@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	s := "565656"
+	s := "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
 	//b := []byte(s)
 
 	fmt.Println(s) // Stampa: Q2lhbw==
