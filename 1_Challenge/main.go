@@ -11,10 +11,6 @@ func main() {
 	fmt.Print("Enter the string \n")
 	fmt.Scanln(&input)
 
-	//s := "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
-	//b := []byte(s)
-
-	//fmt.Println(input) // Stampa:
 	bytes, err := hex.DecodeString(input)
 	if err != nil {
 	}
