@@ -53,6 +53,19 @@ class FrictionTrace(private val clock: Clock) {
         marks.getOrPut(milestone) { clock.nowMillis() }
     }
 
+    /**
+     * Marca una tappa a un istante già noto.
+     *
+     * Serve per [CaptureMilestone.INTENT]: su un avvio a freddo il momento in cui
+     * l'utente ha toccato è **prima** che il nostro codice esista, e l'unico
+     * riferimento onesto è l'avvio del processo, che il sistema ci sa dire. Marcare
+     * l'intenzione all'ingresso di `onCreate` misurerebbe un tempo più breve di
+     * quello che l'utente ha davvero aspettato.
+     */
+    fun markAt(milestone: CaptureMilestone, atMillis: Long) {
+        marks.getOrPut(milestone) { atMillis }
+    }
+
     fun at(milestone: CaptureMilestone): Long? = marks[milestone]
 
     /** Millisecondi fra due tappe, o `null` se una delle due non è stata marcata. */

@@ -87,6 +87,26 @@ solo cosa è cambiato nel codice.
 - **`JournalIngest`** in `core:store` — porta il giornale in archivio fondendolo con
   quanto già salvato. Prima salva, poi svuota: un test fallisce il salvataggio di
   proposito e verifica che il giornale sopravviva come unica copia dell'inchiostro.
+- **`androidApp`** — la prova di velocità di D19, installabile su un telefono:
+  - `CaptureActivity`: Activity di piattaforma, nessuna libreria, nessun database,
+    nessuna animazione di apertura. Serve i due ingressi previsti — sopra il launcher
+    e sopra la schermata di blocco, via `showWhenLocked` (D17);
+  - `InkCanvasView`: `View` di disegno che riempie i contorni calcolati dal core.
+    Legge i campioni storici del `MotionEvent`, senza i quali su uno schermo a 120 Hz
+    si butta via metà della risoluzione del tratto; la pressione la prende solo dal
+    pennino, perché sul dito Android riporta 1.0 fisso e dichiararla assente fa
+    calcolare lo spessore dalla velocità;
+  - `AndroidInkJournalSink`: scrittura in append con `fd.sync()`, senza cui i byte
+    resterebbero nei buffer del sistema e il giornale non proteggerebbe da niente;
+  - il misuratore dell'attrito a schermo nelle build di debug, con il verdetto sul
+    tetto dei 400 ms;
+  - `RecoveredNotesActivity`: schermata di servizio che ricostruisce dal giornale le
+    note e segnala se un tratto si è perso.
+- **`:androidApp` entra nel build solo dove c'è l'SDK Android** (decisione D23), così
+  il core resta compilabile e testabile su qualunque macchina e in CI.
+- **Il giornale sta nell'area protetta dal dispositivo** e `CaptureActivity` è
+  `directBootAware`: è ciò che permette alla cattura sopra il blocco di salvare anche
+  prima del primo sblocco dopo un riavvio (decisione D24, che chiude il caveat di D17).
 - **Mockup delle schermate** in `design/mockups/`, pubblicati come canvas:
   <https://claude.ai/code/artifact/226f7658-faf9-43dc-bd68-a9942e68261a>
   Dieci artboard: home iOS, cattura all'apertura e cattura con gli strumenti,
@@ -98,6 +118,11 @@ solo cosa è cambiato nel codice.
 - Integrazione continua su GitHub Actions: i test del core a ogni push.
 
 ### Modificato
+
+- **Il target `jvm` dei moduli del core produce bytecode 11** invece di 21: è il jar
+  che consuma l'app Android, e D8 lo digerisce senza discutere.
+- **Il giornale non sta più nella cache** ma nei file dell'app: la cache il sistema la
+  può svuotare quando vuole, e lì dentro c'è inchiostro non ancora archiviato.
 
 - **La cattura si apre nuda**: solo foglio e conferma, gli strumenti dopo il primo
   tratto. I primi mockup mostravano selettore della carta e barra delle punte in

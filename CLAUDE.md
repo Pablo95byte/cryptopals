@@ -441,6 +441,56 @@ il movimento del dito, cioè sul percorso critico. Quando succede,
 che un tratto si è perso che lasciargli trovare una nota incompleta senza
 spiegazione.
 
+### D23 — L'app Android entra nel build solo dove c'è l'SDK, e consuma la variante jvm del core
+**Data:** 2026-09-12 · **Stato:** attiva, la variante jvm non ancora provata con l'SDK
+
+`settings.gradle.kts` include `:androidApp` soltanto se trova l'SDK Android
+(`ANDROID_HOME`, `ANDROID_SDK_ROOT` o `sdk.dir` in `local.properties`). I moduli del
+core **non** hanno `androidTarget()`: l'app chiede esplicitamente la loro variante
+`jvm` con l'attributo `KotlinPlatformType.jvm`, e il target `jvm` dei moduli produce
+bytecode 11.
+
+**Perché:** il plugin Android non si può mettere sul classpath senza l'SDK. Senza
+questa condizione il core non si compilerebbe più su una macchina senza Android
+Studio né in CI, e si perderebbe la cosa che tiene in piedi questo progetto: 113 test
+eseguibili su qualunque macchina. Con l'SDK presente — Android Studio scrive
+`local.properties` da sé — il modulo compare senza che nessuno modifichi niente.
+
+**Perché bytecode 11 e non 21:** quel jar lo mangia D8, e il bytecode 21 è una fonte
+di grattacapi che non vale la pena correre per nessun vantaggio.
+
+**Rischio dichiarato:** l'attributo che seleziona la variante `jvm` **non è stato
+provato con l'SDK**, perché nell'ambiente di sviluppo di questo repository il dominio
+di Google è bloccato dalla policy di rete. La strada alternativa, se non regge, è
+`androidTarget()` sui moduli del core, documentata in
+[`androidApp/README.md`](androidApp/README.md). Va scelta solo in second'ordine,
+perché lega il build del core all'SDK.
+
+**Nessuna dipendenza esterna in `:androidApp`:** né AndroidX, né Material, né
+librerie di iniezione. Le `Activity` sono quelle di piattaforma. Non è minimalismo
+per sport: ogni libreria sul percorso di avvio è tempo che l'utente aspetta prima di
+poter scrivere, e un pavimento misurato con mezzo framework addosso non dice niente
+(D19).
+
+### D24 — Il giornale sta nell'area protetta dal dispositivo, non dalle credenziali
+**Data:** 2026-09-12 · **Stato:** attiva · **Precisa D17 e corregge D20**
+
+Il file del giornale vive in `createDeviceProtectedStorageContext().filesDir`, e
+`CaptureActivity` è `directBootAware`.
+
+**Perché:** è l'unica area disponibile **prima del primo sblocco dopo un riavvio**, e
+senza di essa la cattura sopra la schermata di blocco (D17) non potrebbe salvare in
+quel caso — che era annotato come caveat aperto in D17. Ora non lo è più.
+
+**Compromesso accettato:** in quell'area la cifratura è legata al dispositivo e non
+alla credenziale dell'utente, quindi è più debole. Il giornale però è transitorio:
+vive fino al primo assorbimento in archivio, mentre le note vere stanno nell'area
+protetta dalle credenziali.
+
+**Correzione a D20:** lì si diceva "un file semplice nella cache". Sbagliato: la
+cache il sistema la può svuotare quando vuole, e nel giornale c'è inchiostro non
+ancora archiviato. Sta nei file dell'app.
+
 ---
 
 ## 5. Struttura del repository
@@ -452,6 +502,8 @@ core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
   geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline, Bounds
   capture/       CaptureSession, InkJournal, FrictionTrace — non vede l'archivio
   store/         NoteStore, JournalIngest, schema SQLDelight e schema versionato
+androidApp/      La prova di velocità di D19, installabile. Zero dipendenze
+                 esterne: Activity di piattaforma e una View di disegno.
 design/
   mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato:
                  home iOS, cattura nuda, cattura con strumenti, Android da
@@ -521,12 +573,19 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
   semplificazione — è verificabile senza né Xcode né emulatori.
 - **I target iOS si configurano ma non si compilano fuori da macOS.** È normale, ed è
   il motivo di `kotlin.native.ignoreDisabledTargets=true` in `gradle.properties`.
-- Per l'app Android serve Android Studio (SDK); per quella iOS un Mac con Xcode.
+- **Per l'app Android serve Android Studio.** `:androidApp` entra nel build da sé
+  quando l'SDK c'è (D23): `./gradlew :androidApp:installDebug`. Senza SDK il modulo
+  resta fuori e il core si compila e si testa comunque — è voluto.
+- Per l'app iOS serve un Mac con Xcode.
+- **Il dominio di Google è bloccato** nell'ambiente in cui questo repository viene
+  sviluppato: qui l'APK non si compila e la misura di D19 non si può prendere. Va
+  fatta sulla macchina del committente.
 
 - **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
   coincidano. Va eseguito quando si toccano i file `.sq`.
 
-Stato attuale: **113 test, tutti verdi.**
+Stato attuale: **113 test, tutti verdi.** L'app Android è scritta ma **non compilata
+da nessuno**: il primo build è sulla macchina del committente.
 
 ---
 
@@ -553,14 +612,12 @@ Stato attuale: **113 test, tutti verdi.**
 2. ~~`core:capture`~~ — fatto: sessione di scrittura, giornale con formato
    resistente alle scritture interrotte, misuratore dell'attrito, e
    `JournalIngest` in `core:store` che chiude il cerchio.
-3. **Prova di velocità** — Activity nuda che marca le tappe di `FrictionTrace` e
-   disegna un tratto, misurata su un telefono vero contro il tetto di D19. Va fatta
-   **prima** della UI, e richiede Android Studio più un dispositivo: nell'ambiente
-   in cui gira questo repository non c'è né SDK né telefono.
-4. `androidApp` — Activity di cattura minima (D20), in due varianti di ingresso:
-   trasparente sopra il launcher e sopra la schermata di blocco (D17), sopra
-   `CaptureSession`. L'unica cosa che resta da scrivere è l'implementazione di
-   `InkJournalSink`: un `FileOutputStream` in append con `fd.sync()`.
+3. ~~Prova di velocità~~ — **scritta e installabile**: `androidApp` con
+   `CaptureActivity`, `InkCanvasView`, `AndroidInkJournalSink` e il misuratore a
+   schermo. **Manca la misura**, che richiede un telefono: è il prossimo passo, e
+   tocca al committente. Istruzioni in [`androidApp/README.md`](androidApp/README.md).
+4. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
+   all'avvio, così il giornale si svuota e le note vivono nel database.
 4. `androidWidget` — Glance, con la PNG ridotta e il ritaglio su `Bounds`.
 5. `iosApp` + `iosWidget` — SwiftUI e WidgetKit sulla stessa facciata, con widget
    di blocco, Controllo e tasto Azione come porte d'ingresso.

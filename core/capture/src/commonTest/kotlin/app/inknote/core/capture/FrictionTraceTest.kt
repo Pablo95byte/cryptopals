@@ -85,6 +85,26 @@ class FrictionTraceTest {
     }
 
     @Test
+    fun `l'intenzione si può marcare a un istante passato`() {
+        clock.set(1_000L)
+        // L'avvio del processo, che è successo prima che il nostro codice esistesse.
+        trace.markAt(CaptureMilestone.INTENT, atMillis = 800L)
+        trace.mark(CaptureMilestone.FIRST_INK)
+
+        assertEquals(200L, trace.timeToFirstInk)
+    }
+
+    @Test
+    fun `anche marcando a mano la prima vince`() {
+        trace.markAt(CaptureMilestone.INTENT, atMillis = 500L)
+        trace.markAt(CaptureMilestone.INTENT, atMillis = 100L)
+        clock.set(700L)
+        trace.mark(CaptureMilestone.FIRST_INK)
+
+        assertEquals(200L, trace.timeToFirstInk)
+    }
+
+    @Test
     fun `una misura incompleta lo dice invece di inventare un numero`() {
         trace.mark(CaptureMilestone.INTENT)
 
