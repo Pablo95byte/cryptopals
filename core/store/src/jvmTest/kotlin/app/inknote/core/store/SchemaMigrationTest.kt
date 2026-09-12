@@ -19,6 +19,10 @@ import kotlin.test.assertTrue
  * già salvata si rilegga dopo. Questo lo controlla, e lo fa adesso che non ci sono
  * utenti: il momento per scoprire che le migrazioni non funzionano è questo, non dopo
  * la pubblicazione.
+ *
+ * La migrazione arriva sempre alla versione **corrente** dello schema, non a una
+ * fissata: così questo test copre da sé ogni migrazione che verrà aggiunta, invece di
+ * dover essere aggiornato ogni volta (ed è già successo passando da 2 a 3).
  */
 class SchemaMigrationTest {
 
@@ -95,7 +99,7 @@ class SchemaMigrationTest {
         createVersion1Schema()
         insertVersion1Note()
 
-        InkNoteStore.schema.migrate(driver, 1L, 2L)
+        InkNoteStore.schema.migrate(driver, 1L, InkNoteStore.schema.version)
 
         val note = assertNotNull(InkNoteStore.open(driver).note(NoteId("vecchia")))
         assertEquals(360f, note.canvas.width)
@@ -116,7 +120,7 @@ class SchemaMigrationTest {
         createVersion1Schema()
         insertVersion1Note()
 
-        InkNoteStore.schema.migrate(driver, 1L, 2L)
+        InkNoteStore.schema.migrate(driver, 1L, InkNoteStore.schema.version)
 
         val note = InkNoteStore.open(driver).note(NoteId("vecchia"))!!
         assertTrue(note.voiceClips.isEmpty())
@@ -128,7 +132,7 @@ class SchemaMigrationTest {
     fun `dopo la migrazione si possono aggiungere registrazioni alla nota vecchia`() {
         createVersion1Schema()
         insertVersion1Note()
-        InkNoteStore.schema.migrate(driver, 1L, 2L)
+        InkNoteStore.schema.migrate(driver, 1L, InkNoteStore.schema.version)
         val store = InkNoteStore.open(driver)
 
         val withVoice = store.note(NoteId("vecchia"))!!.withVoiceClip(
@@ -146,7 +150,27 @@ class SchemaMigrationTest {
         val reread = store.note(NoteId("vecchia"))!!
         assertTrue(reread.hasInk)
         assertTrue(reread.hasVoice)
+        // Il salvataggio ha ricalcolato l'indice di ricerca della nota, quindi ora si trova.
         assertEquals(listOf("vecchia"), store.search("pile").map { it.id.value })
+    }
+
+    @Test
+    fun `una nota migrata non è cercabile finché non si reindicizza`() {
+        createVersion1Schema()
+        insertVersion1Note()
+        InkNoteStore.schema.migrate(driver, 1L, InkNoteStore.schema.version)
+        val store = InkNoteStore.open(driver)
+
+        // La migrazione non può normalizzare da sola: lo `lower()` di SQLite non toglie
+        // gli accenti. Le note arrivate da un archivio vecchio restano quindi senza
+        // indice, e vanno riconosciute come tali.
+        assertTrue(store.search("latte").isEmpty(), "senza indice non si trova")
+        assertEquals(listOf("vecchia"), store.notesNeedingSearchIndex().map { it.id.value })
+
+        assertEquals(1, store.reindexSearch())
+
+        assertEquals(listOf("vecchia"), store.search("latte").map { it.id.value })
+        assertTrue(store.notesNeedingSearchIndex().isEmpty(), "reindicizzata: non deve tornare in coda")
     }
 
     @Test
@@ -154,7 +178,7 @@ class SchemaMigrationTest {
         createVersion1Schema()
         insertVersion1Note()
 
-        InkNoteStore.schema.migrate(driver, 1L, 2L)
+        InkNoteStore.schema.migrate(driver, 1L, InkNoteStore.schema.version)
 
         assertEquals("/cache/vecchia.png", InkNoteStore.open(driver).widgetImagePath(NoteId("vecchia")))
     }

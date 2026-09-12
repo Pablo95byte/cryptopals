@@ -1,0 +1,16 @@
+-- Migrazione 2 → 3: l'indice di ricerca normalizzato (decisione D27).
+--
+-- Solo aggiunte di colonne: nessun dato esistente viene toccato.
+--
+-- **Il riempimento non si può fare qui.** Normalizzare vuol dire togliere gli accenti
+-- e abbassare le maiuscole anche fuori dall'ASCII, e lo `lower()` di SQLite non sa
+-- fare né l'una né l'altra cosa. Le colonne restano quindi vuote e `search_version`
+-- resta 0: le note così marcate vengono riconosciute da
+-- `selectNotesNeedingSearchIndex` e reindicizzate dall'app. È lo stesso meccanismo che
+-- servirà il giorno in cui la normalizzazione migliora e tutto l'archivio va rifatto.
+
+ALTER TABLE note ADD COLUMN recognized_text_normalized TEXT;
+
+ALTER TABLE note ADD COLUMN search_version INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE voice_clip ADD COLUMN transcript_normalized TEXT;

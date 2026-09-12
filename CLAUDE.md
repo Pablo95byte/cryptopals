@@ -576,13 +576,75 @@ di `deletedAt` — né qui né al primo sync, dove la cancellazione vince comunq
 un meccanismo suo: probabilmente copiare la nota sotto un id nuovo. Sta fra le
 questioni aperte del §10.
 
+### D27 — La ricerca confronta parole normalizzate, non sottostringhe
+**Data:** 2026-09-12 · **Stato:** attiva
+
+`SearchText.normalize` riduce il testo a minuscolo senza accenti con le parole separate
+da spazi; `NoteSearch` richiede che **tutte** le parole cercate siano presenti, in
+qualsiasi ordine, e ordina i risultati per pertinenza. Le forme normalizzate stanno in
+archivio in colonne accanto alla loro sorgente.
+
+**Cosa era rotto, e cosa no:** il `LIKE` di SQLite pareggia già maiuscole e minuscole
+**ASCII**, quindi "SPESA" trovava "spesa" anche prima — l'avevo detto sbagliato.
+Restavano tre problemi:
+
+1. **gli accenti** — "caffe" non trovava "caffè", e in italiano chi cerca in fretta non
+   li mette;
+2. **le maiuscole non ASCII** — "PERCHÉ" non trovava "perché";
+3. **l'ordine delle parole** — "pane latte" non trovava "latte, pane, caffè", perché
+   `LIKE` cerca una sottostringa contigua. È il difetto che si incontra per primo: la
+   gente digita parole, non sottostringhe.
+
+**Dove sta cosa, e perché:** SQL restringe con **una** parola, la più lunga (in genere
+la più selettiva), su una colonna normalizzata. Tutto il resto — tutte le parole
+presenti, in che ordine presentare i risultati — si decide in Kotlin su poche
+candidate. Chiedere a SQLite "tutte le parole in qualsiasi ordine" vorrebbe dire una
+query di lunghezza variabile, oppure FTS5, che su Android dipende dalla versione di
+SQLite del telefono e imporrebbe un minimo di sistema per una comodità: la stessa
+ragione di D15.
+
+**La query delle candidate riporta solo id, istante e testo normalizzato**, non la nota
+intera: caricare tratti e registrazioni di ogni candidata sarebbero due query per nota
+su centinaia di righe, per poi scartarne quasi tutte. Le note complete si leggono solo
+per quelle che finiscono nei risultati.
+
+**Ordinamento:** una parola che comincia una parola del testo vale il doppio di una che
+capita in mezzo — cercando "pane", "pane integrale" batte "accompanare". Poi la nota
+più recente, poi l'id, perché due ricerche identiche devono dare lo stesso ordine.
+
+**`SearchText.VERSION` va alzato ogni volta che la normalizzazione cambia risultato.**
+Le note indicizzate da una versione precedente si riconoscono
+(`notesNeedingSearchIndex`) e si ricalcolano (`reindexSearch`, da chiamare all'avvio
+fuori dal percorso critico). Senza quel numero, migliorare la normalizzazione
+lascerebbe in archivio un indice misto e alcune note diventerebbero introvabili senza
+che nessuno capisca perché. È lo stesso meccanismo che serve al riempimento dopo una
+migrazione, che in SQL non si può fare: `lower()` non toglie gli accenti.
+
+**Limite accettato:** la prima parola tira su al massimo 500 candidate. Con una parola
+molto corta e un archivio molto grande qualche risultato buono può restare fuori.
+Alzare il numero vuol dire scandire più righe a ogni tasto digitato.
+
+### D28 — Le colonne aggiunte da una migrazione vanno in fondo alla tabella
+**Data:** 2026-09-12 · **Stato:** attiva
+
+Nei file `.sq`, una colonna introdotta da una migrazione si scrive **alla fine** del
+`CREATE TABLE`, nell'ordine in cui la migrazione la aggiunge — anche quando starebbe
+più leggibile accanto alla colonna di cui è la forma normalizzata.
+
+**Perché:** `ALTER TABLE ADD COLUMN` accoda. Mettendo la colonna in mezzo al
+`CREATE TABLE`, un database creato da zero e uno migrato hanno le colonne in ordine
+diverso, e `SELECT *` le legge per posizione. È esattamente il caso che
+`verifySqlDelightMigration` ha intercettato mentre si scriveva D27, ed è il motivo per
+cui quel controllo esiste.
+
 ---
 
 ## 5. Struttura del repository
 
 ```
 core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
-  model/         Note, Stroke, VoiceClip, InkPoint, Pen, CanvasSize, mergeNotes
+  model/         Note, Stroke, VoiceClip, InkPoint, Pen, CanvasSize, mergeNotes,
+                 SearchText e NoteSearch (normalizzazione e pertinenza)
   ink/           StrokeBuilder, CatmullRom, WidthProfile, StrokeSimplifier, InkConfig
   geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline, Bounds
   capture/       CaptureSession, InkJournal, FrictionTrace — non vede l'archivio
@@ -652,7 +714,10 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 16. **Ogni modifica allo schema porta la sua migrazione** in un file `.sqm`, e un
     test che rilegge un archivio della versione precedente. `verifySqlDelightMigration`
     controlla che le istruzioni descrivano lo stesso schema; solo il test controlla che
-    i dati sopravvivano.
+    i dati sopravvivano. Le colonne nuove vanno **in fondo** al `CREATE TABLE`. (D28)
+17. **`SearchText.VERSION` si alza ogni volta che la normalizzazione cambia
+    risultato**, altrimenti l'archivio resta con un indice misto e alcune note
+    diventano introvabili. (D27)
 
 ---
 
@@ -676,7 +741,7 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 - **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
   coincidano. Va eseguito quando si toccano i file `.sq`.
 
-Stato attuale: **147 test, tutti verdi.** L'app Android è scritta ma **non compilata
+Stato attuale: **187 test, tutti verdi.** L'app Android è scritta ma **non compilata
 da nessuno**: il primo build è sulla macchina del committente.
 
 ---
@@ -720,9 +785,9 @@ da nessuno**: il primo build è sulla macchina del committente.
 
 ### Si può fare adesso, senza telefono (core puro, verificabile qui)
 
-6. **Ricerca normalizzata** — oggi è un `LIKE` grezzo: "Caffe" non trova "caffè",
-   "SPESA" non trova "spesa". In un'app che promette "poi le ritrovi", una ricerca che
-   non trova è il difetto peggiore che possa avere.
+6. ~~Ricerca normalizzata~~ — fatto: accenti e maiuscole ignorati, parole in qualsiasi
+   ordine, risultati per pertinenza, indice versionato con reindicizzazione
+   (migrazione 2 → 3).
 7. **Inquadratura dei widget** — quali note mostrare, come ritagliare su `Bounds`, come
    stare nei limiti di memoria. Nel core, così vale per tutte e quattro le superfici.
 8. **`core:billing`** — l'unico punto che risponde a "è Pro?" (D4), con le regole del

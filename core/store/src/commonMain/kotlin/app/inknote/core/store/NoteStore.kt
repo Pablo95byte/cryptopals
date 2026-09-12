@@ -39,6 +39,10 @@ interface NoteStore {
      * parlato: per chi cerca sono la stessa cosa. Una nota non ancora riconosciuta non
      * compare nei risultati: è il compromesso della decisione D2, e l'interfaccia deve
      * renderlo evidente all'utente invece di far sembrare che la nota non esista.
+     *
+     * Il confronto ignora accenti e maiuscole e **non chiede l'ordine delle parole**:
+     * "pane latte" trova "latte, pane, caffè" (D27). I risultati escono dal più
+     * pertinente, non dal più recente.
      */
     fun search(term: String, limit: Int = 50): List<Note>
 
@@ -53,6 +57,24 @@ interface NoteStore {
 
     /** Le registrazioni vocali ancora da trascrivere, dalla più vecchia. */
     fun clipsNeedingTranscription(limit: Int = 20): List<VoiceClip>
+
+    /**
+     * Le note il cui indice di ricerca è stato calcolato da una normalizzazione
+     * precedente, o mai.
+     *
+     * Ci finiscono le note salvate da una versione più vecchia dell'app e quelle
+     * arrivate da una migrazione, che non può normalizzare da sola (lo `lower()` di
+     * SQLite non sa togliere gli accenti).
+     */
+    fun notesNeedingSearchIndex(limit: Int = 50): List<Note>
+
+    /**
+     * Ricalcola l'indice di ricerca delle note che ne hanno bisogno.
+     *
+     * Da chiamare all'avvio, fuori dal percorso critico. Ritorna quante note ha
+     * reindicizzato: se il numero è pari al limite, conviene richiamarla.
+     */
+    fun reindexSearch(limit: Int = 50): Int
 
     fun liveNoteCount(): Long
 

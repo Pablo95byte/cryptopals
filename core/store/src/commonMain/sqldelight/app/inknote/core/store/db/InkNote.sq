@@ -18,7 +18,22 @@ CREATE TABLE note (
     recognized_from_revision INTEGER,
     -- Percorso della PNG ridotta per il widget. Non fa parte del modello: è un
     -- prodotto del disegno, non contenuto della nota.
-    widget_image_path TEXT
+    widget_image_path TEXT,
+    -- ⚠️ Le colonne aggiunte da una migrazione vanno **in fondo**, nell'ordine in cui
+    -- la migrazione le aggiunge, anche quando starebbero meglio accanto alla colonna
+    -- di cui sono la forma normalizzata.
+    --
+    -- `ALTER TABLE ADD COLUMN` accoda: un database creato da zero e uno migrato
+    -- avrebbero le colonne in ordine diverso, e `SELECT *` le legge per posizione.
+    -- `verifySqlDelightMigration` se ne accorge, ed è esattamente il motivo per cui
+    -- quel controllo esiste.
+
+    -- Forma normalizzata di recognized_text, per la ricerca (D27). Si scrive nello
+    -- stesso statement della sua sorgente: così non possono andare fuori sincrono.
+    recognized_text_normalized TEXT,
+    -- Versione della normalizzazione con cui l'indice è stato calcolato. Se è diversa
+    -- da SearchText.VERSION la nota va reindicizzata.
+    search_version INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX note_updated_at ON note(updated_at DESC);
@@ -49,7 +64,9 @@ CREATE TABLE voice_clip (
     duration_ms INTEGER NOT NULL,
     transcript TEXT,
     audio_path TEXT,
-    deleted_at INTEGER
+    deleted_at INTEGER,
+    -- In fondo, come sopra: la migrazione l'ha accodata.
+    transcript_normalized TEXT
 );
 
 CREATE INDEX voice_clip_note_id ON voice_clip(note_id);
@@ -60,20 +77,40 @@ SELECT * FROM note WHERE id = ?;
 selectRecentNotes:
 SELECT * FROM note WHERE deleted_at IS NULL ORDER BY updated_at DESC LIMIT :limit;
 
--- Cerca nel testo riconosciuto dall'inchiostro **e** nelle trascrizioni del parlato:
--- per chi cerca sono la stessa cosa, cioè il modo di ritrovare una nota (D2, D25).
-searchNotes:
-SELECT note.* FROM note
+-- Restringe la ricerca a una sola parola, e riporta il minimo che serve a decidere:
+-- id, istante, e tutto il testo normalizzato della nota in un campo solo.
+--
+-- Non riporta la nota intera di proposito. Caricare tratti e registrazioni di ogni
+-- candidata vorrebbe dire due query per nota su centinaia di candidate, per poi
+-- scartarne quasi tutte: le note complete si leggono solo per le poche che finiscono
+-- davvero nei risultati.
+searchCandidates:
+SELECT note.id AS id,
+       note.updated_at AS updated_at,
+       coalesce(note.recognized_text_normalized, '') || ' ' || coalesce(
+           (SELECT group_concat(voice_clip.transcript_normalized, ' ')
+            FROM voice_clip
+            WHERE voice_clip.note_id = note.id AND voice_clip.deleted_at IS NULL),
+           ''
+       ) AS haystack
+FROM note
 WHERE note.deleted_at IS NULL AND (
-    note.recognized_text LIKE '%' || :term || '%'
+    note.recognized_text_normalized LIKE '%' || :token || '%'
     OR EXISTS (
         SELECT 1 FROM voice_clip
         WHERE voice_clip.note_id = note.id
           AND voice_clip.deleted_at IS NULL
-          AND voice_clip.transcript LIKE '%' || :term || '%'
+          AND voice_clip.transcript_normalized LIKE '%' || :token || '%'
     )
 )
 ORDER BY note.updated_at DESC
+LIMIT :limit;
+
+-- Le note il cui indice è stato calcolato da una normalizzazione precedente, o mai.
+selectNotesNeedingSearchIndex:
+SELECT * FROM note
+WHERE deleted_at IS NULL AND search_version != :version
+ORDER BY updated_at DESC
 LIMIT :limit;
 
 countLiveNotes:
@@ -105,10 +142,12 @@ LIMIT :limit;
 insertNoteIfAbsent:
 INSERT OR IGNORE INTO note(
     id, canvas_width, canvas_height, created_at, updated_at, revision,
-    deleted_at, recognized_text, recognized_from_revision
+    deleted_at, recognized_text, recognized_from_revision,
+    recognized_text_normalized, search_version
 ) VALUES (
     :id, :canvasWidth, :canvasHeight, :createdAt, :updatedAt, :revision,
-    :deletedAt, :recognizedText, :recognizedFromRevision
+    :deletedAt, :recognizedText, :recognizedFromRevision,
+    :recognizedTextNormalized, :searchVersion
 );
 
 -- created_at non compare: l'istante di creazione di una nota non cambia.
@@ -124,7 +163,9 @@ UPDATE note SET
     -- resusciterebbe (invariante 2).
     deleted_at = coalesce(deleted_at, :deletedAt),
     recognized_text = :recognizedText,
-    recognized_from_revision = :recognizedFromRevision
+    recognized_from_revision = :recognizedFromRevision,
+    recognized_text_normalized = :recognizedTextNormalized,
+    search_version = :searchVersion
 WHERE id = :id;
 
 markNoteDeleted:
@@ -182,9 +223,11 @@ SELECT * FROM voice_clip WHERE note_id = ? ORDER BY recorded_at ASC, id ASC;
 
 insertVoiceClipIfAbsent:
 INSERT OR IGNORE INTO voice_clip(
-    id, note_id, recorded_at, duration_ms, transcript, audio_path, deleted_at
+    id, note_id, recorded_at, duration_ms, transcript, transcript_normalized,
+    audio_path, deleted_at
 ) VALUES (
-    :id, :noteId, :recordedAt, :durationMs, :transcript, :audioPath, :deletedAt
+    :id, :noteId, :recordedAt, :durationMs, :transcript, :transcriptNormalized,
+    :audioPath, :deletedAt
 );
 
 -- coalesce su tutti e tre i campi mutabili, e in tre direzioni diverse:
@@ -193,6 +236,8 @@ INSERT OR IGNORE INTO voice_clip(
 updateVoiceClip:
 UPDATE voice_clip SET
     transcript = coalesce(:transcript, transcript),
+    -- Segue la trascrizione: se quella resta, resta anche il suo indice.
+    transcript_normalized = coalesce(:transcriptNormalized, transcript_normalized),
     audio_path = coalesce(:audioPath, audio_path),
     deleted_at = coalesce(deleted_at, :deletedAt)
 WHERE id = :id;

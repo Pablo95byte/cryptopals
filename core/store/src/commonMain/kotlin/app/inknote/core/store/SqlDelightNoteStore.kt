@@ -4,6 +4,8 @@ import app.cash.sqldelight.db.SqlDriver
 import app.inknote.core.model.CanvasSize
 import app.inknote.core.model.Note
 import app.inknote.core.model.NoteId
+import app.inknote.core.model.NoteSearch
+import app.inknote.core.model.SearchText
 import app.inknote.core.model.Pen
 import app.inknote.core.model.PenKind
 import app.inknote.core.model.Stroke
@@ -16,6 +18,7 @@ import app.inknote.core.model.orderVoiceClips
 import app.inknote.core.store.db.InkNoteDatabase
 import app.inknote.core.store.db.Note as NoteRow
 import app.inknote.core.store.db.Stroke as StrokeRow
+import app.inknote.core.store.db.SearchCandidates as SearchCandidate
 import app.inknote.core.store.db.Voice_clip as VoiceClipRow
 
 /**
@@ -38,6 +41,18 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
 
     private val queries = database.inkNoteQueries
 
+    private companion object {
+        /**
+         * Quante candidate al massimo la prima parola può tirare su.
+         *
+         * Con una parola corta e un archivio grande si potrebbe troncare, e qualche
+         * risultato buono resterebbe fuori. È un compromesso accettato: alzarlo vuol
+         * dire scandire più righe a ogni tasto digitato, e su un archivio personale
+         * una parola di quattro lettere o più ne seleziona poche.
+         */
+        const val CANDIDATE_LIMIT = 500L
+    }
+
     override fun note(id: NoteId): Note? {
         val row = queries.selectNote(id.value).executeAsOneOrNull() ?: return null
         return row.toNote()
@@ -47,10 +62,41 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
         queries.selectRecentNotes(limit.toLong()).executeAsList().map { it.toNote() }
 
     override fun search(term: String, limit: Int): List<Note> {
-        // Un termine vuoto farebbe combaciare qualunque nota: non è una ricerca,
-        // è l'elenco, e chi chiama non intendeva quello.
-        if (term.isBlank()) return emptyList()
-        return queries.searchNotes(term, limit.toLong()).executeAsList().map { it.toNote() }
+        val tokens = SearchText.tokenize(term)
+        // Nessuna parola non vuol dire "tutte le note": chi chiama non intendeva quello.
+        if (tokens.isEmpty()) return emptyList()
+
+        // La prima parola è la più lunga, quindi in genere la più selettiva: restringe
+        // in SQL. Il resto — tutte le parole presenti, e in che ordine presentarle — si
+        // decide qui, su poche candidate (vedi NoteSearch).
+        val candidates = queries
+            .searchCandidates(token = tokens.first(), limit = CANDIDATE_LIMIT)
+            .executeAsList()
+
+        val matching = candidates
+            .filter { NoteSearch.matchesText(it.haystack, tokens) }
+            .sortedWith(
+                compareByDescending<SearchCandidate> { NoteSearch.scoreText(it.haystack, tokens) }
+                    .thenByDescending { it.updated_at }
+                    .thenBy { it.id },
+            )
+            .take(limit)
+
+        // Solo adesso si leggono le note intere: al massimo `limit`.
+        return matching.mapNotNull { note(NoteId(it.id)) }
+    }
+
+    override fun notesNeedingSearchIndex(limit: Int): List<Note> =
+        queries.selectNotesNeedingSearchIndex(version = SearchText.VERSION.toLong(), limit = limit.toLong())
+            .executeAsList()
+            .map { it.toNote() }
+
+    override fun reindexSearch(limit: Int): Int {
+        val stale = notesNeedingSearchIndex(limit)
+        // Il salvataggio ricalcola l'indice: non c'è una seconda strada per scriverlo,
+        // e quindi non c'è modo di scriverlo in modo diverso da qui.
+        for (note in stale) save(note)
+        return stale.size
     }
 
     override fun notesNeedingRecognition(limit: Int): List<Note> =
@@ -73,6 +119,8 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
                 deletedAt = note.deletedAt,
                 recognizedText = note.recognizedText,
                 recognizedFromRevision = note.recognizedFromRevision,
+                recognizedTextNormalized = SearchText.normalize(note.recognizedText),
+                searchVersion = SearchText.VERSION.toLong(),
             )
             queries.updateNote(
                 canvasWidth = note.canvas.width.toDouble(),
@@ -82,6 +130,8 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
                 deletedAt = note.deletedAt,
                 recognizedText = note.recognizedText,
                 recognizedFromRevision = note.recognizedFromRevision,
+                recognizedTextNormalized = SearchText.normalize(note.recognizedText),
+                searchVersion = SearchText.VERSION.toLong(),
                 id = note.id.value,
             )
             for (stroke in note.strokes) {
@@ -104,11 +154,13 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
                     recordedAt = clip.recordedAt,
                     durationMs = clip.durationMs.toLong(),
                     transcript = clip.transcript,
+                    transcriptNormalized = SearchText.normalize(clip.transcript),
                     audioPath = clip.audioPath,
                     deletedAt = clip.deletedAt,
                 )
                 queries.updateVoiceClip(
                     transcript = clip.transcript,
+                    transcriptNormalized = SearchText.normalize(clip.transcript),
                     audioPath = clip.audioPath,
                     deletedAt = clip.deletedAt,
                     id = clip.id.value,

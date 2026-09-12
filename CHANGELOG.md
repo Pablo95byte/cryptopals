@@ -47,7 +47,7 @@ solo cosa è cambiato nel codice.
     (decisione D11);
   - `Bounds`: rettangolo dell'inchiostro, spessore della penna compreso, per il
     ritaglio nei widget piccoli.
-- **147 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
+- **187 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
   Coprono fra l'altro l'idempotenza e la commutatività del merge, la tenuta della
   geometria su campioni duplicati o coincidenti, e il comportamento dello spessore
   in assenza di pressione, e il giro di andata e ritorno completo di una nota
@@ -87,6 +87,21 @@ solo cosa è cambiato nel codice.
 - **`JournalIngest`** in `core:store` — porta il giornale in archivio fondendolo con
   quanto già salvato. Prima salva, poi svuota: un test fallisce il salvataggio di
   proposito e verifica che il giornale sopravviva come unica copia dell'inchiostro.
+- **Ricerca normalizzata** (decisione D27):
+  - `SearchText` in `core:model`: minuscolo consapevole di Unicode, accenti rimossi con
+    una tabella esplicita, punteggiatura e apostrofi come separatori — così
+    "l'idraulico" si trova cercando "idraulico";
+  - `NoteSearch`: **tutte** le parole cercate devono comparire, in qualsiasi ordine, e i
+    risultati escono per pertinenza. "pane latte" ora trova "latte, pane, caffè", che
+    con il `LIKE` di prima non trovava niente;
+  - una parola che comincia una parola del testo vale il doppio di una che capita in
+    mezzo: cercando "pane", "pane integrale" batte "accompanare";
+  - colonne normalizzate accanto alle loro sorgenti in archivio (migrazione 2 → 3), con
+    `search_version` e `reindexSearch` per ricalcolare l'indice dopo una migrazione o
+    dopo un miglioramento della normalizzazione;
+  - la query delle candidate riporta solo id, istante e testo normalizzato: le note
+    complete si leggono solo per quelle che finiscono nei risultati.
+- **187 test** sul core (erano 147).
 - **Note vocali nel modello e nell'archivio** (decisione D25):
   - `VoiceClip` in `core:model`, con trascrizione e percorso dell'audio. Una nota può
     avere inchiostro, voce o entrambi;
@@ -115,6 +130,13 @@ solo cosa è cambiato nel codice.
   cancellano esplicitamente, prima della nota.
 - **`needsRecognition` teneva le note di sola voce in coda all'OCR per sempre**, senza
   che ci fosse inchiostro da leggere. Ora richiede `hasInk`, nel modello e nella query.
+- **Le colonne aggiunte dalla migrazione 2 → 3 stavano in mezzo al `CREATE TABLE`**,
+  mentre `ALTER TABLE` le accoda: un database creato da zero e uno migrato avrebbero
+  avuto le colonne in ordine diverso, e `SELECT *` le legge per posizione. Intercettato
+  da `verifySqlDelightMigration` (decisione D28).
+- **Il test della migrazione arrivava a una versione fissata** e si rompeva a ogni
+  migrazione nuova. Ora arriva alla versione corrente dello schema, quindi copre da sé
+  anche le migrazioni future.
 
 - **`androidApp`** — la prova di velocità di D19, installabile su un telefono:
   - `CaptureActivity`: Activity di piattaforma, nessuna libreria, nessun database,
