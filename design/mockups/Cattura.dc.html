@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    a { color: #2E5AA8; } a:hover { color: #1F3F78; }
+    .ui { font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif; }
+    .ink { font-family: 'Caveat', 'Bradley Hand', 'Segoe Script', cursive; }
+  </style>
+</helmet>
+
+<div class="ui" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FBF8F1;">
+
+  <!-- Il foglio è tutto lo schermo. Nessuna barra di stato disegnata: quella vera sta sopra. -->
+  <div style="position: absolute; inset: 0; background-image: repeating-linear-gradient(to bottom, transparent 0 35px, #EDE5D3 35px 36px); background-position: 0 108px;"></div>
+
+  <!-- Comandi in alto: il minimo indispensabile, per non rubare foglio -->
+  <div style="position: relative; display: flex; align-items: center; justify-content: space-between; padding: 62px 18px 0 18px;">
+    <div style="height: 44px; display: flex; align-items: center; padding: 0 6px;">
+      <span style="font-size: 15px; font-weight: 500; color: #A79E8D;">Annulla</span>
+    </div>
+    <div style="height: 44px; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 12px; font-weight: 500; color: #BDB4A2;">foglio</span>
+      <div style="display: flex; gap: 7px;">
+        <div style="width: 22px; height: 22px; border-radius: 50%; background: #FFFDF6; border: 2px solid #23201B;"></div>
+        <div style="width: 22px; height: 22px; border-radius: 50%; background: #FBEFC6; border: 1px solid #EBDCA8;"></div>
+        <div style="width: 22px; height: 22px; border-radius: 50%; background: #E6F1E7; border: 1px solid #D2E4D4;"></div>
+        <div style="width: 22px; height: 22px; border-radius: 50%; background: #F8E3E4; border: 1px solid #EFD2D4;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- La scrittura -->
+  <div class="ink" style="position: relative; padding: 26px 26px 0 26px; font-size: 38px; line-height: 1.28; color: #1F2430;">
+    <div style="transform: rotate(-0.7deg);">riunione giovedì 15</div>
+    <div style="transform: rotate(0.4deg); margin-top: 2px;">portare il preventivo</div>
+    <div style="transform: rotate(-0.3deg); margin-top: 2px;">e le foto del cantiere</div>
+    <div style="transform: rotate(0.6deg); margin-top: 18px; color: #2E5AA8;">+ chiedere sconto 10%</div>
+  </div>
+
+  <!-- Strumenti: colori e correzioni -->
+  <div style="position: absolute; left: 16px; right: 16px; bottom: 96px; display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; gap: 10px;">
+      <div style="width: 30px; height: 30px; border-radius: 50%; background: #1F2430; box-shadow: 0 0 0 2px #FBF8F1, 0 0 0 4px #1F2430;"></div>
+      <div style="width: 30px; height: 30px; border-radius: 50%; background: #2E5AA8;"></div>
+      <div style="width: 30px; height: 30px; border-radius: 50%; background: #B4402F;"></div>
+      <div style="width: 30px; height: 30px; border-radius: 50%; background: #D8B23A;"></div>
+    </div>
+    <div style="display: flex; gap: 6px;">
+      <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 14L4 9l5-5"></path><path d="M4 9h9a7 7 0 0 1 0 14H8"></path>
+        </svg>
+      </div>
+      <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8.5 20.5H20"></path><path d="M14 4.5l5.5 5.5-8 8H6L3.5 15.5z"></path>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Punte e conferma -->
+  <div style="position: absolute; left: 16px; right: 16px; bottom: 28px; display: flex; align-items: center; gap: 12px;">
+
+    <div style="flex-grow: 1; height: 56px; background: #FFFFFF; border: 1px solid #EDE5D3; border-radius: 18px; box-shadow: 0 6px 18px rgba(35,32,27,0.08); display: flex; align-items: center; justify-content: space-around; padding: 0 6px;">
+      <!-- biro: selezionata -->
+      <div style="width: 52px; height: 44px; border-radius: 13px; background: #F4EFE3; display: flex; align-items: center; justify-content: center;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#23201B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20l1.2-4.2L16 5a2.2 2.2 0 0 1 3.1 3.1L8.2 18.8z"></path><path d="M5.2 15.8l3.1 3"></path>
+        </svg>
+      </div>
+      <!-- pennarello -->
+      <div style="width: 52px; height: 44px; border-radius: 13px; display: flex; align-items: center; justify-content: center;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B8374" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 19.5h5l9.2-9.2a2.6 2.6 0 0 0 0-3.7l-1.8-1.8a2.6 2.6 0 0 0-3.7 0L4.5 14z"></path><path d="M13 6.5l4.5 4.5"></path>
+        </svg>
+      </div>
+      <!-- evidenziatore -->
+      <div style="width: 52px; height: 44px; border-radius: 13px; display: flex; align-items: center; justify-content: center;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B8374" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 14l6-6 5 5-6 6H6z"></path><path d="M4 20.5h7"></path><path d="M12.5 5.5l3.2-1.8 4.6 4.6-1.8 3.2"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- La conferma. Il salvataggio però avviene comunque: vedi decisione D5. -->
+    <div style="width: 92px; height: 56px; border-radius: 18px; background: #23201B; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 8px 20px rgba(35,32,27,0.28);">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FBF8F1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 13l4.5 4.5L19 7"></path>
+      </svg>
+      <span style="font-size: 16px; font-weight: 600; color: #FBF8F1;">OK</span>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

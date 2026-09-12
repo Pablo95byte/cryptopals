@@ -47,10 +47,32 @@ solo cosa è cambiato nel codice.
     (decisione D11);
   - `Bounds`: rettangolo dell'inchiostro, spessore della penna compreso, per il
     ritaglio nei widget piccoli.
-- **52 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
+- **75 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
   Coprono fra l'altro l'idempotenza e la commutatività del merge, la tenuta della
   geometria su campioni duplicati o coincidenti, e il comportamento dello spessore
-  in assenza di pressione.
+  in assenza di pressione, e il giro di andata e ritorno completo di una nota
+  attraverso SQLite.
+- **`core:store`** — l'archivio locale su SQLite, tramite SQLDelight:
+  - `NoteStore`: lettura per id, elenco recenti, ricerca nel testo riconosciuto,
+    elenco delle note da riconoscere, salvataggio transazionale, tombstone e
+    `purgeDeleted` come unico punto in cui qualcosa viene davvero eliminato;
+  - schema a due tabelle, con i tratti come righe proprie perché sono l'unità di
+    sincronizzazione e ognuno ha il suo tombstone;
+  - `StrokePointCodec` in `core:model`: formato binario con byte di versione,
+    16 byte per campione, che permette di aggiungere campi in futuro continuando a
+    leggere le note già salvate (decisione D13);
+  - inserimenti `INSERT OR IGNORE` + `UPDATE` invece di un upsert nativo, per non
+    imporre `minSdk 30` su Android, e **mai** `INSERT OR REPLACE`, che attraverso
+    la cascata sulla chiave esterna porterebbe via tutti i tratti della nota
+    (decisione D15, con due test di regressione);
+  - il driver del database lo costruisce la piattaforma: il core fornisce solo lo
+    schema, così non entra nessun tipo di piattaforma nel core;
+  - schema versionato in `src/commonMain/sqldelight/databases/1.db`, versionato in
+    git come base delle migrazioni future (`./gradlew verifySqlDelightMigration`).
+- **Mockup delle schermate** in `design/mockups/`: home iOS, cattura, archivio con
+  ricerca, home Android con la finestra trasparente, i tre formati di widget, il
+  paywall e uno schizzo di direzione alternativa. Pubblicati come canvas:
+  <https://claude.ai/code/artifact/226f7658-faf9-43dc-bd68-a9942e68261a>
 - **`CLAUDE.md`** — registro delle decisioni di prodotto e tecniche, con le
   alternative scartate e il perché.
 - Integrazione continua su GitHub Actions: i test del core a ogni push.

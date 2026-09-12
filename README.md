@@ -13,7 +13,8 @@ entrambe le piattaforme.
 ## Stato
 
 Prime fondamenta. C'è il core condiviso — modello dati, motore d'inchiostro,
-geometria dei tratti — con i suoi test. Le app e i widget non sono ancora scritti.
+geometria dei tratti, archivio locale — con i suoi test, e i mockup delle
+schermate. Le app e i widget non sono ancora scritti.
 
 ## Struttura
 
@@ -21,6 +22,8 @@ geometria dei tratti — con i suoi test. Le app e i widget non sono ancora scri
 core/model/      note, tratti, penne, fusione delle versioni
 core/ink/        levigatura della curva, spessore, semplificazione
 core/geometry/   contorni pronti da riempire per i renderer nativi
+core/store/      archivio locale SQLite: note, tratti, ricerca
+design/mockups/  le schermate, come artboard di un canvas pubblicato
 ```
 
 ## Verificare

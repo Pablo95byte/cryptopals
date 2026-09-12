@@ -241,6 +241,81 @@ nota conserverà, oltre ai tratti, una **PNG piccola** dedicata al widget.
 telefono"), e risparmia backend, obblighi sui dati personali e assistenza. Il
 modello dati è comunque pronto (D8, D9).
 
+### D13 — I campioni si salvano in un formato binario versionato
+**Data:** 2026-09-12 · **Stato:** attiva
+
+`StrokePointCodec`: un byte di versione, poi 16 byte per campione (`x`, `y`,
+`pressure` come float a 32 bit e `tMs` come intero).
+
+**Perché non JSON:** una riga di scrittura sono centinaia di campioni e una nota ne
+ha molte; in JSON diventano decine di kilobyte di testo per nota, da rileggere e
+riparsare a ogni aggiornamento del widget — dove la memoria è il vincolo (D11).
+
+**Perché il byte di versione:** permette di aggiungere un campo al campione
+(l'inclinazione del pennino, per dirne uno) **continuando a leggere le note già
+salvate**. Un formato senza versione obbliga a indovinare, e sui dati degli utenti
+non si indovina. Una versione non riconosciuta è un errore esplicito, non una
+lettura approssimativa.
+
+**Conseguenza:** un tratto troncato o illeggibile solleva un errore e non
+restituisce una lista vuota. Un archivio corrotto letto come "nota senza tratti"
+cancellerebbe la nota al primo salvataggio successivo.
+
+### D14 — L'archivio è sincrono, e il driver lo costruisce la piattaforma
+**Data:** 2026-09-12 · **Stato:** attiva
+
+`NoteStore` espone operazioni sincrone, senza flussi osservabili. `core:store`
+fornisce lo schema e apre l'archivio su un driver che gli viene passato.
+
+**Perché sincrono:** sulle quantità in gioco — note singole, elenchi di poche
+decine — SQLite locale risponde in frazioni di millisecondo. Un'API sincrona è
+verificabile e identica sulle due piattaforme; chi chiama decide su quale thread
+stare. L'osservazione continua, se servirà, si aggiunge sopra senza cambiare questo
+contratto.
+
+**Perché il driver sta fuori:** su Android serve il `Context`, su iOS no. Mettere
+quella differenza nel core lo legherebbe alle piattaforme, contro l'invariante 5.
+
+**Conseguenza:** `save` **unisce** i tratti e non cancella quelli assenti dalla
+lista, coerentemente con l'invariante 1. Così un salvataggio partito da una copia
+incompleta della nota non può far sparire inchiostro. La cancellazione vera esiste
+solo in `purgeDeleted`.
+
+### D15 — SQL portabile: nessun upsert nativo
+**Data:** 2026-09-12 · **Stato:** attiva
+
+Gli inserimenti sono `INSERT OR IGNORE` seguito da `UPDATE` dentro una
+transazione, non `ON CONFLICT DO UPDATE`.
+
+**Perché:** quella sintassi esiste da SQLite 3.24, che su Android vuol dire
+Android 11. Significherebbe imporre `minSdk 30` per una comodità di scrittura,
+tagliando fuori dei telefoni per niente.
+
+**E soprattutto niente `INSERT OR REPLACE`:** REPLACE cancella la riga e la
+reinserisce, quindi farebbe scattare la cascata sulla chiave esterna portando via
+**tutti i tratti della nota**, e azzererebbe il percorso dell'immagine del widget a
+ogni salvataggio. Ci sono due test di regressione su questo.
+
+### D16 — Direzione visiva: carta e inchiostro, la calligrafia come segno distintivo
+**Data:** 2026-09-12 · **Stato:** attiva, alternativa ancora aperta
+
+Fondo carta caldo, bigliettini a tinte tenui, inchiostro scuro; testo dell'interfaccia
+in Instrument Sans, scrittura in Caveat nei mockup. Schermate in
+[`design/mockups/`](design/mockups), canvas pubblicato:
+<https://claude.ai/code/artifact/226f7658-faf9-43dc-bd68-a9942e68261a>
+
+**Perché:** la calligrafia dell'utente è l'unica cosa che questa app ha e le altre
+no (D1). La direzione la mette al centro e rende la home riconoscibile a colpo
+d'occhio, che è anche ciò che si vede negli screenshot dello store.
+
+**Aperto:** la direzione B ("gesso su lavagna", inchiostro chiaro su fondo scuro) è
+uno schizzo accanto alle schermate. Più sobria in home, meno riconoscibile. Va
+scelta prima di rifinire l'interfaccia.
+
+**Vincoli già rispettati nei mockup:** nessuna barra di stato né tastiera disegnate
+(sul telefono quelle vere si sovrappongono), e nessun bersaglio di tocco sotto i
+44 punti.
+
 ---
 
 ## 5. Struttura del repository
@@ -250,13 +325,16 @@ core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
   model/         Note, Stroke, InkPoint, Pen, CanvasSize, mergeNotes
   ink/           StrokeBuilder, CatmullRom, WidthProfile, StrokeSimplifier, InkConfig
   geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline, Bounds
+  store/         NoteStore, schema SQLDelight, schema versionato in sqldelight/databases/
+design/
+  mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato
 ```
 
-Ancora da creare: `core/store` (SQLDelight), `core/ocr` (Vision / ML Kit),
-`core/billing` (RevenueCat), `androidApp`, `androidWidget`, `iosApp`, `iosWidget`.
+Ancora da creare: `core/ocr` (Vision / ML Kit), `core/billing` (RevenueCat),
+`androidApp`, `androidWidget`, `iosApp`, `iosWidget`.
 
 **Regola di dipendenza da non rompere:** il core non dipende dalla UI né dalla rete.
-Le dipendenze vanno in una sola direzione, `geometry → ink → model`. Quando i moduli
+Le dipendenze vanno in una sola direzione: `geometry → ink → model` e `store → model`. Quando i moduli
 supereranno i cinque, la configurazione Gradle duplicata va estratta in un plugin di
 convenzione in `build-logic/`.
 
@@ -287,6 +365,11 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
    spessore va dedotto dalla velocità: è ciò che distingue una nota scritta a mano
    da un tubo di spessore costante.
 7. **Il modello non sa nulla dei pixel.** (D10)
+8. **Il formato dei campioni si cambia solo alzando la versione** in
+   `StrokePointCodec`, mai modificando il significato dei byte esistenti. (D13)
+9. **Lo schema versionato in `core/store/src/commonMain/sqldelight/databases/`
+   fa parte del repository.** È la base su cui le migrazioni future vengono
+   verificate (`./gradlew verifySqlDelightMigration`), non un artefatto di build.
 
 ---
 
@@ -301,7 +384,10 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
   il motivo di `kotlin.native.ignoreDisabledTargets=true` in `gradle.properties`.
 - Per l'app Android serve Android Studio (SDK); per quella iOS un Mac con Xcode.
 
-Stato attuale: **52 test, tutti verdi.**
+- **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
+  coincidano. Va eseguito quando si toccano i file `.sq`.
+
+Stato attuale: **75 test, tutti verdi.**
 
 ---
 
@@ -323,8 +409,8 @@ Stato attuale: **52 test, tutti verdi.**
 
 ## 9. Prossimi passi
 
-1. `core:store` — SQLDelight: note, tratti, percorso della PNG per il widget. Con
-   migrazioni versionate dal primo giorno.
+1. ~~`core:store`~~ — fatto: note, tratti, percorso della PNG per il widget,
+   schema versionato e migrazioni verificate.
 2. `androidApp` — Activity trasparente di cattura + canvas Compose che riempie i
    contorni di `StrokeGeometry`.
 3. `androidWidget` — Glance, con la PNG ridotta e il ritaglio su `Bounds`.

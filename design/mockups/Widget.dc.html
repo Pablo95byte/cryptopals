@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    a { color: #7FA8E8; } a:hover { color: #A8C4F0; }
+    .ui { font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif; }
+    .ink { font-family: 'Caveat', 'Bradley Hand', 'Segoe Script', cursive; }
+    .lbl { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(243,239,230,0.62); }
+    .sub { font-size: 11.5px; font-weight: 400; color: rgba(243,239,230,0.40); }
+  </style>
+</helmet>
+
+<div class="ui" style="width: 980px; height: 430px; background: radial-gradient(100% 90% at 20% 0%, #4A5663 0%, #333C46 55%, #262D35 100%); padding: 34px 36px; box-sizing: border-box; display: flex; align-items: flex-end; gap: 40px;">
+
+  <!-- Piccolo: l'ultima nota, e nient'altro -->
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div>
+      <div class="lbl">Piccolo</div>
+      <div class="sub">l'ultima nota</div>
+    </div>
+    <div style="width: 155px; height: 155px; background: #FBF8F1; border-radius: 22px; padding: 14px; box-sizing: border-box; box-shadow: 0 14px 30px rgba(0,0,0,0.32); display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+      <div class="ink" style="font-size: 27px; line-height: 1.12; color: #1F2430; transform: rotate(-0.8deg);">passare in<br>farmacia</div>
+      <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+        <span style="font-size: 10px; font-weight: 500; color: #ADA492;">oggi</span>
+        <div style="width: 30px; height: 30px; border-radius: 50%; background: #23201B; display: flex; align-items: center; justify-content: center;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FBF8F1" stroke-width="2.6" stroke-linecap="round">
+            <path d="M12 5v14M5 12h14"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Medio: tre note e la cattura rapida -->
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div>
+      <div class="lbl">Medio</div>
+      <div class="sub">tre note + cattura</div>
+    </div>
+    <div style="width: 329px; height: 155px; background: #FBF8F1; border-radius: 22px; padding: 13px; box-sizing: border-box; box-shadow: 0 14px 30px rgba(0,0,0,0.32); display: flex; gap: 10px;">
+      <div style="flex-grow: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+        <div style="background: #FFFDF6; border: 1px solid #EDE4D2; border-radius: 11px; padding: 8px 9px;">
+          <div class="ink" style="font-size: 18px; line-height: 1.1; color: #23201B; transform: rotate(-1deg);">chiamare<br>Luca</div>
+        </div>
+        <div style="background: #FBEFC6; border: 1px solid #F0E0AC; border-radius: 11px; padding: 8px 9px;">
+          <div class="ink" style="font-size: 18px; line-height: 1.1; color: #2A2014; transform: rotate(0.8deg);">latte,<br>pane,<br>caffè</div>
+        </div>
+        <div style="background: #E6F1E7; border: 1px solid #D2E4D4; border-radius: 11px; padding: 8px 9px;">
+          <div class="ink" style="font-size: 18px; line-height: 1.1; color: #1B2A1E; transform: rotate(-0.5deg);">podcast<br>sul vino</div>
+        </div>
+      </div>
+      <div style="width: 44px; display: flex; flex-direction: column; justify-content: center;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: #23201B; display: flex; align-items: center; justify-content: center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBF8F1" stroke-width="2.4" stroke-linecap="round">
+            <path d="M12 5v14M5 12h14"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grande: la scrivania -->
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div>
+      <div class="lbl">Grande</div>
+      <div class="sub">quattro note, come una scrivania</div>
+    </div>
+    <div style="width: 329px; height: 329px; background: #FBF8F1; border-radius: 26px; padding: 14px; box-sizing: border-box; box-shadow: 0 18px 36px rgba(0,0,0,0.34); display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 2px 0 6px;">
+        <div style="display: flex; align-items: baseline; gap: 7px;">
+          <span class="ink" style="font-size: 23px; font-weight: 700; color: #23201B; line-height: 1;">InkNote</span>
+          <span style="font-size: 10.5px; font-weight: 500; color: #9C9384;">6 note</span>
+        </div>
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: #23201B; display: flex; align-items: center; justify-content: center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FBF8F1" stroke-width="2.4" stroke-linecap="round">
+            <path d="M12 5v14M5 12h14"></path>
+          </svg>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 9px; flex-grow: 1;">
+        <div style="background: #FFFDF6; border: 1px solid #EDE4D2; border-radius: 13px; padding: 10px 11px;">
+          <div class="ink" style="font-size: 21px; line-height: 1.13; color: #23201B; transform: rotate(-1deg);">chiamare Luca<br>entro venerdì</div>
+        </div>
+        <div style="background: #FBEFC6; border: 1px solid #F0E0AC; border-radius: 13px; padding: 10px 11px;">
+          <div class="ink" style="font-size: 21px; line-height: 1.13; color: #2A2014; transform: rotate(0.7deg);">latte, pane,<br>caffè</div>
+        </div>
+        <div style="background: #E6F1E7; border: 1px solid #D2E4D4; border-radius: 13px; padding: 10px 11px;">
+          <div class="ink" style="font-size: 20px; line-height: 1.13; color: #1B2A1E; transform: rotate(-0.4deg);">idea: podcast<br>sul vino naturale</div>
+        </div>
+        <div style="background: #F8E3E4; border: 1px solid #EFD2D4; border-radius: 13px; padding: 10px 11px;">
+          <div class="ink" style="font-size: 21px; line-height: 1.13; color: #2B1C1D; transform: rotate(0.9deg);">targa<br>AB 421 XY</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

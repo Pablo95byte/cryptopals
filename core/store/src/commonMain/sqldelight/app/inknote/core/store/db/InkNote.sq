@@ -1,0 +1,127 @@
+-- Schema dell'archivio locale.
+--
+-- Due tabelle e non una: i tratti sono righe proprie perché sono l'unità di
+-- sincronizzazione e ognuno ha il suo tombstone (vedi CLAUDE.md, decisione D8).
+-- Tenere i tratti dentro un unico blob per nota renderebbe impossibile fondere
+-- due dispositivi senza riscrivere tutta la nota.
+
+CREATE TABLE note (
+    id TEXT NOT NULL PRIMARY KEY,
+    canvas_width REAL NOT NULL,
+    canvas_height REAL NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    revision INTEGER NOT NULL,
+    -- Tombstone: le note cancellate restano, altrimenti al primo sync tornerebbero.
+    deleted_at INTEGER,
+    recognized_text TEXT,
+    recognized_from_revision INTEGER,
+    -- Percorso della PNG ridotta per il widget. Non fa parte del modello: è un
+    -- prodotto del disegno, non contenuto della nota.
+    widget_image_path TEXT
+);
+
+CREATE INDEX note_updated_at ON note(updated_at DESC);
+
+CREATE TABLE stroke (
+    id TEXT NOT NULL PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    pen_color INTEGER NOT NULL,
+    pen_kind TEXT NOT NULL,
+    pen_base_width REAL NOT NULL,
+    created_at INTEGER NOT NULL,
+    deleted_at INTEGER,
+    -- Campioni nel formato binario versionato di StrokePointCodec.
+    points BLOB NOT NULL
+);
+
+CREATE INDEX stroke_note_id ON stroke(note_id);
+
+selectNote:
+SELECT * FROM note WHERE id = ?;
+
+selectRecentNotes:
+SELECT * FROM note WHERE deleted_at IS NULL ORDER BY updated_at DESC LIMIT :limit;
+
+searchNotes:
+SELECT * FROM note
+WHERE deleted_at IS NULL AND recognized_text LIKE '%' || :term || '%'
+ORDER BY updated_at DESC
+LIMIT :limit;
+
+countLiveNotes:
+SELECT count(*) FROM note WHERE deleted_at IS NULL;
+
+selectNotesNeedingRecognition:
+SELECT * FROM note
+WHERE deleted_at IS NULL
+  AND (recognized_from_revision IS NULL OR recognized_from_revision != revision)
+ORDER BY updated_at DESC
+LIMIT :limit;
+
+-- ## Perché l'inserimento è in due statement e non un upsert
+--
+-- La sintassi ON CONFLICT DO UPDATE esiste da SQLite 3.24, che su Android vuol
+-- dire Android 11: significherebbe imporre minSdk 30 per una comodità di
+-- scrittura, tagliando fuori dei telefoni per niente. INSERT OR IGNORE seguito
+-- da UPDATE funziona su qualsiasi versione e, dentro una transazione, è
+-- equivalente.
+--
+-- L'inserimento inoltre NON è un INSERT OR REPLACE: REPLACE cancella la riga e la
+-- reinserisce, quindi farebbe scattare la cascata sulla chiave esterna portando
+-- via tutti i tratti della nota, e azzererebbe widget_image_path a ogni
+-- salvataggio.
+
+insertNoteIfAbsent:
+INSERT OR IGNORE INTO note(
+    id, canvas_width, canvas_height, created_at, updated_at, revision,
+    deleted_at, recognized_text, recognized_from_revision
+) VALUES (
+    :id, :canvasWidth, :canvasHeight, :createdAt, :updatedAt, :revision,
+    :deletedAt, :recognizedText, :recognizedFromRevision
+);
+
+-- created_at non compare: l'istante di creazione di una nota non cambia.
+-- widget_image_path non compare: non fa parte del modello.
+updateNote:
+UPDATE note SET
+    canvas_width = :canvasWidth,
+    canvas_height = :canvasHeight,
+    updated_at = :updatedAt,
+    revision = :revision,
+    deleted_at = :deletedAt,
+    recognized_text = :recognizedText,
+    recognized_from_revision = :recognizedFromRevision
+WHERE id = :id;
+
+markNoteDeleted:
+UPDATE note SET deleted_at = :deletedAt, updated_at = :updatedAt, revision = revision + 1
+WHERE id = :id AND deleted_at IS NULL;
+
+setWidgetImagePath:
+UPDATE note SET widget_image_path = :path WHERE id = :id;
+
+selectWidgetImagePath:
+SELECT widget_image_path FROM note WHERE id = ?;
+
+purgeDeletedNotes:
+DELETE FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before;
+
+selectStrokes:
+SELECT * FROM stroke WHERE note_id = ? ORDER BY created_at ASC, id ASC;
+
+-- Un tratto è immutabile: l'unico campo che può cambiare dopo la creazione è il
+-- tombstone, quindi l'aggiornamento si limita a quello.
+
+insertStrokeIfAbsent:
+INSERT OR IGNORE INTO stroke(
+    id, note_id, pen_color, pen_kind, pen_base_width, created_at, deleted_at, points
+) VALUES (
+    :id, :noteId, :penColor, :penKind, :penBaseWidth, :createdAt, :deletedAt, :points
+);
+
+updateStrokeDeletedAt:
+UPDATE stroke SET deleted_at = :deletedAt WHERE id = :id;
+
+deleteStrokesOfNote:
+DELETE FROM stroke WHERE note_id = ?;

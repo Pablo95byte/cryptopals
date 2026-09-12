@@ -91,6 +91,6 @@ data class Note(
  * dispositivi che hanno fuso la stessa nota devono disegnarla identica, e
  * l'evidenziatore va sotto l'inchiostro o lo copre.
  */
-internal fun orderStrokes(strokes: List<Stroke>): List<Stroke> = strokes.sortedWith(
+fun orderStrokes(strokes: List<Stroke>): List<Stroke> = strokes.sortedWith(
     compareBy({ if (it.pen.kind == PenKind.HIGHLIGHTER) 0 else 1 }, { it.createdAt }, { it.id.value }),
 )

@@ -1,0 +1,49 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Home iOS" },
+    { "file": "Cattura.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "title": "Cattura" },
+    { "file": "Archivio.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "title": "Archivio e ricerca" },
+    { "file": "HomeAndroid.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "title": "Home Android" },
+    { "file": "Paywall.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "title": "Paywall" },
+    { "file": "Widget.dc.html", "x": 0, "y": 1060, "w": 980, "h": 430, "title": "I tre formati di widget" },
+    { "file": "DirezioneB.dc.html", "x": 1060, "y": 1060, "w": 390, "h": 560, "title": "Direzione B (schizzo)" }
+  ],
+  "annotations": [
+    {
+      "id": "nota-home-ios",
+      "x": 0, "y": -168, "w": 390,
+      "text": "Home iOS. Il widget grande mostra l'inchiostro vero, non una trascrizione.\nIl + è la porta principale: un tocco e il foglio è già aperto."
+    },
+    {
+      "id": "nota-cattura",
+      "x": 470, "y": -168, "w": 390,
+      "text": "Cattura. Il foglio è tutto lo schermo: nessuna intestazione, nessun campo.\nOK chiude e torna alla home, ma il salvataggio avviene comunque (decisione D5)."
+    },
+    {
+      "id": "nota-archivio",
+      "x": 940, "y": -168, "w": 390,
+      "text": "Archivio. La ricerca lavora sul testo riconosciuto dalla scrittura (D2).\nIl testo non sostituisce mai l'inchiostro: serve solo a ritrovare la nota."
+    },
+    {
+      "id": "nota-android",
+      "x": 1410, "y": -168, "w": 390,
+      "text": "Android. La cattura è una finestra trasparente sopra il launcher: la home\nsi intravede dietro, quindi non si percepisce l'apertura di un'altra app."
+    },
+    {
+      "id": "nota-paywall",
+      "x": 1880, "y": -168, "w": 390,
+      "text": "Paywall. Pagamento unico, nessun abbonamento (D4).\nIl prezzo di 6,99 € è la proposta, ancora da confermare per mercato."
+    },
+    {
+      "id": "nota-widget",
+      "x": 0, "y": 890, "w": 430,
+      "text": "I tre formati. Il piccolo mostra l'ultima nota, il medio tre più la cattura,\nil grande quattro come una scrivania. Tutti e tre disegnano gli stessi\ncontorni calcolati dal core, a dettaglio ridotto per stare nei limiti\ndi memoria dei widget (D11)."
+    },
+    {
+      "id": "nota-direzione-b",
+      "x": 1060, "y": 890, "w": 390,
+      "text": "Alternativa sull'estetica, tenuta di proposito a livello di schizzo.\nMeno riconoscibile in home, ma più sobria: da scegliere prima di\nrifinire le schermate."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}
