@@ -58,6 +58,37 @@ vince sulla velocità: widget della home, widget della schermata di blocco,
 Controllo nel Centro di Controllo (iOS 18+), tasto Azione (iPhone 15 Pro e
 successivi), e uno Shortcut per il tocco sul retro.
 
+### Le funzionalità che tolgono attrito, e dove agiscono
+
+La catena reale da "mi viene l'idea" a "è annotata" è: **tirare fuori il telefono →
+sbloccarlo → trovare il punto d'ingresso → aprire → scrivere → salvare → tornare
+indietro.** Ogni anello si accorcia con qualcosa di diverso, ed è utile vederli in un
+posto solo invece che sparsi fra le decisioni.
+
+| Anello | Cosa lo accorcia | Stato |
+|---|---|---|
+| Sblocco + ricerca dell'ingresso | **Cattura dalla schermata di blocco** su Android: `showWhenLocked`, foglio cieco (D17) | nel codice, non provata |
+| Sblocco | **Più porte d'ingresso su iOS**: widget di blocco, Controllo, tasto Azione, tocco sul retro (§2) | da scrivere |
+| Ricerca dell'ingresso | **Widget che apre il foglio in un tocco**; nel formato piccolo si tocca **tutto** il widget, non un pulsante da centrare | da scrivere |
+| Apertura | **Finestra trasparente sopra il launcher** su Android: non si percepisce il cambio di app | nel codice |
+| Apertura | **Nessuna animazione**: tema senza `windowAnimationStyle`, `overridePendingTransition(0, 0)` | nel codice |
+| Apertura | **Il percorso di cattura non passa dall'app**: niente Compose, niente iniezione, niente database (D20) | nel codice |
+| Apertura | **Il primo tocco accettato al primo fotogramma**, con i campioni storici del `MotionEvent` | nel codice |
+| Prima decisione | **Il foglio si apre nudo**: nessuna carta, nessuna punta, nessun colore da scegliere (D21) | nel codice |
+| Salvataggio | **Giornale di scrittura con `fd.sync()`**: al sicuro dal primo tratto, non dalla conferma (D20, D22) | nel codice, testato |
+| Salvataggio | **Il giornale sta in area protetta dal dispositivo**: scrive anche prima del primo sblocco dopo un riavvio (D24) | nel codice |
+| Ritorno | **OK non salva, è solo un'uscita** (D5): nessun gesto è obbligatorio per non perdere la nota | nel codice |
+| Primo avvio | **Nessun account e nessun onboarding** (D12): all'apertura non c'è niente da configurare | deciso |
+| Mani occupate | **Cattura a voce** (D18): l'unica strada senza sblocco su iPhone | modello fatto, cattura da scrivere |
+| Tutti | **Il tetto dei 400 ms** (D19): non è una funzionalità, è ciò che impedisce alle altre di degradarsi | misuratore nel codice, misura da fare |
+
+**Fuori da questa catena** sta la ricerca (OCR e trascrizioni, D2 e D25): riduce
+l'attrito del *ritrovare*, non dello scrivere. È la seconda metà della promessa, e non
+va confusa con la prima.
+
+**Come si giudica un'aggiunta futura:** se allunga uno di questi anelli, non entra —
+o entra dopo il primo tratto, dove non costa niente.
+
 ---
 
 ## 3. Decisioni di prodotto
@@ -668,32 +699,51 @@ da nessuno**: il primo build è sulla macchina del committente.
 
 ## 9. Prossimi passi
 
-1. ~~`core:store`~~ — fatto: note, tratti, percorso della PNG per il widget,
-   schema versionato e migrazioni verificate.
-2. ~~`core:capture`~~ — fatto: sessione di scrittura, giornale con formato
-   resistente alle scritture interrotte, misuratore dell'attrito, e
-   `JournalIngest` in `core:store` che chiude il cerchio.
-3. ~~Prova di velocità~~ — **scritta e installabile**: `androidApp` con
-   `CaptureActivity`, `InkCanvasView`, `AndroidInkJournalSink` e il misuratore a
-   schermo. **Manca la misura**, che richiede un telefono: è il prossimo passo, e
-   tocca al committente. Istruzioni in [`androidApp/README.md`](androidApp/README.md).
-4. ~~Note vocali nel modello~~ — fatto: `VoiceClip` nel modello, tabella e migrazione
-   1 → 2 nell'archivio, ricerca che copre anche le trascrizioni, e un test che rilegge
-   un archivio della versione 1 dopo la migrazione.
-5. **Ricerca normalizzata** — oggi è un `LIKE` grezzo: "Caffe" non trova "caffè".
-   In un'app che promette "poi le ritrovi", una ricerca che non trova è il difetto
-   peggiore. Logica pura, verificabile qui.
-6. **Inquadratura dei widget** — quali note mostrare e come ritagliare, nel core, così
-   vale per entrambe le piattaforme.
-7. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
-   all'avvio, così il giornale si svuota e le note vivono nel database. Dopo la misura
-   di D19, per non impilare codice non compilato.
-4. `androidWidget` — Glance, con la PNG ridotta e il ritaglio su `Bounds`.
-5. `iosApp` + `iosWidget` — SwiftUI e WidgetKit sulla stessa facciata, con widget
-   di blocco, Controllo e tasto Azione come porte d'ingresso.
-6. `core:ocr` — Vision e ML Kit dietro un'unica interfaccia.
-7. `core:voice` — registrazione e trascrizione sul dispositivo (D18).
-8. `core:billing` — RevenueCat, con l'unico punto in cui si decide "è Pro?".
+### Fatto
+
+1. ~~`core:store`~~ — note, tratti, percorso della PNG per il widget, schema
+   versionato e migrazioni verificate.
+2. ~~`core:capture`~~ — sessione di scrittura, giornale resistente alle scritture
+   interrotte, misuratore dell'attrito, e `JournalIngest` che chiude il cerchio.
+3. ~~Prova di velocità, scritta~~ — `androidApp` con `CaptureActivity`,
+   `InkCanvasView`, `AndroidInkJournalSink` e il misuratore a schermo.
+4. ~~Note vocali nel modello~~ — `VoiceClip`, migrazione 1 → 2, ricerca che copre le
+   trascrizioni, e un test che rilegge un archivio della versione 1.
+
+### Bloccato sulla misura
+
+5. **Prendere il numero di D19** su un telefono vero. Istruzioni in
+   [`androidApp/README.md`](androidApp/README.md). **Tocca al committente**, e va prima
+   di scrivere altro codice di piattaforma: se il pavimento è molto oltre i 400 ms la
+   conseguenza cambia l'architettura di entrambe le app, e scriverne una seconda prima
+   di saperlo è lavoro a rischio.
+
+### Si può fare adesso, senza telefono (core puro, verificabile qui)
+
+6. **Ricerca normalizzata** — oggi è un `LIKE` grezzo: "Caffe" non trova "caffè",
+   "SPESA" non trova "spesa". In un'app che promette "poi le ritrovi", una ricerca che
+   non trova è il difetto peggiore che possa avere.
+7. **Inquadratura dei widget** — quali note mostrare, come ritagliare su `Bounds`, come
+   stare nei limiti di memoria. Nel core, così vale per tutte e quattro le superfici.
+8. **`core:billing`** — l'unico punto che risponde a "è Pro?" (D4), con le regole del
+   livello gratuito. Logica pura; l'SDK di RevenueCat si attacca dopo.
+
+### Dopo la misura
+
+9. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
+   all'avvio, così il giornale si svuota e le note vivono nel database.
+10. **`androidWidget`** — Glance, con la PNG ridotta e il ritaglio su `Bounds`. È qui
+    che nascono le porte d'ingresso vere.
+11. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
+    di blocco, Controllo e tasto Azione. **Serve un Mac con Xcode.**
+12. **`core:ocr`** — Vision e ML Kit dietro un'unica interfaccia.
+13. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
+    allora se il giornale debba coprire anche l'audio.
+
+### Prima di pubblicare
+
+14. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
+    privacy. Contano più del codice per la scoperta, e il paywall va collegato.
 
 ## 10. Questioni ancora aperte
 
