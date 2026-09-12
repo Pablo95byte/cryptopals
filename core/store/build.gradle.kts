@@ -14,6 +14,9 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":core:model"))
+            // La dipendenza va in questa direzione e mai nell'altra: l'archivio sa
+            // del giornale, il giornale non sa dell'archivio (decisione D20).
+            api(project(":core:capture"))
             implementation(libs.sqldelight.runtime)
         }
         commonTest.dependencies {

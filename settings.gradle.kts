@@ -17,4 +17,5 @@ rootProject.name = "inknote"
 include(":core:model")
 include(":core:ink")
 include(":core:geometry")
+include(":core:capture")
 include(":core:store")

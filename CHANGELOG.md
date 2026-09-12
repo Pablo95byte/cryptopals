@@ -47,11 +47,12 @@ solo cosa è cambiato nel codice.
     (decisione D11);
   - `Bounds`: rettangolo dell'inchiostro, spessore della penna compreso, per il
     ritaglio nei widget piccoli.
-- **75 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
+- **113 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
   Coprono fra l'altro l'idempotenza e la commutatività del merge, la tenuta della
   geometria su campioni duplicati o coincidenti, e il comportamento dello spessore
   in assenza di pressione, e il giro di andata e ritorno completo di una nota
-  attraverso SQLite.
+  attraverso SQLite, e il percorso completo scrittura → morte del processo →
+  archivio.
 - **`core:store`** — l'archivio locale su SQLite, tramite SQLDelight:
   - `NoteStore`: lettura per id, elenco recenti, ricerca nel testo riconosciuto,
     elenco delle note da riconoscere, salvataggio transazionale, tombstone e
@@ -69,6 +70,23 @@ solo cosa è cambiato nel codice.
     schema, così non entra nessun tipo di piattaforma nel core;
   - schema versionato in `src/commonMain/sqldelight/databases/1.db`, versionato in
     git come base delle migrazioni future (`./gradlew verifySqlDelightMigration`).
+- **`core:capture`** — il percorso di cattura, senza database e senza iniezione
+  delle dipendenze, perché l'inchiostro sia disegnabile al primo fotogramma:
+  - `CaptureSession`: sessione di scrittura che non conosce né UI né archivio; un
+    secondo contatto mentre si scrive viene ignorato, perché è il palmo della mano;
+  - `InkJournal`: giornale di scrittura. Ogni tratto chiuso finisce in coda a un
+    file **prima** che `endStroke` ritorni, quindi la nota è al sicuro dal primo
+    tratto e non dalla conferma (decisione D20);
+  - formato del giornale a record `versione | lunghezza | checksum | contenuto`:
+    un processo ucciso a metà scrittura costa quel tratto, non il giornale, e la
+    coda troncata viene segnalata fino all'interfaccia invece di essere ignorata;
+  - `FrictionTrace` e `FrictionBudget`: le tappe fra il gesto dell'utente e
+    l'inchiostro, con il tetto di 400 ms che blocca il rilascio (decisione D19);
+  - il modulo **non dipende** da `core:store`: l'invariante "niente database sul
+    percorso di cattura" è una dipendenza di build e non un commento (decisione D22).
+- **`JournalIngest`** in `core:store` — porta il giornale in archivio fondendolo con
+  quanto già salvato. Prima salva, poi svuota: un test fallisce il salvataggio di
+  proposito e verifica che il giornale sopravviva come unica copia dell'inchiostro.
 - **Mockup delle schermate** in `design/mockups/`, pubblicati come canvas:
   <https://claude.ai/code/artifact/226f7658-faf9-43dc-bd68-a9942e68261a>
   Dieci artboard: home iOS, cattura all'apertura e cattura con gli strumenti,

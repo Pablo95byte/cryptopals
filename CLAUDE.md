@@ -409,6 +409,38 @@ conferma**. Punte, colori e scelta della carta compaiono dopo il primo tratto.
 chi, in quel momento, non vuole decidere niente. I primi mockup avevano selettore
 della carta e barra delle punte in apertura: era un errore, ed è stato corretto.
 
+### D22 — Il giornale sta in un modulo che non può vedere l'archivio
+**Data:** 2026-09-12 · **Stato:** attiva
+
+`core:capture` dipende solo da `core:model` e `core:ink`. **Non** dipende da
+`core:store`. L'assorbimento del giornale in archivio (`JournalIngest`) sta in
+`core:store`, che dipende da `core:capture`: la dipendenza va in una direzione sola.
+
+**Perché questa forma e non un solo modulo:** D20 dice che sul percorso di cattura
+non entrano database né iniezione delle dipendenze. Detta così è un commento, e i
+commenti si violano — fra tre mesi qualcuno avrà bisogno "solo di leggere una
+impostazione" dal database dentro la cattura, e nessuno se ne accorgerà in revisione.
+Messa così è il compilatore che glielo impedisce: da `core:capture` l'archivio non è
+raggiungibile. **Un invariante che conta va reso una dipendenza di build, non una
+frase in un file.**
+
+**Perché l'assorbimento sta nell'archivio:** deve fondere il recuperato con il
+salvato (`mergeNotes`), quindi ha bisogno di entrambi. Metterlo in `core:store` è
+l'unico posto che rispetta il senso unico.
+
+**Ordine delle operazioni, che è la parte delicata:** prima si salva, **poi** si
+svuota il giornale. Mai il contrario. Se il salvataggio non riesce, il giornale resta
+l'unica copia dell'inchiostro: svuotarlo prima è il solo modo di perdere una nota con
+questo meccanismo. C'è un test che fallisce il salvataggio di proposito e verifica
+che il giornale sopravviva.
+
+**Cosa si perde comunque:** il tratto in corso nel momento in cui il processo muore.
+Sono meno di un secondo di inchiostro, e recuperarlo richiederebbe scrivere durante
+il movimento del dito, cioè sul percorso critico. Quando succede,
+`RecoveredNote.hadTornTail` lo segnala fino all'interfaccia: è meglio dire all'utente
+che un tratto si è perso che lasciargli trovare una nota incompleta senza
+spiegazione.
+
 ---
 
 ## 5. Struttura del repository
@@ -418,7 +450,8 @@ core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
   model/         Note, Stroke, InkPoint, Pen, CanvasSize, mergeNotes
   ink/           StrokeBuilder, CatmullRom, WidthProfile, StrokeSimplifier, InkConfig
   geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline, Bounds
-  store/         NoteStore, schema SQLDelight, schema versionato in sqldelight/databases/
+  capture/       CaptureSession, InkJournal, FrictionTrace — non vede l'archivio
+  store/         NoteStore, JournalIngest, schema SQLDelight e schema versionato
 design/
   mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato:
                  home iOS, cattura nuda, cattura con strumenti, Android da
@@ -430,7 +463,8 @@ Ancora da creare: `core/ocr` (Vision / ML Kit), `core/billing` (RevenueCat),
 `androidApp`, `androidWidget`, `iosApp`, `iosWidget`.
 
 **Regola di dipendenza da non rompere:** il core non dipende dalla UI né dalla rete.
-Le dipendenze vanno in una sola direzione: `geometry → ink → model` e `store → model`. Quando i moduli
+Le dipendenze vanno in una sola direzione: `geometry → ink → model`,
+`capture → ink → model`, `store → capture → model`. **Mai `capture → store`.** Quando i moduli
 supereranno i cinque, la configurazione Gradle duplicata va estratta in un plugin di
 convenzione in `build-logic/`.
 
@@ -472,6 +506,9 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
     senza sblocco, mai. (D17)
 12. **400 ms dal tocco al primo tratto** è un tetto che blocca il rilascio, non un
     obiettivo. (D19)
+13. **Il giornale si svuota solo dopo che i record sono in archivio.** (D22)
+14. **`core:capture` non dipende da `core:store`.** Se un giorno serve, la risposta
+    è quasi certamente spostare il chiamante, non aggiungere la dipendenza. (D22)
 
 ---
 
@@ -489,7 +526,7 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 - **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
   coincidano. Va eseguito quando si toccano i file `.sq`.
 
-Stato attuale: **75 test, tutti verdi.**
+Stato attuale: **113 test, tutti verdi.**
 
 ---
 
@@ -513,12 +550,17 @@ Stato attuale: **75 test, tutti verdi.**
 
 1. ~~`core:store`~~ — fatto: note, tratti, percorso della PNG per il widget,
    schema versionato e migrazioni verificate.
-2. **Prova di velocità** — Activity nuda che disegna un tratto, misurata su un
-   telefono vero contro il tetto di D19. Va fatta **prima** della UI: richiede
-   Android Studio e un dispositivo.
-3. `androidApp` — Activity di cattura minima (D20), in due varianti di ingresso:
-   trasparente sopra il launcher e sopra la schermata di blocco (D17). Più il
-   giornale di scrittura.
+2. ~~`core:capture`~~ — fatto: sessione di scrittura, giornale con formato
+   resistente alle scritture interrotte, misuratore dell'attrito, e
+   `JournalIngest` in `core:store` che chiude il cerchio.
+3. **Prova di velocità** — Activity nuda che marca le tappe di `FrictionTrace` e
+   disegna un tratto, misurata su un telefono vero contro il tetto di D19. Va fatta
+   **prima** della UI, e richiede Android Studio più un dispositivo: nell'ambiente
+   in cui gira questo repository non c'è né SDK né telefono.
+4. `androidApp` — Activity di cattura minima (D20), in due varianti di ingresso:
+   trasparente sopra il launcher e sopra la schermata di blocco (D17), sopra
+   `CaptureSession`. L'unica cosa che resta da scrivere è l'implementazione di
+   `InkJournalSink`: un `FileOutputStream` in append con `fd.sync()`.
 4. `androidWidget` — Glance, con la PNG ridotta e il ritaglio su `Bounds`.
 5. `iosApp` + `iosWidget` — SwiftUI e WidgetKit sulla stessa facciata, con widget
    di blocco, Controllo e tasto Azione come porte d'ingresso.

@@ -22,6 +22,7 @@ schermate. Le app e i widget non sono ancora scritti.
 core/model/      note, tratti, penne, fusione delle versioni
 core/ink/        levigatura della curva, spessore, semplificazione
 core/geometry/   contorni pronti da riempire per i renderer nativi
+core/capture/    sessione di scrittura e giornale dell'inchiostro
 core/store/      archivio locale SQLite: note, tratti, ricerca
 design/mockups/  le schermate, come artboard di un canvas pubblicato
 ```
