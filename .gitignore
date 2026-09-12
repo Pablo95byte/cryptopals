@@ -25,3 +25,6 @@ Pods/
 # OS
 .DS_Store
 .kotlin/
+
+# Il canvas seminato è un prodotto di build: le sorgenti sono i .dc.html
+design/mockups/inknote-schermate.html
