@@ -8,9 +8,10 @@
 <x-dc>
 <helmet>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    * { box-sizing: border-box; }
     body { margin: 0; }
     a { color: #2E5AA8; } a:hover { color: #1F3F78; }
     .ui { font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif; }
@@ -33,11 +34,12 @@
         <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5L21 21"></path>
       </svg>
       <span style="font-size: 16px; font-weight: 500; color: #23201B;">spesa</span>
-      <div style="flex-grow: 1;"></div>
-      <div style="width: 22px; height: 22px; border-radius: 50%; background: #EDE5D3; display: flex; align-items: center; justify-content: center;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8B8374" stroke-width="3" stroke-linecap="round">
-          <path d="M6 6l12 12M18 6L6 18"></path>
-        </svg>
+      <div style="width: 44px; height: 44px; margin-left: auto; margin-right: -8px; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 22px; height: 22px; border-radius: 50%; background: #EDE5D3; display: flex; align-items: center; justify-content: center;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8B8374" stroke-width="3" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6L6 18"></path>
+          </svg>
+        </div>
       </div>
     </div>
 
@@ -74,7 +76,7 @@
 
     </div>
 
-    <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
       <span style="font-size: 12px; font-weight: 600; color: #8B8374; letter-spacing: 0.05em; text-transform: uppercase;">Tutte le note</span>
       <div style="flex-grow: 1; height: 1px; background: #E4DCCC;"></div>
     </div>

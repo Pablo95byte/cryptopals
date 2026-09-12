@@ -14,9 +14,12 @@ prodotto di build che contiene l'editor per intero. Si rigenera dai sorgenti.
 | Artboard | Schermata |
 |---|---|
 | `Main` | Home iOS con il widget grande |
-| `Cattura` | Il foglio: scrittura, punte, conferma |
-| `Archivio` | Elenco e ricerca nel testo riconosciuto |
+| `Cattura` | Il foglio all'apertura: solo foglio e conferma (D21) |
+| `CatturaStrumenti` | Dopo il primo tratto: punte, colori, correzioni |
+| `Blocco` | Android senza sbloccare, foglio cieco (D17) |
 | `HomeAndroid` | La finestra trasparente sopra il launcher |
+| `Voce` | Cattura a voce, per le mani occupate (D18) |
+| `Archivio` | Elenco e ricerca nel testo riconosciuto |
 | `Widget` | I tre formati di widget |
 | `Paywall` | Pagamento unico, come da decisione D4 |
 | `DirezioneB` | Schizzo di direzione alternativa, ancora da valutare |
@@ -25,6 +28,10 @@ prodotto di build che contiene l'editor per intero. Si rigenera dai sorgenti.
 
 - Nessuna barra di stato né tastiera disegnate: sul telefono quelle vere si
   sovrappongono al layout, e disegnarle fa sembrare tutto raddoppiato.
-- Nessun bersaglio di tocco sotto i 44 punti.
+- Nessun bersaglio di tocco sotto i 44 punti. Il pallino del colore resta piccolo
+  perché non pesi visivamente, ma la sua area di tocco arriva a 44: sono due cose
+  diverse.
+- `box-sizing: border-box` su tutto: altezze fisse più padding senza di esso fanno
+  scavalcare gli elementi, e nei primi mockup era successo in tre punti.
 - La scrittura nei mockup è resa con un font corsivo (Caveat): nell'app vera è
   inchiostro disegnato dai tratti, non testo.

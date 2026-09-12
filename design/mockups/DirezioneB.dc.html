@@ -8,9 +8,10 @@
 <x-dc>
 <helmet>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    * { box-sizing: border-box; }
     body { margin: 0; }
     a { color: #8FB8F0; } a:hover { color: #B4D0F6; }
     .ui { font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif; }
@@ -20,10 +21,10 @@
 
 <div class="ui" style="width: 390px; height: 560px; background: #1A1C1E; padding: 28px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
 
-  <div>
+  <div style="display: flex; flex-direction: column; gap: 5px;">
     <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(240,238,234,0.45);">Direzione B — schizzo</div>
-    <div style="font-size: 19px; font-weight: 600; color: #F0EEEA; margin-top: 4px;">Gesso su lavagna</div>
-    <div style="font-size: 13px; line-height: 1.45; color: rgba(240,238,234,0.55); margin-top: 6px; text-wrap: pretty;">Inchiostro chiaro su fondo scuro invece di carta. Più discreto sulla home, meno "bigliettino".</div>
+    <div style="font-size: 19px; font-weight: 600; color: #F0EEEA;">Gesso su lavagna</div>
+    <div style="font-size: 13px; line-height: 1.45; color: rgba(240,238,234,0.55); text-wrap: pretty;">Inchiostro chiaro su fondo scuro invece di carta. Più discreto sulla home, meno "bigliettino".</div>
   </div>
 
   <!-- Schizzo del widget -->
@@ -35,16 +36,16 @@
       </div>
     </div>
     <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 8px;">
-      <div style="height: 86px; border-radius: 12px; background: #24272A; padding: 10px;">
+      <div style="height: 82px; border-radius: 12px; background: #24272A; padding: 10px;">
         <div class="ink" style="font-size: 19px; line-height: 1.12; color: #EDEBE6;">chiamare Luca</div>
       </div>
-      <div style="height: 86px; border-radius: 12px; background: #24272A; padding: 10px;">
+      <div style="height: 82px; border-radius: 12px; background: #24272A; padding: 10px;">
         <div class="ink" style="font-size: 19px; line-height: 1.12; color: #E9DFA8;">latte, pane, caffè</div>
       </div>
-      <div style="height: 86px; border-radius: 12px; background: #24272A; padding: 10px;">
+      <div style="height: 82px; border-radius: 12px; background: #24272A; padding: 10px;">
         <div class="ink" style="font-size: 19px; line-height: 1.12; color: #BFD8C2;">podcast sul vino</div>
       </div>
-      <div style="height: 86px; border-radius: 12px; background: #24272A; padding: 10px;">
+      <div style="height: 82px; border-radius: 12px; background: #24272A; padding: 10px;">
         <div class="ink" style="font-size: 19px; line-height: 1.12; color: #EDC9CB;">targa AB 421 XY</div>
       </div>
     </div>

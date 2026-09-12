@@ -316,6 +316,99 @@ scelta prima di rifinire l'interfaccia.
 (sul telefono quelle vere si sovrappongono), e nessun bersaglio di tocco sotto i
 44 punti.
 
+### D17 — Su Android la cattura parte dalla schermata di blocco
+**Data:** 2026-09-12 · **Stato:** attiva, approvata dal committente
+
+Un'Activity con `setShowWhenLocked(true)` compare sopra il blocco e riceve i
+tocchi, senza sbloccare: è lo stesso meccanismo delle sveglie e delle chiamate in
+arrivo.
+
+**Perché:** la catena reale da "mi viene l'idea" a "è annotata" è tirare fuori il
+telefono, **sbloccarlo**, trovare il widget, aprire, scrivere, confermare. Lo
+sblocco e la ricerca del widget costano più di tutto il resto sommato, e questa è
+l'unica strada che li elimina entrambi.
+
+**Vincolo non negoziabile:** quel foglio è **cieco e in sola scrittura**. Niente
+elenco note, niente anteprime, niente ricerca. Chi raccoglie il telefono da un
+tavolo può scrivere una nota, e va bene; non deve poter leggere le tue. Qualunque
+aggiunta futura a quella schermata va misurata su questa frase.
+
+**Caveat tecnico:** subito dopo un riavvio, prima del primo sblocco, l'archivio
+cifrato con le credenziali non è accessibile. In quel caso l'inchiostro va nel
+giornale di scrittura (D20) su area disponibile a freddo, e viene assorbito al
+primo sblocco.
+
+**Asimmetria da ricordare:** su iPhone **non si può**. Apple non concede a nessuno
+una superficie di scrittura sopra il blocco: widget della schermata di blocco,
+Centro di Controllo e tasto Azione portano tutti a "sblocca prima". Il meglio
+ottenibile è comprimere sblocco e apertura in un gesto solo. Il pavimento
+dell'attrito è quindi diverso sulle due piattaforme, e non va raccontato come
+uguale.
+
+### D18 — La voce è la seconda modalità di cattura
+**Data:** 2026-09-12 · **Stato:** attiva, approvata dal committente
+
+Registrazione con trascrizione sul dispositivo; la nota vocale finisce accanto a
+quelle scritte ed è cercabile con lo stesso meccanismo dell'OCR (D2).
+
+**Perché:** in bici, con le borse della spesa, al volante, **scrivere a mano non è
+attrito zero e non lo diventerà**, per quanto buona sia l'app. E su iPhone la voce è
+l'unica cattura che funziona senza sbloccare, quindi lì non è un extra: è il
+percorso più breve che esista.
+
+**Il rischio accettato:** allarga il prodotto e può diluire il messaggio. La
+scrittura resta l'identità — è quello che ci differenzia e ciò che si vede negli
+screenshot dello store; la voce è il ripiego per le mani occupate, non il titolo.
+
+### D19 — L'attrito è un numero, con un tetto che blocca il rilascio
+**Data:** 2026-09-12 · **Stato:** attiva
+
+**Tempo dal tocco al primo tratto disegnabile: massimo 400 ms**, misurato su un
+Android di fascia media reale e su un iPhone, non su un emulatore. Un misuratore
+in modalità debug lo mostra a ogni avvio, e **nessuna build che peggiora quel
+numero si rilascia.**
+
+**Perché:** "attrito zero" senza un numero è uno slogan, e gli slogan non
+sopravvivono alla prima settimana di sviluppo in cui qualcuno aggiunge
+un'animazione di apertura. Un tetto misurato invece cambia le decisioni di
+architettura — è esattamente come è nata D20.
+
+**Prima cosa da fare, prima della UI vera:** una prova di velocità, cioè
+un'Activity nuda che disegna un tratto, misurata sul telefono. Se il pavimento con
+un'Activity vuota è già 900 ms, nessuna rifinitura successiva lo recupera, e
+conviene saperlo subito. **Richiede una macchina con Android Studio e un telefono
+vero: non è misurabile nell'ambiente in cui gira questo repository.**
+
+### D20 — Il percorso di cattura non passa dall'app
+**Data:** 2026-09-12 · **Stato:** attiva
+
+La schermata di cattura su Android **non usa Compose** e non vede né iniezione
+delle dipendenze né database. È un'Activity minima con una View di disegno
+normale, che accetta il primo tocco al primo fotogramma e tiene i tratti in
+memoria. Su iOS, il widget apre una scena leggera, non l'app completa con il
+modello dati caricato.
+
+**Perché:** l'avvio a freddo di una Activity Compose su un telefono di fascia
+media sta sui 700-1200 ms. È lì che si perde la partita di D19, non nel disegno.
+Questa decisione contraddice di proposito il piano ovvio ("Compose per tutto"):
+Compose va benissimo per l'archivio e le impostazioni, non sul percorso critico.
+
+**Giornale di scrittura:** ogni tratto chiuso viene aggiunto in coda a un file
+semplice nella cache, subito, fuori dal percorso critico; `core:store` lo assorbe
+dopo. Così l'inchiostro è al sicuro **dal primo tratto** e non dalla conferma: se
+l'utente rimette il telefono in tasca, preme il tasto laterale, riceve una
+chiamata o il sistema uccide l'app, la nota c'è già. È il completamento di D5.
+
+### D21 — Il foglio si apre nudo
+**Data:** 2026-09-12 · **Stato:** attiva
+
+All'apertura la schermata di cattura mostra **soltanto il foglio e il pulsante di
+conferma**. Punte, colori e scelta della carta compaiono dopo il primo tratto.
+
+**Perché:** ogni comando visibile prima del primo tratto è una decisione chiesta a
+chi, in quel momento, non vuole decidere niente. I primi mockup avevano selettore
+della carta e barra delle punte in apertura: era un errore, ed è stato corretto.
+
 ---
 
 ## 5. Struttura del repository
@@ -327,7 +420,10 @@ core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
   geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline, Bounds
   store/         NoteStore, schema SQLDelight, schema versionato in sqldelight/databases/
 design/
-  mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato
+  mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato:
+                 home iOS, cattura nuda, cattura con strumenti, Android da
+                 schermo bloccato, Android sopra il launcher, voce, archivio,
+                 widget, paywall, direzione alternativa
 ```
 
 Ancora da creare: `core/ocr` (Vision / ML Kit), `core/billing` (RevenueCat),
@@ -370,6 +466,12 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 9. **Lo schema versionato in `core/store/src/commonMain/sqldelight/databases/`
    fa parte del repository.** È la base su cui le migrazioni future vengono
    verificate (`./gradlew verifySqlDelightMigration`), non un artefatto di build.
+10. **Sul percorso di cattura non entrano database, iniezione delle dipendenze né
+    Compose.** L'inchiostro deve essere disegnabile al primo fotogramma. (D20)
+11. **La schermata di blocco resta cieca:** nessun contenuto di nota leggibile
+    senza sblocco, mai. (D17)
+12. **400 ms dal tocco al primo tratto** è un tetto che blocca il rilascio, non un
+    obiettivo. (D19)
 
 ---
 
@@ -411,12 +513,18 @@ Stato attuale: **75 test, tutti verdi.**
 
 1. ~~`core:store`~~ — fatto: note, tratti, percorso della PNG per il widget,
    schema versionato e migrazioni verificate.
-2. `androidApp` — Activity trasparente di cattura + canvas Compose che riempie i
-   contorni di `StrokeGeometry`.
-3. `androidWidget` — Glance, con la PNG ridotta e il ritaglio su `Bounds`.
-4. `iosApp` + `iosWidget` — SwiftUI e WidgetKit sulla stessa facciata.
-5. `core:ocr` — Vision e ML Kit dietro un'unica interfaccia.
-6. `core:billing` — RevenueCat, con l'unico punto in cui si decide "è Pro?".
+2. **Prova di velocità** — Activity nuda che disegna un tratto, misurata su un
+   telefono vero contro il tetto di D19. Va fatta **prima** della UI: richiede
+   Android Studio e un dispositivo.
+3. `androidApp` — Activity di cattura minima (D20), in due varianti di ingresso:
+   trasparente sopra il launcher e sopra la schermata di blocco (D17). Più il
+   giornale di scrittura.
+4. `androidWidget` — Glance, con la PNG ridotta e il ritaglio su `Bounds`.
+5. `iosApp` + `iosWidget` — SwiftUI e WidgetKit sulla stessa facciata, con widget
+   di blocco, Controllo e tasto Azione come porte d'ingresso.
+6. `core:ocr` — Vision e ML Kit dietro un'unica interfaccia.
+7. `core:voice` — registrazione e trascrizione sul dispositivo (D18).
+8. `core:billing` — RevenueCat, con l'unico punto in cui si decide "è Pro?".
 
 ## 10. Questioni ancora aperte
 
@@ -426,3 +534,9 @@ Stato attuale: **75 test, tutti verdi.**
   renda il livello gratuito inutile e quindi l'app non recensita.
 - **Prezzo effettivo del Pro**, per mercato.
 - **Gesto della gomma** con dito e con pennino, che sono casi diversi.
+- **Se la nota vocale conservi anche l'audio** o solo la trascrizione. L'audio
+  occupa spazio e va sincronizzato; la trascrizione da sola può sbagliare una
+  parola importante.
+- **Come si entra nella cattura vocale su Android** a telefono bloccato, dato che
+  lì la scrittura sopra il blocco esiste già (D17) e la voce servirebbe soprattutto
+  a mani occupate.

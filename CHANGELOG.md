@@ -69,13 +69,28 @@ solo cosa è cambiato nel codice.
     schema, così non entra nessun tipo di piattaforma nel core;
   - schema versionato in `src/commonMain/sqldelight/databases/1.db`, versionato in
     git come base delle migrazioni future (`./gradlew verifySqlDelightMigration`).
-- **Mockup delle schermate** in `design/mockups/`: home iOS, cattura, archivio con
-  ricerca, home Android con la finestra trasparente, i tre formati di widget, il
-  paywall e uno schizzo di direzione alternativa. Pubblicati come canvas:
+- **Mockup delle schermate** in `design/mockups/`, pubblicati come canvas:
   <https://claude.ai/code/artifact/226f7658-faf9-43dc-bd68-a9942e68261a>
+  Dieci artboard: home iOS, cattura all'apertura e cattura con gli strumenti,
+  Android da schermo bloccato, Android sopra il launcher, cattura a voce, archivio
+  con ricerca, i tre formati di widget, paywall e uno schizzo di direzione
+  alternativa da valutare.
 - **`CLAUDE.md`** — registro delle decisioni di prodotto e tecniche, con le
   alternative scartate e il perché.
 - Integrazione continua su GitHub Actions: i test del core a ogni push.
+
+### Modificato
+
+- **La cattura si apre nuda**: solo foglio e conferma, gli strumenti dopo il primo
+  tratto. I primi mockup mostravano selettore della carta e barra delle punte in
+  apertura, cioè decisioni chieste a chi in quel momento non vuole decidere niente
+  (decisione D21).
+- **Corretti i mockup** dopo una revisione: `box-sizing` mancante che faceva
+  scavalcare il pulsante di cattura sull'ultima riga di note e il terzo bigliettino
+  sul pulsante del widget Android; bersagli di tocco portati a 44 punti (il pallino
+  del colore resta piccolo, l'area di tocco no); il widget piccolo non ha più un
+  pulsante, si tocca tutto; "Camera" corretto in "Fotocamera"; conteggi
+  incoerenti fra widget e archivio rimossi.
 
 ### Rimosso
 

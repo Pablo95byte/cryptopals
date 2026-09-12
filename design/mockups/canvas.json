@@ -1,43 +1,61 @@
 {
   "artboards": [
     { "file": "Main.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Home iOS" },
-    { "file": "Cattura.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "title": "Cattura" },
-    { "file": "Archivio.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "title": "Archivio e ricerca" },
-    { "file": "HomeAndroid.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "title": "Home Android" },
-    { "file": "Paywall.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "title": "Paywall" },
+    { "file": "Cattura.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "title": "Cattura — apertura" },
+    { "file": "CatturaStrumenti.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "title": "Cattura — dopo il primo tratto" },
+    { "file": "Blocco.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "title": "Android da schermo bloccato" },
+    { "file": "HomeAndroid.dc.html", "x": 1880, "y": 0, "w": 390, "h": 844, "title": "Android sopra il launcher" },
+    { "file": "Voce.dc.html", "x": 2350, "y": 0, "w": 390, "h": 844, "title": "Cattura a voce" },
+    { "file": "Archivio.dc.html", "x": 2820, "y": 0, "w": 390, "h": 844, "title": "Archivio e ricerca" },
+    { "file": "Paywall.dc.html", "x": 3290, "y": 0, "w": 390, "h": 844, "title": "Paywall" },
     { "file": "Widget.dc.html", "x": 0, "y": 1060, "w": 980, "h": 430, "title": "I tre formati di widget" },
-    { "file": "DirezioneB.dc.html", "x": 1060, "y": 1060, "w": 390, "h": 560, "title": "Direzione B (schizzo)" }
+    { "file": "DirezioneB.dc.html", "x": 1060, "y": 1060, "w": 390, "h": 620, "title": "Direzione B (schizzo)" }
   ],
   "annotations": [
     {
       "id": "nota-home-ios",
-      "x": 0, "y": -168, "w": 390,
-      "text": "Home iOS. Il widget grande mostra l'inchiostro vero, non una trascrizione.\nIl + è la porta principale: un tocco e il foglio è già aperto."
+      "x": 0, "y": -180, "w": 390,
+      "text": "Home iOS. Il widget mostra l'inchiostro vero, non una trascrizione.\nSu iPhone non esiste scrittura sopra il blocco: la strada più breve è\nwidget di blocco o tasto Azione, cioè Face ID e foglio in un gesto."
     },
     {
       "id": "nota-cattura",
-      "x": 470, "y": -168, "w": 390,
-      "text": "Cattura. Il foglio è tutto lo schermo: nessuna intestazione, nessun campo.\nOK chiude e torna alla home, ma il salvataggio avviene comunque (decisione D5)."
+      "x": 470, "y": -180, "w": 390,
+      "text": "L'apertura, e non c'è niente dentro. Nessuna intestazione, nessuna carta\nda scegliere, nessuna barra di punte: ogni comando visibile prima del\nprimo tratto è una decisione chiesta a chi non vuole decidere niente."
     },
     {
-      "id": "nota-archivio",
-      "x": 940, "y": -168, "w": 390,
-      "text": "Archivio. La ricerca lavora sul testo riconosciuto dalla scrittura (D2).\nIl testo non sostituisce mai l'inchiostro: serve solo a ritrovare la nota."
+      "id": "nota-cattura-strumenti",
+      "x": 940, "y": -180, "w": 390,
+      "text": "Gli strumenti compaiono dopo il primo tratto, quando serve correggere.\nOK non salva: la nota è al sicuro dal primo tratto grazie al giornale di\nscrittura. OK dice soltanto \"ho finito, riportami alla home\"."
+    },
+    {
+      "id": "nota-blocco",
+      "x": 1410, "y": -180, "w": 390,
+      "text": "Android, senza sbloccare: un'Activity mostrata sopra il blocco, come per\nle sveglie. Salta sblocco e ricerca del widget. Il foglio è cieco di\nproposito: chi ha il telefono in mano può scrivere, non leggere."
     },
     {
       "id": "nota-android",
-      "x": 1410, "y": -168, "w": 390,
-      "text": "Android. La cattura è una finestra trasparente sopra il launcher: la home\nsi intravede dietro, quindi non si percepisce l'apertura di un'altra app."
+      "x": 1880, "y": -180, "w": 390,
+      "text": "A telefono sbloccato la cattura è una finestra trasparente sopra il\nlauncher: la home si intravede dietro, quindi non si percepisce\nl'apertura di un'altra app."
+    },
+    {
+      "id": "nota-voce",
+      "x": 2350, "y": -180, "w": 390,
+      "text": "La seconda modalità, per quando le mani sono occupate: in bici, con le\nborse, al volante. Trascrizione sul dispositivo, e la nota diventa\ncercabile accanto a quelle scritte. Su iPhone è l'unica via senza sblocco."
+    },
+    {
+      "id": "nota-archivio",
+      "x": 2820, "y": -180, "w": 390,
+      "text": "La ricerca lavora sul testo riconosciuto, dalla scrittura o dalla voce.\nIl testo non sostituisce mai l'inchiostro: serve solo a ritrovare la nota."
     },
     {
       "id": "nota-paywall",
-      "x": 1880, "y": -168, "w": 390,
-      "text": "Paywall. Pagamento unico, nessun abbonamento (D4).\nIl prezzo di 6,99 € è la proposta, ancora da confermare per mercato."
+      "x": 3290, "y": -180, "w": 390,
+      "text": "Pagamento unico, nessun abbonamento. Il prezzo di 6,99 € è la proposta,\nancora da confermare guardando il mercato."
     },
     {
       "id": "nota-widget",
-      "x": 0, "y": 890, "w": 430,
-      "text": "I tre formati. Il piccolo mostra l'ultima nota, il medio tre più la cattura,\nil grande quattro come una scrivania. Tutti e tre disegnano gli stessi\ncontorni calcolati dal core, a dettaglio ridotto per stare nei limiti\ndi memoria dei widget (D11)."
+      "x": 0, "y": 890, "w": 390,
+      "text": "Il piccolo si tocca tutto e scrive. Tutti e tre disegnano gli stessi\ncontorni calcolati dal core, a dettaglio ridotto per stare nei limiti\ndi memoria dei widget."
     },
     {
       "id": "nota-direzione-b",
