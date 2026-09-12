@@ -9,8 +9,8 @@ Il canvas pubblicato:
 Il file `inknote-schermate.html` non è in git: è il canvas assemblato, cioè un
 prodotto di build che contiene l'editor per intero. Si rigenera dai sorgenti.
 
-Due pagine: **Flusso principale** (il percorso felice) e **Stati e servizio** (gli
-stati veri e le schermate che il prodotto richiede).
+Tre pagine: **In home** (come appare dove conta), **Flusso principale** (il percorso
+felice) e **Stati e servizio** (gli stati veri e le schermate che il prodotto richiede).
 
 ## Cosa mostrano
 
@@ -32,6 +32,14 @@ stati veri e le schermate che il prodotto richiede).
 | `ArchivioStati` | Nota vocale, riconoscimento in corso, tratto perso |
 | `ConfiguraWidget` | Cosa mostra il widget, formato, limite del gratuito |
 | `Impostazioni` | Poche voci, col riconoscimento del testo spegnibile |
+| `HomeMedio` | Widget medio iOS: cattura di lato, non in alto |
+| `HomePiccolo` | Widget piccolo: nessun pulsante, si tocca tutto |
+| `HomeGrandeScuro` | Widget grande su sfondo scuro: è lì che la carta si vede |
+| `HomeVuoto` | Il primo giorno, senza note: il widget è solo una porta |
+| `HomeMisto` | Una nota vocale fra quelle scritte |
+| `BloccoiOS` | Schermata di blocco iOS: il gesto più corto che Apple concede |
+| `HomeAndroidMedio` | Stesso widget, launcher Android |
+| `HomeAndroidGrande` | Widget grande Android, cattura nella striscia in alto |
 
 ## Vincoli rispettati
 

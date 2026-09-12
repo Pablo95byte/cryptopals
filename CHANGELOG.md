@@ -173,7 +173,10 @@ solo cosa è cambiato nel codice.
   prima del primo sblocco dopo un riavvio (decisione D24, che chiude il caveat di D17).
 - **Mockup delle schermate** in `design/mockups/`, pubblicati come canvas:
   <https://claude.ai/code/artifact/226f7658-faf9-43dc-bd68-a9942e68261a>
-  Sedici artboard su due pagine. **Flusso principale:** home iOS, cattura
+  Ventiquattro artboard su tre pagine. **In home:** il widget nei tre formati su
+  sfondi diversi, il primo giorno senza note, una nota vocale fra quelle scritte, la
+  schermata di blocco iOS e due home Android. È la pagina che mostra il prodotto dove
+  conta davvero, perché la home è l'unico posto dove si vede senza aprirlo. **Flusso principale:** home iOS, cattura
   all'apertura e con gli strumenti, Android da schermo bloccato, Android sopra il
   launcher, cattura a voce, archivio con ricerca, i tre formati di widget, paywall,
   direzione alternativa. **Stati e servizio:** primo avvio senza note, come mettere
