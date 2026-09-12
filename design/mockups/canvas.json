@@ -2,15 +2,15 @@
   "pages": [
     {
       "id": "page-1",
-      "name": "Flusso principale"
+      "name": "In home"
     },
     {
       "id": "page-2",
-      "name": "Stati e servizio"
+      "name": "Flusso principale"
     },
     {
       "id": "page-3",
-      "name": "In home"
+      "name": "Stati e servizio"
     }
   ],
   "artboards": [
@@ -21,12 +21,75 @@
       "y": 0,
       "w": 390,
       "h": 844,
-      "title": "Home iOS"
+      "title": "Home iOS — il foglio bianco"
+    },
+    {
+      "file": "HomePiccolo.dc.html",
+      "page": "page-1",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "iOS — formato piccolo"
+    },
+    {
+      "file": "HomeGrandeScuro.dc.html",
+      "page": "page-1",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "iOS — grande, sfondo scuro"
+    },
+    {
+      "file": "HomeAndroidMedio.dc.html",
+      "page": "page-1",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Android — formato medio"
+    },
+    {
+      "file": "BloccoiOS.dc.html",
+      "page": "page-1",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Schermata di blocco iOS"
+    },
+    {
+      "file": "Formati.dc.html",
+      "page": "page-1",
+      "x": 0,
+      "y": 1060,
+      "w": 980,
+      "h": 470,
+      "title": "I tre formati"
+    },
+    {
+      "file": "DueVarianti.dc.html",
+      "page": "page-1",
+      "x": 1060,
+      "y": 1060,
+      "w": 820,
+      "h": 500,
+      "title": "Nudo o con un segno? (da decidere)"
+    },
+    {
+      "file": "Sequenza.dc.html",
+      "page": "page-1",
+      "x": 1960,
+      "y": 1060,
+      "w": 1200,
+      "h": 900,
+      "title": "Tocco, scrivi, e la home è come prima"
     },
     {
       "file": "Cattura.dc.html",
-      "page": "page-1",
-      "x": 470,
+      "page": "page-2",
+      "x": 0,
       "y": 0,
       "w": 390,
       "h": 844,
@@ -34,8 +97,8 @@
     },
     {
       "file": "CatturaStrumenti.dc.html",
-      "page": "page-1",
-      "x": 940,
+      "page": "page-2",
+      "x": 470,
       "y": 0,
       "w": 390,
       "h": 844,
@@ -43,8 +106,8 @@
     },
     {
       "file": "Blocco.dc.html",
-      "page": "page-1",
-      "x": 1410,
+      "page": "page-2",
+      "x": 940,
       "y": 0,
       "w": 390,
       "h": 844,
@@ -52,8 +115,8 @@
     },
     {
       "file": "HomeAndroid.dc.html",
-      "page": "page-1",
-      "x": 1880,
+      "page": "page-2",
+      "x": 1410,
       "y": 0,
       "w": 390,
       "h": 844,
@@ -61,8 +124,8 @@
     },
     {
       "file": "Voce.dc.html",
-      "page": "page-1",
-      "x": 2350,
+      "page": "page-2",
+      "x": 1880,
       "y": 0,
       "w": 390,
       "h": 844,
@@ -70,8 +133,8 @@
     },
     {
       "file": "Archivio.dc.html",
-      "page": "page-1",
-      "x": 2820,
+      "page": "page-2",
+      "x": 2350,
       "y": 0,
       "w": 390,
       "h": 844,
@@ -79,34 +142,25 @@
     },
     {
       "file": "Paywall.dc.html",
-      "page": "page-1",
-      "x": 3290,
+      "page": "page-2",
+      "x": 2820,
       "y": 0,
       "w": 390,
       "h": 844,
       "title": "Paywall"
     },
     {
-      "file": "Widget.dc.html",
-      "page": "page-1",
-      "x": 0,
-      "y": 1060,
-      "w": 980,
-      "h": 430,
-      "title": "I tre formati di widget"
-    },
-    {
       "file": "DirezioneB.dc.html",
-      "page": "page-1",
-      "x": 1060,
-      "y": 1060,
+      "page": "page-2",
+      "x": 3290,
+      "y": 0,
       "w": 390,
       "h": 620,
       "title": "Direzione B (schizzo)"
     },
     {
       "file": "Vuoto.dc.html",
-      "page": "page-2",
+      "page": "page-3",
       "x": 0,
       "y": 0,
       "w": 390,
@@ -115,7 +169,7 @@
     },
     {
       "file": "AggiungiWidget.dc.html",
-      "page": "page-2",
+      "page": "page-3",
       "x": 470,
       "y": 0,
       "w": 390,
@@ -124,7 +178,7 @@
     },
     {
       "file": "Nota.dc.html",
-      "page": "page-2",
+      "page": "page-3",
       "x": 940,
       "y": 0,
       "w": 390,
@@ -133,7 +187,7 @@
     },
     {
       "file": "ArchivioStati.dc.html",
-      "page": "page-2",
+      "page": "page-3",
       "x": 1410,
       "y": 0,
       "w": 390,
@@ -141,292 +195,187 @@
       "title": "Archivio — gli stati veri"
     },
     {
-      "file": "ConfiguraWidget.dc.html",
-      "page": "page-2",
-      "x": 1880,
-      "y": 0,
-      "w": 390,
-      "h": 844,
-      "title": "Configurare il widget"
-    },
-    {
       "file": "Impostazioni.dc.html",
-      "page": "page-2",
-      "x": 2350,
+      "page": "page-3",
+      "x": 1880,
       "y": 0,
       "w": 390,
       "h": 844,
       "title": "Impostazioni"
-    },
-    {
-      "file": "HomeMedio.dc.html",
-      "page": "page-3",
-      "x": 0,
-      "y": 0,
-      "w": 390,
-      "h": 844,
-      "title": "Home iOS — widget medio"
-    },
-    {
-      "file": "HomePiccolo.dc.html",
-      "page": "page-3",
-      "x": 470,
-      "y": 0,
-      "w": 390,
-      "h": 844,
-      "title": "Home iOS — widget piccolo"
-    },
-    {
-      "file": "HomeGrandeScuro.dc.html",
-      "page": "page-3",
-      "x": 940,
-      "y": 0,
-      "w": 390,
-      "h": 844,
-      "title": "Home iOS — widget grande, sfondo scuro"
-    },
-    {
-      "file": "HomeVuoto.dc.html",
-      "page": "page-3",
-      "x": 1410,
-      "y": 0,
-      "w": 390,
-      "h": 844,
-      "title": "Il primo giorno"
-    },
-    {
-      "file": "HomeMisto.dc.html",
-      "page": "page-3",
-      "x": 1880,
-      "y": 0,
-      "w": 390,
-      "h": 844,
-      "title": "Una nota vocale fra quelle scritte"
-    },
-    {
-      "file": "BloccoiOS.dc.html",
-      "page": "page-3",
-      "x": 2350,
-      "y": 0,
-      "w": 390,
-      "h": 844,
-      "title": "Schermata di blocco iOS"
-    },
-    {
-      "file": "HomeAndroidMedio.dc.html",
-      "page": "page-3",
-      "x": 2820,
-      "y": 0,
-      "w": 390,
-      "h": 844,
-      "title": "Home Android — widget medio"
-    },
-    {
-      "file": "HomeAndroidGrande.dc.html",
-      "page": "page-3",
-      "x": 3290,
-      "y": 0,
-      "w": 390,
-      "h": 844,
-      "title": "Home Android — widget grande"
     }
   ],
   "annotations": [
     {
-      "id": "nota-home-ios",
+      "id": "nota-main",
       "page": "page-1",
       "x": 0,
       "y": -180,
       "w": 390,
-      "text": "Home iOS. Il widget mostra l'inchiostro vero, non una trascrizione.\nSu iPhone non esiste scrittura sopra il blocco: la strada più breve è\nwidget di blocco o tasto Azione, cioè Face ID e foglio in un gesto."
-    },
-    {
-      "id": "nota-cattura",
-      "page": "page-1",
-      "x": 470,
-      "y": -180,
-      "w": 390,
-      "text": "L'apertura, e non c'è niente dentro. Nessuna intestazione, nessuna carta\nda scegliere, nessuna barra di punte: ogni comando visibile prima del\nprimo tratto è una decisione chiesta a chi non vuole decidere niente."
-    },
-    {
-      "id": "nota-cattura-strumenti",
-      "page": "page-1",
-      "x": 940,
-      "y": -180,
-      "w": 390,
-      "text": "Gli strumenti compaiono dopo il primo tratto, quando serve correggere.\nOK non salva: la nota è al sicuro dal primo tratto grazie al giornale di\nscrittura. OK dice soltanto \"ho finito, riportami alla home\"."
-    },
-    {
-      "id": "nota-blocco",
-      "page": "page-1",
-      "x": 1410,
-      "y": -180,
-      "w": 390,
-      "text": "Android, senza sbloccare: un'Activity mostrata sopra il blocco, come per\nle sveglie. Salta sblocco e ricerca del widget. Il foglio è cieco di\nproposito: chi ha il telefono in mano può scrivere, non leggere."
-    },
-    {
-      "id": "nota-android",
-      "page": "page-1",
-      "x": 1880,
-      "y": -180,
-      "w": 390,
-      "text": "A telefono sbloccato la cattura è una finestra trasparente sopra il\nlauncher: la home si intravede dietro, quindi non si percepisce\nl'apertura di un'altra app."
-    },
-    {
-      "id": "nota-voce",
-      "page": "page-1",
-      "x": 2350,
-      "y": -180,
-      "w": 390,
-      "text": "La seconda modalità, per quando le mani sono occupate: in bici, con le\nborse, al volante. Trascrizione sul dispositivo, e la nota diventa\ncercabile accanto a quelle scritte. Su iPhone è l'unica via senza sblocco."
-    },
-    {
-      "id": "nota-archivio",
-      "page": "page-1",
-      "x": 2820,
-      "y": -180,
-      "w": 390,
-      "text": "La ricerca lavora sul testo riconosciuto, dalla scrittura o dalla voce.\nIl testo non sostituisce mai l'inchiostro: serve solo a ritrovare la nota."
-    },
-    {
-      "id": "nota-paywall",
-      "page": "page-1",
-      "x": 3290,
-      "y": -180,
-      "w": 390,
-      "text": "Pagamento unico, nessun abbonamento. Il prezzo di 6,99 € è la proposta,\nancora da confermare guardando il mercato."
-    },
-    {
-      "id": "nota-widget",
-      "page": "page-1",
-      "x": 0,
-      "y": 890,
-      "w": 390,
-      "text": "Il piccolo si tocca tutto e scrive. Tutti e tre disegnano gli stessi\ncontorni calcolati dal core, a dettaglio ridotto per stare nei limiti\ndi memoria dei widget."
-    },
-    {
-      "id": "nota-direzione-b",
-      "page": "page-1",
-      "x": 1060,
-      "y": 890,
-      "w": 390,
-      "text": "Alternativa sull'estetica, tenuta di proposito a livello di schizzo.\nMeno riconoscibile in home, ma più sobria: da scegliere prima di\nrifinire le schermate."
-    },
-    {
-      "id": "nota-vuoto",
-      "page": "page-2",
-      "x": 0,
-      "y": -180,
-      "w": 390,
-      "text": "Il vuoto ha un solo compito: portare alla prima nota. Il widget non si\nchiede adesso — configurarlo prima che esista una nota da mostrarci\ndentro è una richiesta senza senso."
-    },
-    {
-      "id": "nota-aggiungi-widget",
-      "page": "page-2",
-      "x": 470,
-      "y": -180,
-      "w": 390,
-      "text": "Si arriva qui dopo la prima nota. È la schermata che decide se l'app\nverrà riusata: senza widget in home il gesto di cattura non esiste, e\nnessuno scopre da solo come si aggiunge un widget."
-    },
-    {
-      "id": "nota-nota",
-      "page": "page-2",
-      "x": 940,
-      "y": -180,
-      "w": 390,
-      "text": "Una nota riaperta: qui gli strumenti ci sono, perché si corregge. La\nregola del foglio nudo vale all'apertura di una nota nuova. In basso il\ntesto riconosciuto: è lì che si scopre che la ricerca funziona."
-    },
-    {
-      "id": "nota-archivio-stati",
-      "page": "page-2",
-      "x": 1410,
-      "y": -180,
-      "w": 390,
-      "text": "Gli stati che il codice già produce e che il prodotto deve saper dire:\nuna nota vocale, una non ancora riconosciuta, una a cui è mancato un\ntratto. È la schermata che rende l'app onesta invece di perfetta."
-    },
-    {
-      "id": "nota-configura-widget",
-      "page": "page-2",
-      "x": 1880,
-      "y": -180,
-      "w": 390,
-      "text": "L'anteprima cambia con le scelte sotto: si vede quello che si sta\ndecidendo. Il limite del livello gratuito è detto dove lo si incontra,\nnon a sorpresa dopo."
-    },
-    {
-      "id": "nota-impostazioni",
-      "page": "page-2",
-      "x": 2350,
-      "y": -180,
-      "w": 390,
-      "text": "Poche voci. Il riconoscimento del testo si può spegnere, e la riga in\nfondo dice la cosa che vendiamo: le note non escono dal telefono."
-    },
-    {
-      "id": "nota-homemedio",
-      "page": "page-3",
-      "x": 0,
-      "y": -180,
-      "w": 390,
-      "text": "Il formato che scelgono in più. L'area di cattura sta di lato e non in alto:\nsu un widget basso e largo una striscia in alto costerebbe più spazio del\ncontenuto (D29)."
+      "text": "Il widget è un foglio bianco e nient'altro: nessuna nota, nessun conteggio,\nnessuna intestazione. Si tocca in qualunque punto e il foglio vero si apre già\npronto (D30)."
     },
     {
       "id": "nota-homepiccolo",
+      "page": "page-1",
+      "x": 470,
+      "y": -180,
+      "w": 390,
+      "text": "Il formato cambia solo quanto spazio occupa, non cosa mostra: un foglio\npiccolo resta un foglio. Si tocca tutto."
+    },
+    {
+      "id": "nota-homegrandescuro",
+      "page": "page-1",
+      "x": 940,
+      "y": -180,
+      "w": 390,
+      "text": "Su uno sfondo scuro il foglio bianco è la cosa più visibile della home. Fra\nicone colorate, un rettangolo di carta vuoto è più riconoscibile di una griglia\ndi bigliettini: è la nuova identità visiva."
+    },
+    {
+      "id": "nota-homeandroidmedio",
+      "page": "page-1",
+      "x": 1410,
+      "y": -180,
+      "w": 390,
+      "text": "Stesso foglio, launcher diverso. Su Android il tocco può aprire il foglio\nanche a telefono bloccato (D17), cosa che su iPhone non è concessa."
+    },
+    {
+      "id": "nota-bloccoios",
+      "page": "page-1",
+      "x": 1880,
+      "y": -180,
+      "w": 390,
+      "text": "La coerenza che mancava: il blocco era già cieco per privacy, ora lo è anche\nla home. Prima la spesa e gli indirizzi si leggevano da chiunque passasse\naccanto al telefono appoggiato."
+    },
+    {
+      "id": "nota-formati",
+      "page": "page-1",
+      "x": 0,
+      "y": 880,
+      "w": 430,
+      "text": "Tutti e tre la stessa cosa: un foglio. Il formato decide solo l'ingombro in\nhome. Niente da configurare, e infatti la schermata di configurazione del\nwidget è stata cancellata."
+    },
+    {
+      "id": "nota-duevarianti",
+      "page": "page-1",
+      "x": 1060,
+      "y": 880,
+      "w": 430,
+      "text": "L'unica decisione rimasta su questo widget. Un rettangolo bianco del tutto\nnudo può sembrare rotto o non caricato; un solo segno tenue dice \"qui si\nscrive\" senza dire altro. Consiglio B."
+    },
+    {
+      "id": "nota-sequenza",
+      "page": "page-1",
+      "x": 1960,
+      "y": 880,
+      "w": 430,
+      "text": "Con il widget bianco la vetrina non è più la home piena di bigliettini: è la\nrapidità del gesto. È questa la sequenza da mettere nelle schede degli store.\nIl terzo riquadro è identico al primo, e non è pigrizia: è il punto."
+    },
+    {
+      "id": "nota-cattura",
+      "page": "page-2",
+      "x": 0,
+      "y": -180,
+      "w": 390,
+      "text": "Il foglio all'apertura: solo foglio e conferma. Ogni comando visibile prima\ndel primo tratto è una decisione chiesta a chi non vuole decidere niente (D21)."
+    },
+    {
+      "id": "nota-catturastrumenti",
+      "page": "page-2",
+      "x": 470,
+      "y": -180,
+      "w": 390,
+      "text": "Gli strumenti compaiono dopo, quando serve correggere. OK non salva: la nota\nè al sicuro dal primo tratto grazie al giornale di scrittura."
+    },
+    {
+      "id": "nota-blocco",
+      "page": "page-2",
+      "x": 940,
+      "y": -180,
+      "w": 390,
+      "text": "Senza sbloccare, con un'Activity mostrata sopra il blocco come fanno le\nsveglie. Il foglio è cieco: chi ha il telefono in mano può scrivere, non\nleggere (D17)."
+    },
+    {
+      "id": "nota-homeandroid",
+      "page": "page-2",
+      "x": 1410,
+      "y": -180,
+      "w": 390,
+      "text": "A telefono sbloccato la cattura è una finestra trasparente sopra il launcher:\nla home si intravede dietro — e anche lì il widget è un foglio bianco."
+    },
+    {
+      "id": "nota-voce",
+      "page": "page-2",
+      "x": 1880,
+      "y": -180,
+      "w": 390,
+      "text": "Per quando le mani sono occupate: in bici, con le borse, al volante.\nTrascrizione sul dispositivo. Su iPhone è l'unica cattura senza sblocco."
+    },
+    {
+      "id": "nota-archivio",
+      "page": "page-2",
+      "x": 2350,
+      "y": -180,
+      "w": 390,
+      "text": "È **qui** che si ritrovano le note, e solo qui. La ricerca ignora accenti e\nmaiuscole e non chiede l'ordine delle parole (D27)."
+    },
+    {
+      "id": "nota-paywall",
+      "page": "page-2",
+      "x": 2820,
+      "y": -180,
+      "w": 390,
+      "text": "Pagamento unico, nessun abbonamento. Da rivedere: \"widget multipli\" era una\nvoce del Pro, e con un widget che non mostra niente vale ancora?"
+    },
+    {
+      "id": "nota-direzioneb",
+      "page": "page-2",
+      "x": 3290,
+      "y": -180,
+      "w": 390,
+      "text": "Alternativa sull'estetica, ancora aperta. Con il foglio bianco in home la\nscelta pesa meno: il grosso della superficie visibile è carta e nient'altro."
+    },
+    {
+      "id": "nota-vuoto",
+      "page": "page-3",
+      "x": 0,
+      "y": -180,
+      "w": 390,
+      "text": "Il vuoto dell'app ha un solo compito: portare alla prima nota."
+    },
+    {
+      "id": "nota-aggiungiwidget",
       "page": "page-3",
       "x": 470,
       "y": -180,
       "w": 390,
-      "text": "Nel piccolo non c'è alcun pulsante: si tocca tutto il widget. Un + da\ncentrare col pollice, in 166 punti, ruberebbe spazio alla nota e aggiungerebbe\nla mira — cioè sforzo."
+      "text": "Si arriva qui dopo la prima nota. Senza widget in home il gesto di cattura\nnon esiste, e nessuno scopre da solo come si aggiunge un widget."
     },
     {
-      "id": "nota-homegrandescuro",
+      "id": "nota-nota",
       "page": "page-3",
       "x": 940,
       "y": -180,
       "w": 390,
-      "text": "La carta su uno sfondo scuro: è lì che i bigliettini si vedono meglio, e la\nhome diventa riconoscibile a colpo d'occhio. È anche quello che si vede negli\nscreenshot dello store."
+      "text": "Dentro l'app gli strumenti ci sono, perché qui si corregge. In basso il testo\nriconosciuto: è lì che si scopre che la ricerca funziona."
     },
     {
-      "id": "nota-homevuoto",
+      "id": "nota-archiviostati",
       "page": "page-3",
       "x": 1410,
       "y": -180,
       "w": 390,
-      "text": "Nessuna nota ancora. Il widget fa solo la cosa per cui esiste — apre il\nfoglio — e la fa toccandolo tutto. Un piccolo + in un riquadro altrimenti\ninutile è una porta sprecata (D29)."
+      "text": "Una nota vocale, una non ancora riconosciuta, una a cui è mancato un tratto.\nÈ la schermata che rende l'app onesta invece di perfetta."
     },
     {
-      "id": "nota-homemisto",
+      "id": "nota-impostazioni",
       "page": "page-3",
       "x": 1880,
       "y": -180,
       "w": 390,
-      "text": "Una nota vocale non ha inchiostro: al suo posto va la trascrizione, col segno\ndel microfono. Lasciarla fuori vorrebbe dire che metà della cattura non si\nvede in home (D25, D29)."
-    },
-    {
-      "id": "nota-bloccoios",
-      "page": "page-3",
-      "x": 2350,
-      "y": -180,
-      "w": 390,
-      "text": "Su iPhone non si può scrivere sopra il blocco. Questo widget è la strada più\ncorta che Apple concede: Face ID e apertura del foglio diventano un gesto solo\n(D17)."
-    },
-    {
-      "id": "nota-homeandroidmedio",
-      "page": "page-3",
-      "x": 2820,
-      "y": -180,
-      "w": 390,
-      "text": "Stesso widget, launcher diverso: icone tonde, angoli più morbidi. La\ncalligrafia è identica alle due piattaforme perché la matematica del tratto sta\nnel core (D6)."
-    },
-    {
-      "id": "nota-homeandroidgrande",
-      "page": "page-3",
-      "x": 3290,
-      "y": -180,
-      "w": 390,
-      "text": "Nel grande l'area di cattura sta nella striscia in alto, dove su un widget\nquadrato costa poco. Qui si vede anche una nota vocale in mezzo a tre scritte."
+      "text": "Poche voci. Il riconoscimento si può spegnere, e la riga in fondo dice la cosa\nche vendiamo: le note non escono dal telefono."
     }
   ],
   "launch": {
     "view": "canvas",
-    "page": "page-3"
+    "page": "page-1"
   }
 }

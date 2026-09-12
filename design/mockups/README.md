@@ -12,6 +12,9 @@ prodotto di build che contiene l'editor per intero. Si rigenera dai sorgenti.
 Tre pagine: **In home** (come appare dove conta), **Flusso principale** (il percorso
 felice) e **Stati e servizio** (gli stati veri e le schermate che il prodotto richiede).
 
+In home il widget è **un foglio bianco e nient'altro** (decisione D30): nessuna nota
+è leggibile fuori dall'app.
+
 ## Cosa mostrano
 
 | Artboard | Schermata |

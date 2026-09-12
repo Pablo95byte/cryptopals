@@ -76,7 +76,7 @@ posto solo invece che sparsi fra le decisioni.
 |---|---|---|
 | Sblocco + ricerca dell'ingresso | **Cattura dalla schermata di blocco** su Android: `showWhenLocked`, foglio cieco (D17) | nel codice, non provata |
 | Sblocco | **Più porte d'ingresso su iOS**: widget di blocco, Controllo, tasto Azione, tocco sul retro (§2) | da scrivere |
-| Ricerca dell'ingresso | **Widget che apre il foglio in un tocco**; nel formato piccolo si tocca **tutto** il widget, non un pulsante da centrare | da scrivere |
+| Ricerca dell'ingresso | **Il widget è un foglio bianco che si tocca tutto** (D30): nessun bersaglio da centrare, in nessun formato | da scrivere |
 | Apertura | **Finestra trasparente sopra il launcher** su Android: non si percepisce il cambio di app | nel codice |
 | Apertura | **Nessuna animazione**: tema senza `windowAnimationStyle`, `overridePendingTransition(0, 0)` | nel codice |
 | Apertura | **Il percorso di cattura non passa dall'app**: niente Compose, niente iniezione, niente database (D20) | nel codice |
@@ -91,7 +91,8 @@ posto solo invece che sparsi fra le decisioni.
 
 **Fuori da questa catena** sta la ricerca (OCR e trascrizioni, D2 e D25): riduce
 l'attrito del *ritrovare*, non dello scrivere. È la seconda metà della promessa, e non
-va confusa con la prima.
+va confusa con la prima — è esattamente l'errore che D30 ha corretto, quando il widget
+mostrava le vecchie note.
 
 **Come si giudica un'aggiunta futura:** se allunga uno di questi anelli, non entra —
 o entra dopo il primo tratto, dove non costa niente.
@@ -113,8 +114,10 @@ identità). Con l'inchiostro vero invece: una home coperta di bigliettini **nell
 calligrafia di chi li ha scritti** è riconoscibile a colpo d'occhio, si presenta da
 sé negli screenshot dello store, e nessuno dei grandi la fa bene su telefono.
 
-**Conseguenza:** il widget mostra l'inchiostro, non una trascrizione. È permesso,
-perché i tratti si disegnano come immagine.
+**Conseguenza:** ~~il widget mostra l'inchiostro, non una trascrizione.~~
+**SUPERATA da D30:** in home il widget è un foglio bianco e non mostra nessuna nota. La
+calligrafia resta l'identità del prodotto, ma si vede dentro l'app e negli screenshot
+dello store, non sulla home dell'utente.
 
 ### D2 — Le note diventano cercabili con l'OCR della scrittura
 **Data:** 2026-09-12 · **Stato:** attiva, da implementare
@@ -645,7 +648,17 @@ diverso, e `SELECT *` le legge per posizione. È esattamente il caso che
 cui quel controllo esiste.
 
 ### D29 — L'inquadratura dei widget sta nel core, e la leggibilità viene prima della quantità
-**Data:** 2026-09-12 · **Stato:** attiva
+**Data:** 2026-09-12 · **Stato:** **SUPERATA da D30** dopo poche ore di vita
+
+Il widget non mostra più note, quindi non c'è più niente da inquadrare in un widget:
+`WidgetFraming` è stato cancellato. Sopravvivono, in `NoteFraming`, le due regole che
+valgono in qualunque riquadro dentro l'app — si inquadra l'inchiostro e non il foglio,
+e l'ingrandimento ha un tetto — più la scelta del dettaglio in base al riquadro.
+
+La voce resta qui per intero perché il ragionamento che segue è ancora quello giusto
+*per l'archivio*, e perché serve ricordare che la regola dell'area di cattura sul lato
+lungo era stata trovata da un test: informazione che tornerà utile se un giorno si
+rimetterà mano ai widget.
 
 `WidgetFraming.layout` in `core:geometry` decide quante note stanno in un widget, in
 quali caselle, con quale ritaglio e a quale dettaglio. **Quali** note non lo decide:
@@ -681,6 +694,53 @@ qui non entra nessuna politica su *quali* note mostrare.
   (D18) non si vede in home.
 - **La prima nota va nella prima casella**, e a parità di ingresso l'uscita è identica.
 
+### D30 — In home il widget è un foglio bianco. Non mostra nessuna nota
+**Data:** 2026-09-12 · **Stato:** attiva, decisa dal committente ·
+**Supera la conseguenza di D1 e la maggior parte di D29**
+
+Il widget, in tutti i formati, è **un foglio bianco e nient'altro**: nessuna nota,
+nessun conteggio, nessuna intestazione, niente da configurare. Si tocca in qualunque
+punto e il foglio vero si apre già pronto. **Dalla home si possono solo aggiungere
+note, mai rileggerle.**
+
+**Cosa non cambia:** dentro un widget non si può disegnare (§2). Il widget *sembra* un
+foglio su cui scrivere perché non c'è nient'altro da guardare né da centrare; il tratto
+lo prende la schermata di cattura, un tocco dopo.
+
+**Perché è meglio di quello che avevamo:**
+
+1. **Risolve un'incoerenza vera.** La schermata di blocco era cieca per privacy
+   (invariante 11), ma la home mostrava spesa, indirizzi e numeri di telefono a
+   chiunque passasse accanto al telefono appoggiato su un tavolo. Ora la regola è una
+   sola, su tutte le superfici fuori dall'app.
+2. **Rispetta la missione meglio.** Mostrare le vecchie note è *ritrovare*, non
+   *catturare*: è la seconda metà della promessa messa nel posto della prima. Il
+   ritrovare ha già il suo posto, che è l'archivio dentro l'app.
+3. **Cancella un sottosistema intero.** Un widget senza dati non va mai aggiornato, non
+   mostra mai una nota vecchia, non sfonda il tetto di memoria di D11, non ha bisogno
+   della PNG per nota, e su iOS l'estensione non deve nemmeno leggere l'archivio.
+
+**Cosa costa, e va detto:** perde il gancio di marketing di D1 — "la home coperta della
+tua calligrafia" — che era l'argomento più forte per gli screenshot dello store. La
+vetrina si sposta sulla **sequenza** (tocco → scrivi → fatto) e sull'archivio.
+L'artboard `Sequenza` esiste per questo.
+
+**Conseguenze già applicate:**
+
+- `WidgetFraming` **cancellato**: senza note nel widget non serviva più a niente, e
+  tenere codice inutile "per sicurezza" è il modo in cui un progetto imputridisce. Ne
+  resta `NoteFraming`, le due regole che valgono in qualunque riquadro dentro l'app —
+  si inquadra l'inchiostro e non il foglio, e l'ingrandimento ha un tetto.
+- La schermata di configurazione del widget è **cancellata dai mockup**: non c'è più
+  niente da configurare oltre al formato, che si sceglie mettendolo in home.
+- La colonna `widget_image_path` in archivio **resta ma è inutilizzata**: togliere una
+  colonna in SQLite costa una migrazione con ricostruzione della tabella, cioè un
+  rischio sui dati per nessun guadagno. Va lasciata lì, documentata come morta.
+
+**Aperto:** il foglio è del tutto nudo, o porta un solo segno tenue? Un rettangolo
+bianco vuoto può sembrare un widget rotto o non caricato. Proposta: un segno, a basso
+contrasto. Vedi l'artboard `DueVarianti`.
+
 ---
 
 ## 5. Struttura del repository
@@ -691,7 +751,7 @@ core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
                  SearchText e NoteSearch (normalizzazione e pertinenza)
   ink/           StrokeBuilder, CatmullRom, WidthProfile, StrokeSimplifier, InkConfig
   geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline,
-                 Bounds, WidgetFraming (come riempire un widget)
+                 Bounds, NoteFraming (inquadrare una nota in un riquadro, dentro l'app)
   capture/       CaptureSession, InkJournal, FrictionTrace — non vede l'archivio
   store/         NoteStore, JournalIngest, schema SQLDelight e schema versionato
 androidApp/      La prova di velocità di D19, installabile. Zero dipendenze
@@ -746,8 +806,9 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
    verificate (`./gradlew verifySqlDelightMigration`), non un artefatto di build.
 10. **Sul percorso di cattura non entrano database, iniezione delle dipendenze né
     Compose.** L'inchiostro deve essere disegnabile al primo fotogramma. (D20)
-11. **La schermata di blocco resta cieca:** nessun contenuto di nota leggibile
-    senza sblocco, mai. (D17)
+11. **Fuori dall'app non si legge nessuna nota.** Né sulla schermata di blocco (D17)
+    né nel widget della home (D30): il widget è un foglio bianco. Dalla home si
+    aggiunge, non si rilegge.
 12. **400 ms dal tocco al primo tratto** è un tetto che blocca il rilascio, non un
     obiettivo. (D19)
 13. **Il giornale si svuota solo dopo che i record sono in archivio.** (D22)
@@ -786,7 +847,8 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 - **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
   coincidano. Va eseguito quando si toccano i file `.sq`.
 
-Stato attuale: **209 test, tutti verdi.** L'app Android è scritta ma **non compilata
+Stato attuale: **193 test, tutti verdi.** Sono meno di prima perché c'è meno codice:
+D30 ha cancellato `WidgetFraming` e i suoi test. L'app Android è scritta ma **non compilata
 da nessuno**: il primo build è sulla macchina del committente.
 
 ---
@@ -842,8 +904,8 @@ da nessuno**: il primo build è sulla macchina del committente.
 
 9. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
    all'avvio, così il giornale si svuota e le note vivono nel database.
-10. **`androidWidget`** — Glance, con la PNG ridotta e il ritaglio su `Bounds`. È qui
-    che nascono le porte d'ingresso vere.
+10. **`androidWidget`** — Glance. Dopo D30 è diventato quasi banale: un foglio bianco
+    che apre la cattura, senza dati da leggere e senza aggiornamenti da pianificare.
 11. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
     di blocco, Controllo e tasto Azione. **Serve un Mac con Xcode.**
 12. **`core:ocr`** — Vision e ML Kit dietro un'unica interfaccia.
@@ -867,6 +929,11 @@ da nessuno**: il primo build è sulla macchina del committente.
   permette più (D26) e al primo sync la cancellazione vincerebbe comunque. Probabile
   soluzione: copiare la nota sotto un id nuovo, accettando di perdere lo storico.
 - **Se il giornale debba coprire anche l'audio** (D25 lo lascia fuori per ora).
+- **Il foglio del widget: nudo o con un segno tenue?** Un rettangolo bianco vuoto può
+  sembrare rotto. Proposta: un segno a basso contrasto (D30, artboard `DueVarianti`).
+- **Il Pro va rivisto dopo D30.** "Widget multipli" era una voce del livello Pro: con un
+  widget che non mostra niente, più widget bianchi valgono qualcosa? Probabile che il
+  Pro debba poggiare solo su ricerca OCR, punte, temi ed esportazione.
 - **Come si entra nella cattura vocale su Android** a telefono bloccato, dato che
   lì la scrittura sopra il blocco esiste già (D17) e la voce servirebbe soprattutto
   a mani occupate.

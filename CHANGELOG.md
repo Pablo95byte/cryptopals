@@ -47,7 +47,7 @@ solo cosa è cambiato nel codice.
     (decisione D11);
   - `Bounds`: rettangolo dell'inchiostro, spessore della penna compreso, per il
     ritaglio nei widget piccoli.
-- **209 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
+- **193 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
   Coprono fra l'altro l'idempotenza e la commutatività del merge, la tenuta della
   geometria su campioni duplicati o coincidenti, e il comportamento dello spessore
   in assenza di pressione, e il giro di andata e ritorno completo di una nota
@@ -87,6 +87,27 @@ solo cosa è cambiato nel codice.
 - **`JournalIngest`** in `core:store` — porta il giornale in archivio fondendolo con
   quanto già salvato. Prima salva, poi svuota: un test fallisce il salvataggio di
   proposito e verifica che il giornale sopravviva come unica copia dell'inchiostro.
+- **In home il widget è un foglio bianco** (decisione D30, dal committente): nessuna
+  nota, nessun conteggio, niente da configurare. Si tocca in qualunque punto e il
+  foglio vero si apre. Dalla home si aggiungono note, non si rileggono.
+  - risolve un'incoerenza vera: la schermata di blocco era cieca per privacy, ma la
+    home mostrava spesa, indirizzi e numeri a chiunque passasse accanto al telefono;
+  - un widget senza dati non va mai aggiornato, non mostra mai una nota vecchia, non
+    sfonda il tetto di memoria e non ha bisogno della PNG per nota;
+  - costa il gancio di marketing della "home coperta della propria calligrafia": la
+    vetrina si sposta sulla sequenza tocco → scrivi → fatto.
+- I mockup hanno una pagina **In home** rifatta: i tre formati come fogli bianchi su
+  iOS e Android, la schermata di blocco, la sequenza completa del gesto, e due varianti
+  del foglio (nudo o con un segno tenue) fra cui scegliere.
+
+### Rimosso in questa tornata
+
+- **`WidgetFraming` e i suoi test**, cancellati da D30: senza note nel widget non
+  servivano più. Ne resta `NoteFraming`, le due regole che valgono in qualunque riquadro
+  dentro l'app. I test scendono da 209 a 193, e va bene: c'è meno codice.
+- **La schermata di configurazione del widget** dai mockup: non c'è più niente da
+  configurare oltre al formato, che si sceglie mettendolo in home.
+
 - **Inquadratura dei widget** in `core:geometry` (decisione D29): `WidgetFraming`
   decide quante note stanno in un widget, in quali caselle, con quale ritaglio e a
   quale dettaglio.
@@ -99,7 +120,7 @@ solo cosa è cambiato nel codice.
   - le note vocali entrano nel widget con la loro trascrizione; se una nota ha
     inchiostro e voce vince l'inchiostro;
   - il dettaglio di disegno lo decide la casella, non il formato del widget.
-- **209 test** sul core (erano 187).
+- ~~209~~ **193 test** sul core: vedi "Rimosso in questa tornata".
 - **Ricerca normalizzata** (decisione D27):
   - `SearchText` in `core:model`: minuscolo consapevole di Unicode, accenti rimossi con
     una tabella esplicita, punteggiatura e apostrofi come separatori — così

@@ -24,23 +24,9 @@
   <!-- Il launcher, che resta visibile: la cattura è una finestra trasparente sopra la home -->
   <div style="position: absolute; inset: 0; padding: 70px 20px 0 20px; display: flex; flex-direction: column; gap: 26px;">
 
-    <div style="background: #FBF8F1; border-radius: 22px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;">
-      <div style="display: flex; gap: 8px;">
-        <div style="width: 74px; height: 58px; border-radius: 10px; background: #FFFDF6; border: 1px solid #EDE4D2; padding: 7px;">
-          <div class="ink" style="font-size: 15px; line-height: 1.1; color: #23201B;">chiamare<br>Luca</div>
-        </div>
-        <div style="width: 74px; height: 58px; border-radius: 10px; background: #FBEFC6; border: 1px solid #F0E0AC; padding: 7px;">
-          <div class="ink" style="font-size: 15px; line-height: 1.1; color: #2A2014;">latte, pane,<br>caffè</div>
-        </div>
-        <div style="width: 74px; height: 58px; border-radius: 10px; background: #E6F1E7; border: 1px solid #D2E4D4; padding: 7px;">
-          <div class="ink" style="font-size: 15px; line-height: 1.1; color: #1B2A1E;">podcast<br>sul vino</div>
-        </div>
-      </div>
-      <div style="width: 44px; height: 44px; border-radius: 50%; background: #23201B; display: flex; align-items: center; justify-content: center;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBF8F1" stroke-width="2.4" stroke-linecap="round">
-          <path d="M12 5v14M5 12h14"></path>
-        </svg>
-      </div>
+    <!-- Anche dietro, il widget è un foglio bianco: in home non si vedono note (D30). -->
+    <div style="background: #FBF8F1; border-radius: 22px; height: 132px; display: flex; align-items: center; justify-content: center;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D9CEB8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5c3-1 5-6.5 8-11.5 2.2-3.7 4-4.3 4.8-3.4.9 1-.4 3.2-2.4 5.6-1.6 1.9-3 3-3 4.3 0 1 .8 1.5 1.8 1.2 1.4-.4 2.6-1.6 3.8-3.2"></path></svg>
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 18px;">
