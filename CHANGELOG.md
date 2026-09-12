@@ -47,7 +47,7 @@ solo cosa è cambiato nel codice.
     (decisione D11);
   - `Bounds`: rettangolo dell'inchiostro, spessore della penna compreso, per il
     ritaglio nei widget piccoli.
-- **187 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
+- **209 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
   Coprono fra l'altro l'idempotenza e la commutatività del merge, la tenuta della
   geometria su campioni duplicati o coincidenti, e il comportamento dello spessore
   in assenza di pressione, e il giro di andata e ritorno completo di una nota
@@ -87,6 +87,19 @@ solo cosa è cambiato nel codice.
 - **`JournalIngest`** in `core:store` — porta il giornale in archivio fondendolo con
   quanto già salvato. Prima salva, poi svuota: un test fallisce il salvataggio di
   proposito e verifica che il giornale sopravviva come unica copia dell'inchiostro.
+- **Inquadratura dei widget** in `core:geometry` (decisione D29): `WidgetFraming`
+  decide quante note stanno in un widget, in quali caselle, con quale ritaglio e a
+  quale dettaglio.
+  - il numero di note lo decide lo spazio e non il formato: sotto il minimo leggibile
+    si mostrano meno note più grandi, e se nemmeno una casella è leggibile il widget
+    resta solo una porta per scrivere;
+  - si inquadra l'inchiostro e non il foglio, con un tetto all'ingrandimento;
+  - l'area di cattura va sul lato lungo del widget: su un formato basso e largo una
+    striscia in alto costerebbe più spazio del contenuto;
+  - le note vocali entrano nel widget con la loro trascrizione; se una nota ha
+    inchiostro e voce vince l'inchiostro;
+  - il dettaglio di disegno lo decide la casella, non il formato del widget.
+- **209 test** sul core (erano 187).
 - **Ricerca normalizzata** (decisione D27):
   - `SearchText` in `core:model`: minuscolo consapevole di Unicode, accenti rimossi con
     una tabella esplicita, punteggiatura e apostrofi come separatori — così

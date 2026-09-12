@@ -23,7 +23,14 @@ tocco, scrivi, confermi, e la nota è salvata e visibile nel widget. Poi le
 ritrovi tutte aprendo l'app.
 
 La promessa è la **velocità di cattura**: il valore non è archiviare, è non perdere
-l'idea. Ogni decisione qui dentro si giudica con questo metro.
+l'idea.
+
+> **No effort quick notes.**
+>
+> È la missione, nelle parole del committente, ed è il metro con cui si giudica ogni
+> decisione di questo file. Non "poche azioni": **nessuno sforzo** — né fisico, né di
+> attenzione, né di scelta. Una funzione che chiede all'utente di decidere qualcosa nel
+> momento in cui vuole solo scrivere ha già perso, anche se è utile.
 
 Obiettivo dichiarato: pubblicazione su App Store e Play Store (gli abbonamenti
 sviluppatore sono già attivi su entrambi).
@@ -637,6 +644,43 @@ diverso, e `SELECT *` le legge per posizione. È esattamente il caso che
 `verifySqlDelightMigration` ha intercettato mentre si scriveva D27, ed è il motivo per
 cui quel controllo esiste.
 
+### D29 — L'inquadratura dei widget sta nel core, e la leggibilità viene prima della quantità
+**Data:** 2026-09-12 · **Stato:** attiva
+
+`WidgetFraming.layout` in `core:geometry` decide quante note stanno in un widget, in
+quali caselle, con quale ritaglio e a quale dettaglio. **Quali** note non lo decide:
+arrivano già scelte e ordinate da chi chiama (archivio più configurazione del widget).
+
+**Perché in `core:geometry` e non in un modulo nuovo:** inquadrare è geometria, e quel
+modulo ha già `Bounds` e `RenderQuality`. Un sesto modulo avrebbe fatto scattare il
+debito del plugin di convenzione (§5) per duecento righe. Il confine resta però netto:
+qui non entra nessuna politica su *quali* note mostrare.
+
+**Le regole, tutte dalla missione:**
+
+- **La leggibilità viene prima della quantità.** Il numero di note mostrate lo decide lo
+  spazio, non il formato: se la griglia preferita darebbe caselle sotto il minimo
+  leggibile, si mostrano meno note più grandi. Un widget con sei francobolli
+  indistinguibili costringe ad aprire l'app, cioè esattamente lo sforzo che vogliamo
+  togliere. E se nemmeno una casella è leggibile, il widget resta **solo** una porta.
+- **Si inquadra l'inchiostro, non il foglio** (`Bounds` più un margine), altrimenti tre
+  parole scritte in alto a sinistra sono invisibili.
+- **L'ingrandimento ha un tetto.** Due parole ritagliate strette e portate a riempire una
+  casella grande sembrano un manifesto, non una nota.
+- **L'area di cattura c'è sempre**, e nel formato piccolo — o con il widget vuoto — è
+  tutto il widget: nessun bersaglio da centrare col pollice.
+- **L'area di cattura va sul lato lungo.** Su un widget basso e largo (il formato medio)
+  una striscia in alto costerebbe 44 punti su 131 di altezza utile, cioè più spazio del
+  contenuto; di lato costa 44 su 305 di larghezza. È la regola della leggibilità
+  applicata al pulsante, e l'ha trovata un test che cadeva.
+- **Il dettaglio lo decide la casella, non il formato**: un widget grande con quattro note
+  ha caselle piccole quanto quelle di un medio con due (D11).
+- **Le note vocali entrano nel widget.** Senza inchiostro da mostrare si disegna la
+  trascrizione; se una nota ha entrambi vince l'inchiostro, perché è quello che si
+  riconosce a colpo d'occhio (D1). Lasciarle fuori vorrebbe dire che metà della cattura
+  (D18) non si vede in home.
+- **La prima nota va nella prima casella**, e a parità di ingresso l'uscita è identica.
+
 ---
 
 ## 5. Struttura del repository
@@ -646,7 +690,8 @@ core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
   model/         Note, Stroke, VoiceClip, InkPoint, Pen, CanvasSize, mergeNotes,
                  SearchText e NoteSearch (normalizzazione e pertinenza)
   ink/           StrokeBuilder, CatmullRom, WidthProfile, StrokeSimplifier, InkConfig
-  geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline, Bounds
+  geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline,
+                 Bounds, WidgetFraming (come riempire un widget)
   capture/       CaptureSession, InkJournal, FrictionTrace — non vede l'archivio
   store/         NoteStore, JournalIngest, schema SQLDelight e schema versionato
 androidApp/      La prova di velocità di D19, installabile. Zero dipendenze
@@ -741,7 +786,7 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 - **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
   coincidano. Va eseguito quando si toccano i file `.sq`.
 
-Stato attuale: **187 test, tutti verdi.** L'app Android è scritta ma **non compilata
+Stato attuale: **209 test, tutti verdi.** L'app Android è scritta ma **non compilata
 da nessuno**: il primo build è sulla macchina del committente.
 
 ---
@@ -788,8 +833,8 @@ da nessuno**: il primo build è sulla macchina del committente.
 6. ~~Ricerca normalizzata~~ — fatto: accenti e maiuscole ignorati, parole in qualsiasi
    ordine, risultati per pertinenza, indice versionato con reindicizzazione
    (migrazione 2 → 3).
-7. **Inquadratura dei widget** — quali note mostrare, come ritagliare su `Bounds`, come
-   stare nei limiti di memoria. Nel core, così vale per tutte e quattro le superfici.
+7. ~~Inquadratura dei widget~~ — fatto: `WidgetFraming` decide caselle, ritagli e
+   dettaglio per i tre formati, con la leggibilità come vincolo (D29).
 8. **`core:billing`** — l'unico punto che risponde a "è Pro?" (D4), con le regole del
    livello gratuito. Logica pura; l'SDK di RevenueCat si attacca dopo.
 
