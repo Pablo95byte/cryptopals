@@ -96,9 +96,11 @@ class NoteMergeTest {
 
     @Test
     fun `l'OCR sopravvive se solo una copia lo ha calcolato`() {
+        val inked = listOf(stroke("a", createdAt = 1_000L))
+
         val merged = mergeNotes(
-            local = note(emptyList(), updatedAt = 2_000L, revision = 2L),
-            remote = note(emptyList(), updatedAt = 1_000L, revision = 1L, recognizedText = "spesa", recognizedFromRevision = 1L),
+            local = note(inked, updatedAt = 2_000L, revision = 2L),
+            remote = note(inked, updatedAt = 1_000L, revision = 1L, recognizedText = "spesa", recognizedFromRevision = 1L),
         )
 
         assertEquals("spesa", merged.recognizedText)
@@ -114,5 +116,93 @@ class NoteMergeTest {
                 remote = note(emptyList(), updatedAt = 1L, revision = 1L).copy(id = NoteId("altra")),
             )
         }
+    }
+}
+
+/** Le registrazioni vocali si fondono con le stesse regole dei tratti (D25). */
+class VoiceClipMergeTest {
+
+    private val id = NoteId("nota-1")
+
+    private fun clip(
+        clipId: String,
+        recordedAt: Long,
+        transcript: String? = null,
+        audioPath: String? = null,
+        deletedAt: Long? = null,
+    ) = VoiceClip(
+        id = VoiceClipId(clipId),
+        recordedAt = recordedAt,
+        durationMs = 5_000,
+        transcript = transcript,
+        audioPath = audioPath,
+        deletedAt = deletedAt,
+    )
+
+    private fun note(clips: List<VoiceClip>, updatedAt: Long, revision: Long) = Note(
+        id = id,
+        canvas = CANVAS,
+        strokes = emptyList(),
+        voiceClips = orderVoiceClips(clips),
+        createdAt = 1_000L,
+        updatedAt = updatedAt,
+        revision = revision,
+    )
+
+    @Test
+    fun `due dispositivi che registrano offline non si perdono le registrazioni`() {
+        val merged = mergeNotes(
+            local = note(listOf(clip("locale", 2_000L)), updatedAt = 2_000L, revision = 2L),
+            remote = note(listOf(clip("remota", 2_100L)), updatedAt = 2_100L, revision = 2L),
+        )
+
+        assertEquals(listOf("locale", "remota"), merged.voiceClips.map { it.id.value })
+    }
+
+    @Test
+    fun `una trascrizione già calcolata non si perde nel merge`() {
+        val merged = mergeNotes(
+            local = note(listOf(clip("c1", 2_000L)), updatedAt = 5_000L, revision = 9L),
+            remote = note(listOf(clip("c1", 2_000L, transcript = "chiamare Luca")), updatedAt = 2_000L, revision = 2L),
+        )
+
+        assertEquals("chiamare Luca", merged.voiceClips.single().transcript)
+    }
+
+    @Test
+    fun `l'audio ritrovato su un solo dispositivo sopravvive`() {
+        val merged = mergeNotes(
+            local = note(listOf(clip("c1", 2_000L, audioPath = null)), updatedAt = 5_000L, revision = 9L),
+            remote = note(listOf(clip("c1", 2_000L, audioPath = "/audio/c1.m4a")), updatedAt = 2_000L, revision = 2L),
+        )
+
+        assertEquals("/audio/c1.m4a", merged.voiceClips.single().audioPath)
+    }
+
+    @Test
+    fun `una registrazione cancellata non resuscita`() {
+        val merged = mergeNotes(
+            local = note(listOf(clip("c1", 2_000L)), updatedAt = 9_000L, revision = 9L),
+            remote = note(listOf(clip("c1", 2_000L, deletedAt = 3_000L)), updatedAt = 3_000L, revision = 2L),
+        )
+
+        assertEquals(3_000L, merged.voiceClips.single().deletedAt)
+        assertTrue(merged.visibleVoiceClips.isEmpty())
+    }
+
+    @Test
+    fun `il merge delle registrazioni non dipende dall'ordine degli operandi`() {
+        val local = note(
+            clips = listOf(clip("a", 2_000L, transcript = "primo"), clip("b", 2_500L)),
+            updatedAt = 2_500L,
+            revision = 3L,
+        )
+        val remote = note(
+            clips = listOf(clip("a", 2_000L, audioPath = "/audio/a.m4a"), clip("c", 2_800L, deletedAt = 2_900L)),
+            updatedAt = 2_900L,
+            revision = 2L,
+        )
+
+        assertEquals(mergeNotes(local, remote), mergeNotes(remote, local))
     }
 }

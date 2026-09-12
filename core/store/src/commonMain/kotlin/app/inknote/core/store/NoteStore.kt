@@ -2,6 +2,7 @@ package app.inknote.core.store
 
 import app.inknote.core.model.Note
 import app.inknote.core.model.NoteId
+import app.inknote.core.model.VoiceClip
 
 /**
  * L'archivio locale delle note.
@@ -34,14 +35,24 @@ interface NoteStore {
     /**
      * Le note vive il cui testo riconosciuto contiene [term].
      *
-     * Cerca nel testo prodotto dall'OCR, non nell'inchiostro: una nota non ancora
-     * riconosciuta non compare nei risultati. È il compromesso della decisione D2
-     * e l'interfaccia deve renderlo evidente all'utente.
+     * Cerca nel testo prodotto dall'OCR sull'inchiostro **e** nelle trascrizioni del
+     * parlato: per chi cerca sono la stessa cosa. Una nota non ancora riconosciuta non
+     * compare nei risultati: è il compromesso della decisione D2, e l'interfaccia deve
+     * renderlo evidente all'utente invece di far sembrare che la nota non esista.
      */
     fun search(term: String, limit: Int = 50): List<Note>
 
-    /** Le note il cui testo riconosciuto è assente o si riferisce a una revisione precedente. */
+    /**
+     * Le note il cui testo riconosciuto è assente o si riferisce a una revisione
+     * precedente.
+     *
+     * Le note di sola voce non compaiono: non hanno inchiostro da leggere, e tenerle in
+     * coda la farebbe girare a vuoto per sempre.
+     */
     fun notesNeedingRecognition(limit: Int = 20): List<Note>
+
+    /** Le registrazioni vocali ancora da trascrivere, dalla più vecchia. */
+    fun clipsNeedingTranscription(limit: Int = 20): List<VoiceClip>
 
     fun liveNoteCount(): Long
 

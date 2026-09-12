@@ -37,26 +37,56 @@ CREATE TABLE stroke (
 
 CREATE INDEX stroke_note_id ON stroke(note_id);
 
+-- Le registrazioni vocali (decisione D25). Righe proprie e con tombstone, come i
+-- tratti e per la stessa ragione: sono unità di sincronizzazione.
+-- L'audio non sta qui dentro ma su disco: audio_path. Un blob di qualche centinaio
+-- di kilobyte per nota renderebbe il database lento a leggersi per l'elenco, che è
+-- l'operazione più frequente dell'app.
+CREATE TABLE voice_clip (
+    id TEXT NOT NULL PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    recorded_at INTEGER NOT NULL,
+    duration_ms INTEGER NOT NULL,
+    transcript TEXT,
+    audio_path TEXT,
+    deleted_at INTEGER
+);
+
+CREATE INDEX voice_clip_note_id ON voice_clip(note_id);
+
 selectNote:
 SELECT * FROM note WHERE id = ?;
 
 selectRecentNotes:
 SELECT * FROM note WHERE deleted_at IS NULL ORDER BY updated_at DESC LIMIT :limit;
 
+-- Cerca nel testo riconosciuto dall'inchiostro **e** nelle trascrizioni del parlato:
+-- per chi cerca sono la stessa cosa, cioè il modo di ritrovare una nota (D2, D25).
 searchNotes:
-SELECT * FROM note
-WHERE deleted_at IS NULL AND recognized_text LIKE '%' || :term || '%'
-ORDER BY updated_at DESC
+SELECT note.* FROM note
+WHERE note.deleted_at IS NULL AND (
+    note.recognized_text LIKE '%' || :term || '%'
+    OR EXISTS (
+        SELECT 1 FROM voice_clip
+        WHERE voice_clip.note_id = note.id
+          AND voice_clip.deleted_at IS NULL
+          AND voice_clip.transcript LIKE '%' || :term || '%'
+    )
+)
+ORDER BY note.updated_at DESC
 LIMIT :limit;
 
 countLiveNotes:
 SELECT count(*) FROM note WHERE deleted_at IS NULL;
 
+-- La condizione sull'inchiostro non è una rifinitura: senza di essa una nota di sola
+-- voce resterebbe in questa coda per sempre, senza mai avere niente da leggere.
 selectNotesNeedingRecognition:
-SELECT * FROM note
-WHERE deleted_at IS NULL
-  AND (recognized_from_revision IS NULL OR recognized_from_revision != revision)
-ORDER BY updated_at DESC
+SELECT note.* FROM note
+WHERE note.deleted_at IS NULL
+  AND (note.recognized_from_revision IS NULL OR note.recognized_from_revision != note.revision)
+  AND EXISTS (SELECT 1 FROM stroke WHERE stroke.note_id = note.id AND stroke.deleted_at IS NULL)
+ORDER BY note.updated_at DESC
 LIMIT :limit;
 
 -- ## Perché l'inserimento è in due statement e non un upsert
@@ -89,7 +119,10 @@ UPDATE note SET
     canvas_height = :canvasHeight,
     updated_at = :updatedAt,
     revision = :revision,
-    deleted_at = :deletedAt,
+    -- coalesce e non assegnazione secca: un salvataggio partito da una copia vecchia
+    -- della nota non deve poter cancellare un tombstone già in archivio, o la nota
+    -- resusciterebbe (invariante 2).
+    deleted_at = coalesce(deleted_at, :deletedAt),
     recognized_text = :recognizedText,
     recognized_from_revision = :recognizedFromRevision
 WHERE id = :id;
@@ -103,6 +136,23 @@ UPDATE note SET widget_image_path = :path WHERE id = :id;
 
 selectWidgetImagePath:
 SELECT widget_image_path FROM note WHERE id = ?;
+
+-- I figli si cancellano a mano, prima della nota.
+--
+-- Non basta la cascata sulla chiave esterna: in SQLite le chiavi esterne sono
+-- disattivate per difetto e si accendono con un PRAGMA **per connessione**, e la
+-- connessione la apre la piattaforma (D14). Contare su quel PRAGMA vorrebbe dire
+-- lasciare tratti e registrazioni orfani in archivio per sempre, su un dispositivo
+-- dove nessuno se ne accorge.
+purgeStrokesOfDeletedNotes:
+DELETE FROM stroke WHERE note_id IN (
+    SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
+);
+
+purgeVoiceClipsOfDeletedNotes:
+DELETE FROM voice_clip WHERE note_id IN (
+    SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
+);
 
 purgeDeletedNotes:
 DELETE FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before;
@@ -120,8 +170,35 @@ INSERT OR IGNORE INTO stroke(
     :id, :noteId, :penColor, :penKind, :penBaseWidth, :createdAt, :deletedAt, :points
 );
 
+-- Come sopra: il tombstone si può mettere, non togliere.
 updateStrokeDeletedAt:
-UPDATE stroke SET deleted_at = :deletedAt WHERE id = :id;
+UPDATE stroke SET deleted_at = coalesce(deleted_at, :deletedAt) WHERE id = :id;
 
 deleteStrokesOfNote:
 DELETE FROM stroke WHERE note_id = ?;
+
+selectVoiceClips:
+SELECT * FROM voice_clip WHERE note_id = ? ORDER BY recorded_at ASC, id ASC;
+
+insertVoiceClipIfAbsent:
+INSERT OR IGNORE INTO voice_clip(
+    id, note_id, recorded_at, duration_ms, transcript, audio_path, deleted_at
+) VALUES (
+    :id, :noteId, :recordedAt, :durationMs, :transcript, :audioPath, :deletedAt
+);
+
+-- coalesce su tutti e tre i campi mutabili, e in tre direzioni diverse:
+-- una trascrizione o un audio già presenti non si perdono se chi salva non li ha
+-- (fra "c'è" e "non c'è ancora" vince "c'è"), e un tombstone non si toglie.
+updateVoiceClip:
+UPDATE voice_clip SET
+    transcript = coalesce(:transcript, transcript),
+    audio_path = coalesce(:audioPath, audio_path),
+    deleted_at = coalesce(deleted_at, :deletedAt)
+WHERE id = :id;
+
+selectClipsNeedingTranscription:
+SELECT * FROM voice_clip
+WHERE deleted_at IS NULL AND transcript IS NULL
+ORDER BY recorded_at ASC
+LIMIT :limit;

@@ -491,13 +491,67 @@ protetta dalle credenziali.
 cache il sistema la può svuotare quando vuole, e nel giornale c'è inchiostro non
 ancora archiviato. Sta nei file dell'app.
 
+### D25 — Le note vocali stanno nella stessa nota, come lista, e l'audio si conserva
+**Data:** 2026-09-12 · **Stato:** attiva · **Chiude una questione aperta del §10**
+
+`Note` porta `voiceClips: List<VoiceClip>` accanto a `strokes`. Una nota può avere
+inchiostro, voce, o entrambi. L'audio si conserva su disco (`audioPath`), non solo la
+trascrizione.
+
+**Perché l'audio e non solo il testo:** per una nota vocale **l'audio è la nota**, e la
+trascrizione è l'indice che serve a ritrovarla — lo stesso rapporto che c'è fra
+l'inchiostro e l'OCR (D1, D2). Il riconoscimento del parlato sbaglia una parola ogni
+tanto, e se quella parola era un numero di telefono la nota senza audio è persa.
+Tenere l'originale nell'un caso e buttarlo nell'altro sarebbe incoerente.
+
+**Perché una lista e non un campo singolo:** con un campo singolo due dispositivi che
+registrano offline sulla stessa nota si sovrascrivono e uno dei due perde la
+registrazione. Una lista con id si fonde per unione, come i tratti (D8), e il merge è
+scritto e testato.
+
+**Perché non una gerarchia `InkNote | VoiceNote`:** avrebbe spezzato `mergeNotes`, la
+facciata della geometria e tutto l'archivio per guadagnare niente — e avrebbe reso
+impossibile una nota che è scritta *e* dettata. Il campo in più costa una riga.
+
+**La trascrizione non diventa mai vecchia:** una registrazione, una volta fatta, non
+cambia più. Quindi non serve il campo "revisione a cui il testo si riferisce" che
+invece serve per l'inchiostro, dove la nota si può continuare a scrivere.
+
+**Conseguenza da non dimenticare:** `needsRecognition` ora richiede `hasInk`. Senza
+quella condizione una nota di sola voce resterebbe in coda all'OCR per sempre, senza
+mai avere niente da leggere. La stessa condizione è nella query dell'archivio.
+
+**Lasciato fuori di proposito:** il giornale di scrittura (D20, D22) non copre l'audio.
+Una registrazione interrotta dalla morte del processo si perde, perché proteggerla
+vorrebbe dire scrivere metadati durante la registrazione. Va deciso quando si scrive
+`core:voice`.
+
+### D26 — I tombstone non si possono togliere con un salvataggio
+**Data:** 2026-09-12 · **Stato:** attiva
+
+Nell'archivio, i campi `deleted_at` di note, tratti e registrazioni si aggiornano con
+`coalesce(deleted_at, :nuovo)`: si possono mettere, non togliere. Stessa forma per
+trascrizione e percorso dell'audio, nella direzione opposta — fra "c'è" e "non c'è
+ancora" vince "c'è".
+
+**Perché:** era un bug reale. `save` con un'assegnazione secca permetteva a un
+salvataggio partito da una copia vecchia della nota di **far resuscitare un tratto
+cancellato** o una nota cestinata, contro l'invariante 2. Succede appena due pezzi di
+codice tengono in mano la stessa nota, che è la norma. Ora è lo SQL a impedirlo, non
+la disciplina di chi chiama. Tre test di regressione.
+
+**Conseguenza aperta:** il recupero dal cestino non può essere un semplice azzeramento
+di `deletedAt` — né qui né al primo sync, dove la cancellazione vince comunque. Serve
+un meccanismo suo: probabilmente copiare la nota sotto un id nuovo. Sta fra le
+questioni aperte del §10.
+
 ---
 
 ## 5. Struttura del repository
 
 ```
 core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
-  model/         Note, Stroke, InkPoint, Pen, CanvasSize, mergeNotes
+  model/         Note, Stroke, VoiceClip, InkPoint, Pen, CanvasSize, mergeNotes
   ink/           StrokeBuilder, CatmullRom, WidthProfile, StrokeSimplifier, InkConfig
   geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline, Bounds
   capture/       CaptureSession, InkJournal, FrictionTrace — non vede l'archivio
@@ -561,6 +615,13 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 13. **Il giornale si svuota solo dopo che i record sono in archivio.** (D22)
 14. **`core:capture` non dipende da `core:store`.** Se un giorno serve, la risposta
     è quasi certamente spostare il chiamante, non aggiungere la dipendenza. (D22)
+15. **Un tombstone si mette, non si toglie.** Nell'archivio gli aggiornamenti di
+    `deleted_at` passano da `coalesce`: nessun salvataggio può far resuscitare
+    qualcosa. (D26)
+16. **Ogni modifica allo schema porta la sua migrazione** in un file `.sqm`, e un
+    test che rilegge un archivio della versione precedente. `verifySqlDelightMigration`
+    controlla che le istruzioni descrivano lo stesso schema; solo il test controlla che
+    i dati sopravvivano.
 
 ---
 
@@ -584,7 +645,7 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 - **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
   coincidano. Va eseguito quando si toccano i file `.sq`.
 
-Stato attuale: **113 test, tutti verdi.** L'app Android è scritta ma **non compilata
+Stato attuale: **147 test, tutti verdi.** L'app Android è scritta ma **non compilata
 da nessuno**: il primo build è sulla macchina del committente.
 
 ---
@@ -616,8 +677,17 @@ da nessuno**: il primo build è sulla macchina del committente.
    `CaptureActivity`, `InkCanvasView`, `AndroidInkJournalSink` e il misuratore a
    schermo. **Manca la misura**, che richiede un telefono: è il prossimo passo, e
    tocca al committente. Istruzioni in [`androidApp/README.md`](androidApp/README.md).
-4. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
-   all'avvio, così il giornale si svuota e le note vivono nel database.
+4. ~~Note vocali nel modello~~ — fatto: `VoiceClip` nel modello, tabella e migrazione
+   1 → 2 nell'archivio, ricerca che copre anche le trascrizioni, e un test che rilegge
+   un archivio della versione 1 dopo la migrazione.
+5. **Ricerca normalizzata** — oggi è un `LIKE` grezzo: "Caffe" non trova "caffè".
+   In un'app che promette "poi le ritrovi", una ricerca che non trova è il difetto
+   peggiore. Logica pura, verificabile qui.
+6. **Inquadratura dei widget** — quali note mostrare e come ritagliare, nel core, così
+   vale per entrambe le piattaforme.
+7. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
+   all'avvio, così il giornale si svuota e le note vivono nel database. Dopo la misura
+   di D19, per non impilare codice non compilato.
 4. `androidWidget` — Glance, con la PNG ridotta e il ritaglio su `Bounds`.
 5. `iosApp` + `iosWidget` — SwiftUI e WidgetKit sulla stessa facciata, con widget
    di blocco, Controllo e tasto Azione come porte d'ingresso.
@@ -633,9 +703,10 @@ da nessuno**: il primo build è sulla macchina del committente.
   renda il livello gratuito inutile e quindi l'app non recensita.
 - **Prezzo effettivo del Pro**, per mercato.
 - **Gesto della gomma** con dito e con pennino, che sono casi diversi.
-- **Se la nota vocale conservi anche l'audio** o solo la trascrizione. L'audio
-  occupa spazio e va sincronizzato; la trascrizione da sola può sbagliare una
-  parola importante.
+- **Il recupero dal cestino.** Azzerare `deletedAt` non funziona: l'archivio non lo
+  permette più (D26) e al primo sync la cancellazione vincerebbe comunque. Probabile
+  soluzione: copiare la nota sotto un id nuovo, accettando di perdere lo storico.
+- **Se il giornale debba coprire anche l'audio** (D25 lo lascia fuori per ora).
 - **Come si entra nella cattura vocale su Android** a telefono bloccato, dato che
   lì la scrittura sopra il blocco esiste già (D17) e la voce servirebbe soprattutto
   a mani occupate.

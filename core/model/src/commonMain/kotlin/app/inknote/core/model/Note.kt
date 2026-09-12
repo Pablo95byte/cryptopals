@@ -29,7 +29,11 @@ data class CanvasSize(val width: Float, val height: Float) {
  *   timestamp di due dispositivi non sono allineati.
  * @param deletedAt tombstone. Non cancelliamo le righe: una cancellazione deve
  *   poter viaggiare, altrimenti al primo sync la nota cancellata torna indietro.
- * @param recognizedText esito dell'OCR, `null` se non ancora calcolato.
+ * @param voiceClips le registrazioni vocali della nota. Una lista e non un campo
+ *   singolo: due dispositivi che registrano offline sulla stessa nota si fondono per
+ *   unione, come i tratti, invece che sovrascriversi (D8, D25).
+ * @param recognizedText esito dell'OCR **sull'inchiostro**, `null` se non ancora
+ *   calcolato. La trascrizione del parlato sta su ciascun [VoiceClip].
  * @param recognizedFromRevision revisione su cui l'OCR è stato calcolato: se è
  *   diversa da [revision], il testo è vecchio e va ricalcolato.
  */
@@ -37,6 +41,7 @@ data class Note(
     val id: NoteId,
     val canvas: CanvasSize,
     val strokes: List<Stroke>,
+    val voiceClips: List<VoiceClip> = emptyList(),
     val createdAt: Long,
     val updatedAt: Long,
     val revision: Long = 1L,
@@ -49,10 +54,56 @@ data class Note(
     /** I tratti da disegnare, nell'ordine di disegno. */
     val visibleStrokes: List<Stroke> get() = strokes.filter { !it.isDeleted }
 
-    val isEmpty: Boolean get() = visibleStrokes.isEmpty()
+    /** Le registrazioni ancora presenti, in ordine di registrazione. */
+    val visibleVoiceClips: List<VoiceClip> get() = voiceClips.filter { !it.isDeleted }
 
-    /** `true` se [recognizedText] si riferisce a una versione precedente della nota. */
-    val needsRecognition: Boolean get() = recognizedFromRevision != revision
+    val hasInk: Boolean get() = visibleStrokes.isNotEmpty()
+
+    val hasVoice: Boolean get() = visibleVoiceClips.isNotEmpty()
+
+    /** Una nota è vuota solo se non ha né inchiostro né voce. */
+    val isEmpty: Boolean get() = !hasInk && !hasVoice
+
+    /**
+     * `true` se l'inchiostro va (ri)riconosciuto.
+     *
+     * La condizione su [hasInk] non è una rifinitura: senza di essa una nota di sola
+     * voce risulterebbe sempre da riconoscere, e la coda dell'OCR le girerebbe sopra
+     * per sempre senza mai avere niente da leggere.
+     */
+    val needsRecognition: Boolean get() = hasInk && recognizedFromRevision != revision
+
+    /** Le registrazioni ancora da trascrivere. */
+    val voiceClipsNeedingTranscription: List<VoiceClip>
+        get() = visibleVoiceClips.filter { it.needsTranscription }
+
+    /**
+     * Tutto il testo con cui questa nota si può ritrovare: l'OCR dell'inchiostro più
+     * le trascrizioni del parlato.
+     */
+    val searchableText: String
+        get() = buildList {
+            recognizedText?.let(::add)
+            for (clip in visibleVoiceClips) clip.transcript?.let(::add)
+        }.joinToString(" ")
+
+    /** Aggiunge una registrazione producendo una nuova versione della nota. */
+    fun withVoiceClip(clip: VoiceClip, now: Long): Note = copy(
+        voiceClips = orderVoiceClips(voiceClips + clip),
+        updatedAt = now,
+        revision = revision + 1,
+    )
+
+    /** Marca una registrazione come cancellata senza rimuoverla. */
+    fun withVoiceClipDeleted(clipId: VoiceClipId, now: Long): Note {
+        val index = voiceClips.indexOfFirst { it.id == clipId }
+        if (index < 0 || voiceClips[index].isDeleted) return this
+        return copy(
+            voiceClips = voiceClips.toMutableList().also { it[index] = it[index].copy(deletedAt = now) },
+            updatedAt = now,
+            revision = revision + 1,
+        )
+    }
 
     /** Aggiunge un tratto producendo una nuova versione della nota. */
     fun withStroke(stroke: Stroke, now: Long): Note = copy(

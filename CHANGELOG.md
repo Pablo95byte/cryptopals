@@ -47,7 +47,7 @@ solo cosa è cambiato nel codice.
     (decisione D11);
   - `Bounds`: rettangolo dell'inchiostro, spessore della penna compreso, per il
     ritaglio nei widget piccoli.
-- **113 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
+- **147 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
   Coprono fra l'altro l'idempotenza e la commutatività del merge, la tenuta della
   geometria su campioni duplicati o coincidenti, e il comportamento dello spessore
   in assenza di pressione, e il giro di andata e ritorno completo di una nota
@@ -87,6 +87,35 @@ solo cosa è cambiato nel codice.
 - **`JournalIngest`** in `core:store` — porta il giornale in archivio fondendolo con
   quanto già salvato. Prima salva, poi svuota: un test fallisce il salvataggio di
   proposito e verifica che il giornale sopravviva come unica copia dell'inchiostro.
+- **Note vocali nel modello e nell'archivio** (decisione D25):
+  - `VoiceClip` in `core:model`, con trascrizione e percorso dell'audio. Una nota può
+    avere inchiostro, voce o entrambi;
+  - `voiceClips` è una **lista** con tombstone, come i tratti: due dispositivi che
+    registrano offline sulla stessa nota si fondono per unione invece di
+    sovrascriversi, e `mergeNotes` lo fa già;
+  - `searchableText`, `hasInk`, `hasVoice`, `voiceClipsNeedingTranscription`;
+  - la ricerca dell'archivio copre le trascrizioni oltre al testo riconosciuto
+    dall'inchiostro: per chi cerca sono la stessa cosa;
+  - **la prima migrazione dello schema**, 1 → 2, con un test che rilegge un archivio
+    scritto dalla versione 1 e verifica che nota, tratti, campioni e percorso
+    dell'immagine del widget sopravvivano. `verifySqlDelightMigration` controlla che le
+    istruzioni descrivano lo stesso schema; solo quel test controlla i dati.
+- **147 test** sul core (erano 113).
+
+### Corretto
+
+- **Un salvataggio da una copia vecchia poteva far resuscitare un tratto cancellato**
+  o una nota cestinata, contro l'invariante 2 (decisione D26). Gli aggiornamenti di
+  `deleted_at` passano ora da `coalesce`: un tombstone si mette, non si toglie. Vale
+  anche per trascrizione e audio, nella direzione opposta — fra "c'è" e "non c'è
+  ancora" vince "c'è". Tre test di regressione.
+- **`purgeDeleted` lasciava tratti e registrazioni orfani in archivio.** Contava sulla
+  cascata delle chiavi esterne, che in SQLite è spenta per difetto e si accende con un
+  PRAGMA per connessione — e la connessione la apre la piattaforma. Ora i figli si
+  cancellano esplicitamente, prima della nota.
+- **`needsRecognition` teneva le note di sola voce in coda all'OCR per sempre**, senza
+  che ci fosse inchiostro da leggere. Ora richiede `hasInk`, nel modello e nella query.
+
 - **`androidApp`** — la prova di velocità di D19, installabile su un telefono:
   - `CaptureActivity`: Activity di piattaforma, nessuna libreria, nessun database,
     nessuna animazione di apertura. Serve i due ingressi previsti — sopra il launcher

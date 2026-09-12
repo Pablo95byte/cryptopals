@@ -12,6 +12,9 @@ package app.inknote.core.model
  * - **I tratti si uniscono per id.** Sono immutabili, quindi due dispositivi non
  *   possono produrre versioni diverse dello stesso tratto: l'unione è sempre
  *   definita e nessuno dei due perde ciò che ha disegnato offline.
+ * - **Le registrazioni vocali si uniscono allo stesso modo** (D25). Anche l'audio è
+ *   immutabile; l'unico campo che può comparire dopo è la trascrizione, e fra "c'è" e
+ *   "non c'è ancora" vince "c'è".
  * - **La cancellazione di un tratto vince** sulla sua esistenza, con il tombstone
  *   più vecchio a fare da riferimento. Senza questo un tratto cancellato su un
  *   dispositivo riapparirebbe al sync successivo.
@@ -36,6 +39,13 @@ fun mergeNotes(local: Note, remote: Note): Note {
 
     // Il "più recente" decide i campi a valore singolo: prima la revisione, che è
     // monotona per dispositivo, e solo a parità il timestamp.
+    val mergedClips = HashMap<VoiceClipId, VoiceClip>(local.voiceClips.size + remote.voiceClips.size)
+    for (clip in local.voiceClips) mergedClips[clip.id] = clip
+    for (clip in remote.voiceClips) {
+        val existing = mergedClips[clip.id]
+        mergedClips[clip.id] = if (existing == null) clip else mergeVoiceClips(existing, clip)
+    }
+
     val newest = if (compareVersions(local, remote) >= 0) local else remote
     val oldest = if (newest === local) remote else local
 
@@ -43,6 +53,7 @@ fun mergeNotes(local: Note, remote: Note): Note {
         id = local.id,
         canvas = newest.canvas,
         strokes = orderStrokes(mergedStrokes.values.toList()),
+        voiceClips = orderVoiceClips(mergedClips.values.toList()),
         createdAt = minOf(local.createdAt, remote.createdAt),
         updatedAt = maxOf(local.updatedAt, remote.updatedAt),
         revision = maxOf(local.revision, remote.revision),
@@ -65,6 +76,18 @@ private fun mergeStrokes(a: Stroke, b: Stroke): Stroke {
     val richest = if (a.points.size >= b.points.size) a else b
     return richest.copy(deletedAt = deletedAt, createdAt = minOf(a.createdAt, b.createdAt))
 }
+
+private fun mergeVoiceClips(a: VoiceClip, b: VoiceClip): VoiceClip = a.copy(
+    // Come per i tratti: la cancellazione vince, e vale il tombstone più vecchio.
+    deletedAt = minOfNullable(a.deletedAt, b.deletedAt),
+    // La trascrizione e l'audio possono essere arrivati su un solo dispositivo: fra
+    // "c'è" e "non c'è ancora" vince "c'è", altrimenti un sync farebbe perdere un
+    // riconoscimento già fatto.
+    transcript = a.transcript ?: b.transcript,
+    audioPath = a.audioPath ?: b.audioPath,
+    recordedAt = minOf(a.recordedAt, b.recordedAt),
+    durationMs = maxOf(a.durationMs, b.durationMs),
+)
 
 /** Confronto di versione: revisione, poi timestamp, poi id come ultimo criterio stabile. */
 private fun compareVersions(a: Note, b: Note): Int {

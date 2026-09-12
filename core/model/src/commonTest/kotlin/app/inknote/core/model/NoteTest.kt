@@ -9,12 +9,23 @@ import kotlin.test.assertTrue
 class NoteTest {
 
     @Test
-    fun `una nota nuova è vuota e va riconosciuta`() {
+    fun `una nota nuova è vuota e non ha niente da riconoscere`() {
         val note = Note.empty(CANVAS, now = 1_000L)
+
         assertTrue(note.isEmpty)
         assertFalse(note.isDeleted)
-        assertTrue(note.needsRecognition)
         assertNull(note.recognizedText)
+        // Senza inchiostro non c'è nulla da leggere: mettere una nota vuota nella coda
+        // dell'OCR la farebbe girare a vuoto per sempre.
+        assertFalse(note.needsRecognition)
+    }
+
+    @Test
+    fun `appena c'è inchiostro la nota va riconosciuta`() {
+        val note = Note.empty(CANVAS, now = 1_000L)
+            .withStroke(stroke("a", createdAt = 1_100L), now = 1_100L)
+
+        assertTrue(note.needsRecognition)
     }
 
     @Test
