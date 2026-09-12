@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #2E5AA8; } a:hover { color: #1F3F78; }
+    .ui { font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif; }
+    .ink { font-family: 'Caveat', 'Bradley Hand', 'Segoe Script', cursive; }
+    .menurow { height: 48px; display: flex; align-items: center; gap: 11px; padding: 0 15px; }
+  </style>
+</helmet>
+
+<div class="ui" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FBF8F1;">
+
+  <!--
+    Una nota già scritta, riaperta. Gli strumenti ci sono perché qui si corregge, non
+    si cattura: la regola del foglio nudo (D21) vale all'apertura di una nota nuova.
+  -->
+  <div style="position: absolute; left: 0; right: 0; top: 116px; bottom: 0; background-image: repeating-linear-gradient(to bottom, transparent 0 35px, #EDE5D3 35px 36px);"></div>
+
+  <div style="position: relative; display: flex; align-items: center; justify-content: space-between; padding: 58px 14px 0 14px;">
+    <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#23201B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 5l-7 7 7 7"></path>
+      </svg>
+    </div>
+    <span style="font-size: 13px; font-weight: 500; color: #8B8374;">ieri · 18:42</span>
+    <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#23201B" stroke-width="2.4" stroke-linecap="round">
+        <path d="M6 12h.01M12 12h.01M18 12h.01"></path>
+      </svg>
+    </div>
+  </div>
+
+  <div class="ink" style="position: relative; padding: 30px 26px 0 26px; font-size: 37px; line-height: 1.3; color: #1F2430;">
+    <div style="transform: rotate(-0.6deg);">latte, pane, caffè</div>
+    <div style="transform: rotate(0.5deg); margin-top: 2px;">e detersivo</div>
+    <div style="transform: rotate(-0.3deg); margin-top: 16px; color: #B4402F;">+ pile AA</div>
+  </div>
+
+  <!-- Il menù aperto: da qui si esporta e si elimina. -->
+  <div style="position: absolute; right: 14px; top: 106px; width: 214px; background: #FFFFFF; border-radius: 16px; box-shadow: 0 14px 34px rgba(35,32,27,0.20), 0 0 0 1px rgba(35,32,27,0.06); overflow: hidden; padding: 5px 0;">
+    <div class="menurow">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#23201B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 3v5h5"></path><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"></path>
+      </svg>
+      <span style="font-size: 15px; color: #23201B; flex-grow: 1;">Esporta in PDF</span>
+      <span style="font-size: 10px; font-weight: 600; color: #8B7A46; background: #F7EDCC; padding: 3px 6px; border-radius: 5px;">PRO</span>
+    </div>
+    <div class="menurow">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#23201B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="5" width="16" height="14" rx="2.5"></rect><circle cx="9" cy="10" r="1.6"></circle><path d="M4.5 17l4.5-4 3.5 3 3-2.5 4 3.5"></path>
+      </svg>
+      <span style="font-size: 15px; color: #23201B; flex-grow: 1;">Esporta immagine</span>
+      <span style="font-size: 10px; font-weight: 600; color: #8B7A46; background: #F7EDCC; padding: 3px 6px; border-radius: 5px;">PRO</span>
+    </div>
+    <div style="height: 1px; background: #EDE5D3; margin: 5px 15px;"></div>
+    <div class="menurow">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B4402F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 7h16M9 7V4.8A.8.8 0 0 1 9.8 4h4.4a.8.8 0 0 1 .8.8V7"></path><path d="M6 7l1 12.2a1.5 1.5 0 0 0 1.5 1.4h7a1.5 1.5 0 0 0 1.5-1.4L18 7"></path>
+      </svg>
+      <span style="font-size: 15px; color: #B4402F;">Elimina</span>
+    </div>
+  </div>
+
+  <!-- Il testo riconosciuto: è qui che l'utente scopre che la ricerca funziona (D2). -->
+  <div style="position: absolute; left: 20px; right: 20px; bottom: 100px; display: flex; align-items: center; gap: 8px;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ADA492" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0;">
+      <path d="M4 7h16M4 12h11M4 17h7"></path>
+    </svg>
+    <span style="font-size: 12px; color: #ADA492; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">latte, pane, caffè e detersivo · pile AA</span>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; bottom: 28px; display: flex; align-items: center; gap: 12px;">
+    <div style="flex-grow: 1; height: 56px; background: #FFFFFF; border: 1px solid #EDE5D3; border-radius: 18px; box-shadow: 0 6px 18px rgba(35,32,27,0.08); display: flex; align-items: center; justify-content: space-around; padding: 0 6px;">
+      <div style="width: 48px; height: 44px; border-radius: 13px; background: #F4EFE3; display: flex; align-items: center; justify-content: center;">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#23201B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20l1.2-4.2L16 5a2.2 2.2 0 0 1 3.1 3.1L8.2 18.8z"></path><path d="M5.2 15.8l3.1 3"></path>
+        </svg>
+      </div>
+      <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 26px; height: 26px; border-radius: 50%; background: #B4402F;"></div>
+      </div>
+      <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8.5 20.5H20"></path><path d="M14 4.5l5.5 5.5-8 8H6L3.5 15.5z"></path>
+        </svg>
+      </div>
+      <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 14L4 9l5-5"></path><path d="M4 9h9a7 7 0 0 1 0 14H8"></path>
+        </svg>
+      </div>
+    </div>
+    <div style="width: 92px; height: 56px; border-radius: 18px; background: #23201B; display: flex; align-items: center; justify-content: center;">
+      <span style="font-size: 16px; font-weight: 600; color: #FBF8F1;">Fatto</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

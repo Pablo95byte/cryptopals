@@ -9,6 +9,9 @@ Il canvas pubblicato:
 Il file `inknote-schermate.html` non è in git: è il canvas assemblato, cioè un
 prodotto di build che contiene l'editor per intero. Si rigenera dai sorgenti.
 
+Due pagine: **Flusso principale** (il percorso felice) e **Stati e servizio** (gli
+stati veri e le schermate che il prodotto richiede).
+
 ## Cosa mostrano
 
 | Artboard | Schermata |
@@ -23,6 +26,12 @@ prodotto di build che contiene l'editor per intero. Si rigenera dai sorgenti.
 | `Widget` | I tre formati di widget |
 | `Paywall` | Pagamento unico, come da decisione D4 |
 | `DirezioneB` | Schizzo di direzione alternativa, ancora da valutare |
+| `Vuoto` | Primo avvio: porta alla prima nota, non alla configurazione |
+| `AggiungiWidget` | Come si mette in home. Nessuno lo scopre da solo |
+| `Nota` | Una nota riaperta: strumenti, esportazione, eliminazione |
+| `ArchivioStati` | Nota vocale, riconoscimento in corso, tratto perso |
+| `ConfiguraWidget` | Cosa mostra il widget, formato, limite del gratuito |
+| `Impostazioni` | Poche voci, col riconoscimento del testo spegnibile |
 
 ## Vincoli rispettati
 

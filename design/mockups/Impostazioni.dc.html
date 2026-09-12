@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #2E5AA8; } a:hover { color: #1F3F78; }
+    .ui { font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif; }
+    .ink { font-family: 'Caveat', 'Bradley Hand', 'Segoe Script', cursive; }
+    .group { font-size: 11.5px; font-weight: 600; color: #8B8374; letter-spacing: 0.05em; text-transform: uppercase; }
+    .row { min-height: 56px; background: #FFFDF6; border: 1px solid #EDE4D2; border-radius: 14px; display: flex; align-items: center; gap: 13px; padding: 0 15px; }
+    .value { font-size: 14.5px; color: #8B8374; }
+  </style>
+</helmet>
+
+<div class="ui" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F6F1E7;">
+
+  <div style="padding: 62px 20px 0 20px; display: flex; flex-direction: column; gap: 20px;">
+
+    <span style="font-size: 30px; font-weight: 600; color: #23201B; letter-spacing: -0.015em;">Impostazioni</span>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <span class="group">Scrittura</span>
+      <div class="row">
+        <span style="font-size: 15.5px; color: #23201B; flex-grow: 1;">Punta predefinita</span>
+        <span class="value">Biro</span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#CFC4AE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>
+      </div>
+      <div class="row">
+        <span style="font-size: 15.5px; color: #23201B; flex-grow: 1;">Spessore</span>
+        <span class="value">Medio</span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#CFC4AE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <span class="group">Ricerca</span>
+      <div class="row">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; padding: 10px 0;">
+          <span style="font-size: 15.5px; color: #23201B;">Riconosci il testo scritto</span>
+          <span style="font-size: 12px; line-height: 1.35; color: #ADA492; text-wrap: pretty;">Succede sul telefono. Il testo serve solo a ritrovare le note, non sostituisce l'inchiostro.</span>
+        </div>
+        <div style="width: 50px; height: 30px; border-radius: 15px; background: #2F6B3A; display: flex; align-items: center; justify-content: flex-end; padding: 3px; flex-shrink: 0;">
+          <div style="width: 24px; height: 24px; border-radius: 50%; background: #FFFFFF;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <span class="group">Dati</span>
+      <div class="row">
+        <span style="font-size: 15.5px; color: #23201B; flex-grow: 1;">Esporta tutte le note</span>
+        <span style="font-size: 10px; font-weight: 600; color: #8B7A46; background: #F7EDCC; padding: 3px 6px; border-radius: 5px;">PRO</span>
+      </div>
+      <div class="row">
+        <span style="font-size: 15.5px; color: #23201B; flex-grow: 1;">Spazio usato</span>
+        <span class="value">14 MB · 142 note</span>
+      </div>
+      <div class="row">
+        <span style="font-size: 15.5px; color: #B4402F; flex-grow: 1;">Cestino</span>
+        <span class="value">3 note</span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#CFC4AE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <span class="group">InkNote Pro</span>
+      <div class="row" style="background: #F7EDCC; border-color: #EBDCA8;">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; padding: 9px 0;">
+          <span style="font-size: 15px; font-weight: 500; color: #5E5222;">Sblocca Pro</span>
+          <span style="font-size: 12px; color: #8B7A46;">6,99 € una volta sola, nessun abbonamento</span>
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B7A46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; left: 24px; right: 24px; bottom: 34px; display: flex; flex-direction: column; align-items: center; gap: 7px;">
+    <div style="display: flex; align-items: center; gap: 7px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ADA492" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.2"></rect><path d="M8 10.5V7.2a4 4 0 0 1 8 0v3.3"></path>
+      </svg>
+      <span style="font-size: 12px; color: #ADA492;">Le tue note non escono dal telefono.</span>
+    </div>
+    <span style="font-size: 11px; color: #CFC4AE;">InkNote 0.1</span>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

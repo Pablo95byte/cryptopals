@@ -109,10 +109,13 @@ solo cosa è cambiato nel codice.
   prima del primo sblocco dopo un riavvio (decisione D24, che chiude il caveat di D17).
 - **Mockup delle schermate** in `design/mockups/`, pubblicati come canvas:
   <https://claude.ai/code/artifact/226f7658-faf9-43dc-bd68-a9942e68261a>
-  Dieci artboard: home iOS, cattura all'apertura e cattura con gli strumenti,
-  Android da schermo bloccato, Android sopra il launcher, cattura a voce, archivio
-  con ricerca, i tre formati di widget, paywall e uno schizzo di direzione
-  alternativa da valutare.
+  Sedici artboard su due pagine. **Flusso principale:** home iOS, cattura
+  all'apertura e con gli strumenti, Android da schermo bloccato, Android sopra il
+  launcher, cattura a voce, archivio con ricerca, i tre formati di widget, paywall,
+  direzione alternativa. **Stati e servizio:** primo avvio senza note, come mettere
+  il widget in home, una nota riaperta col menù di esportazione, l'archivio con gli
+  stati che il codice produce davvero (nota vocale, riconoscimento in corso, tratto
+  perso nel giornale), la configurazione del widget e le impostazioni.
 - **`CLAUDE.md`** — registro delle decisioni di prodotto e tecniche, con le
   alternative scartate e il perché.
 - Integrazione continua su GitHub Actions: i test del core a ogni push.
