@@ -12,6 +12,9 @@ package app.inknote.core.model
  * - **I tratti si uniscono per id.** Sono immutabili, quindi due dispositivi non
  *   possono produrre versioni diverse dello stesso tratto: l'unione è sempre
  *   definita e nessuno dei due perde ciò che ha disegnato offline.
+ * - **Gli invii si uniscono per destinazione** (D31), tenendo quello della revisione
+ *   più avanzata: è quello che descrive meglio cosa la destinazione ha già visto. Se
+ *   si perdesse, il dispositivo che non lo sa rimanderebbe la nota e la duplicherebbe.
  * - **Le registrazioni vocali si uniscono allo stesso modo** (D25). Anche l'audio è
  *   immutabile; l'unico campo che può comparire dopo è la trascrizione, e fra "c'è" e
  *   "non c'è ancora" vince "c'è".
@@ -46,6 +49,20 @@ fun mergeNotes(local: Note, remote: Note): Note {
         mergedClips[clip.id] = if (existing == null) clip else mergeVoiceClips(existing, clip)
     }
 
+    val mergedExports = HashMap<ExportTarget, ExportRecord>(local.exports.size + remote.exports.size)
+    for (record in local.exports) mergedExports[record.target] = record
+    for (record in remote.exports) {
+        val existing = mergedExports[record.target]
+        // Vince l'invio della revisione più avanzata: è quello che descrive lo stato più
+        // aggiornato di ciò che la destinazione ha già visto.
+        mergedExports[record.target] = when {
+            existing == null -> record
+            record.revision > existing.revision -> record
+            record.revision < existing.revision -> existing
+            else -> if (record.sentAt >= existing.sentAt) record else existing
+        }
+    }
+
     val newest = if (compareVersions(local, remote) >= 0) local else remote
     val oldest = if (newest === local) remote else local
 
@@ -54,6 +71,7 @@ fun mergeNotes(local: Note, remote: Note): Note {
         canvas = newest.canvas,
         strokes = orderStrokes(mergedStrokes.values.toList()),
         voiceClips = orderVoiceClips(mergedClips.values.toList()),
+        exports = orderExports(mergedExports.values.toList()),
         createdAt = minOf(local.createdAt, remote.createdAt),
         updatedAt = maxOf(local.updatedAt, remote.updatedAt),
         revision = maxOf(local.revision, remote.revision),

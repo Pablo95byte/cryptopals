@@ -1,0 +1,19 @@
+-- Migrazione 3 → 4: la traccia degli invii (decisione D31).
+--
+-- Serve a non duplicare: senza sapere cosa è già stato mandato e dove, un secondo
+-- invio creerebbe una seconda pagina in Notion, e l'utente si ritroverebbe l'archivio
+-- altrui pieno di doppioni per colpa nostra.
+--
+-- Chiave primaria composta (nota, destinazione): una riga per coppia, e contiene
+-- l'invio più recente verso quella destinazione. Non serve lo storico di tutti gli
+-- invii — serve sapere se rimandare.
+
+CREATE TABLE note_export (
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    target TEXT NOT NULL,
+    sent_at INTEGER NOT NULL,
+    revision INTEGER NOT NULL,
+    PRIMARY KEY (note_id, target)
+);
+
+CREATE INDEX note_export_target ON note_export(target);

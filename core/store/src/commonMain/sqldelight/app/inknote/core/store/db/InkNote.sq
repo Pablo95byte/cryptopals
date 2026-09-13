@@ -71,6 +71,18 @@ CREATE TABLE voice_clip (
 
 CREATE INDEX voice_clip_note_id ON voice_clip(note_id);
 
+-- Dove ogni nota è già stata mandata (D31). Una riga per coppia nota/destinazione:
+-- non serve lo storico di tutti gli invii, serve sapere se rimandare.
+CREATE TABLE note_export (
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    target TEXT NOT NULL,
+    sent_at INTEGER NOT NULL,
+    revision INTEGER NOT NULL,
+    PRIMARY KEY (note_id, target)
+);
+
+CREATE INDEX note_export_target ON note_export(target);
+
 selectNote:
 SELECT * FROM note WHERE id = ?;
 
@@ -241,6 +253,41 @@ UPDATE voice_clip SET
     audio_path = coalesce(:audioPath, audio_path),
     deleted_at = coalesce(deleted_at, :deletedAt)
 WHERE id = :id;
+
+selectExports:
+SELECT * FROM note_export WHERE note_id = ? ORDER BY target ASC;
+
+insertExportIfAbsent:
+INSERT OR IGNORE INTO note_export(note_id, target, sent_at, revision)
+VALUES (:noteId, :target, :sentAt, :revision);
+
+-- L'invio più avanzato vince, come nel merge del modello: un aggiornamento non deve
+-- poter far retrocedere la revisione registrata, o il dispositivo rimanderebbe una
+-- nota già arrivata e la duplicherebbe.
+updateExport:
+UPDATE note_export SET
+    sent_at = max(sent_at, :sentAt),
+    revision = max(revision, :revision)
+WHERE note_id = :noteId AND target = :target;
+
+-- Le note vive mai mandate a questa destinazione, o mandate a una revisione vecchia:
+-- è la coda di "manda tutte quelle nuove".
+selectNotesToSend:
+SELECT note.* FROM note
+WHERE note.deleted_at IS NULL
+  AND NOT EXISTS (
+      SELECT 1 FROM note_export
+      WHERE note_export.note_id = note.id
+        AND note_export.target = :target
+        AND note_export.revision = note.revision
+  )
+ORDER BY note.updated_at DESC
+LIMIT :limit;
+
+purgeExportsOfDeletedNotes:
+DELETE FROM note_export WHERE note_id IN (
+    SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
+);
 
 selectClipsNeedingTranscription:
 SELECT * FROM voice_clip

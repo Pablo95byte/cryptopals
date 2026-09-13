@@ -32,6 +32,8 @@ data class CanvasSize(val width: Float, val height: Float) {
  * @param voiceClips le registrazioni vocali della nota. Una lista e non un campo
  *   singolo: due dispositivi che registrano offline sulla stessa nota si fondono per
  *   unione, come i tratti, invece che sovrascriversi (D8, D25).
+ * @param exports dove questa nota è già stata mandata, per non duplicarla al secondo
+ *   invio (D31).
  * @param recognizedText esito dell'OCR **sull'inchiostro**, `null` se non ancora
  *   calcolato. La trascrizione del parlato sta su ciascun [VoiceClip].
  * @param recognizedFromRevision revisione su cui l'OCR è stato calcolato: se è
@@ -42,6 +44,7 @@ data class Note(
     val canvas: CanvasSize,
     val strokes: List<Stroke>,
     val voiceClips: List<VoiceClip> = emptyList(),
+    val exports: List<ExportRecord> = emptyList(),
     val createdAt: Long,
     val updatedAt: Long,
     val revision: Long = 1L,
@@ -72,6 +75,30 @@ data class Note(
      * per sempre senza mai avere niente da leggere.
      */
     val needsRecognition: Boolean get() = hasInk && recognizedFromRevision != revision
+
+    /** `true` se la nota è già stata mandata a questa destinazione. */
+    fun wasSentTo(target: ExportTarget): Boolean = exports.any { it.target == target }
+
+    /**
+     * `true` se la nota è stata mandata, ma è cresciuta da allora.
+     *
+     * È la condizione che permette un "rimanda" sensato senza duplicare quelle già a
+     * posto: se la revisione è la stessa, l'invio è ancora valido.
+     */
+    fun needsResendTo(target: ExportTarget): Boolean {
+        val record = exports.firstOrNull { it.target == target } ?: return false
+        return record.revision != revision
+    }
+
+    /** Registra un invio, o ne aggiorna uno precedente verso la stessa destinazione. */
+    fun withExport(target: ExportTarget, now: Long): Note {
+        val record = ExportRecord(target = target, sentAt = now, revision = revision)
+        val others = exports.filterNot { it.target == target }
+        // L'invio **non** avanza la revisione: mandare una nota non la modifica, e far
+        // salire la revisione qui vorrebbe dire che ogni invio rende vecchi tutti gli
+        // altri invii della stessa nota.
+        return copy(exports = orderExports(others + record))
+    }
 
     /** Le registrazioni ancora da trascrivere. */
     val voiceClipsNeedingTranscription: List<VoiceClip>

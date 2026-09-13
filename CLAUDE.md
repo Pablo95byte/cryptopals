@@ -19,8 +19,11 @@ posizionamento nello store, e non deve costare una rinomina dei package.
 ## 1. Il prodotto in una frase
 
 Un'app per prendere appunti **scritti a mano** partendo dalla home del telefono: un
-tocco, scrivi, confermi, e la nota è salvata e visibile nel widget. Poi le
-ritrovi tutte aprendo l'app.
+tocco, scrivi, confermi, ed è salvata. Poi, quando hai un minuto, la ritrovi nell'app e
+la mandi dove tieni le tue note — Keep, Notion, Obsidian, una mail (D31).
+
+**InkNote è il livello di cattura del sistema di note che hai già**, non un archivio che
+compete con quelli.
 
 La promessa è la **velocità di cattura**: il valore non è archiviare, è non perdere
 l'idea.
@@ -741,6 +744,77 @@ L'artboard `Sequenza` esiste per questo.
 bianco vuoto può sembrare un widget rotto o non caricato. Proposta: un segno, a basso
 contrasto. Vedi l'artboard `DueVarianti`.
 
+### D31 — InkNote alimenta il sistema di note che l'utente ha già. Esportazione, mai sincronizzazione
+**Data:** 2026-09-13 · **Stato:** attiva, decisa dal committente ·
+**Cambia il posizionamento del prodotto**
+
+Una nota, quando l'utente vuole, si manda fuori: a Google Keep, Notion, Obsidian, Apple
+Note, a un messaggio, a una mail. InkNote è **il livello di cattura** di qualunque
+sistema di note la persona usi già, non un archivio che compete con quelli.
+
+**Perché è una posizione migliore di "un'altra app di note":** il motivo per cui
+qualcuno non installa un'altra app di note è sempre lo stesso — *"uso già Notion, non
+voglio un secondo archivio da controllare"*. Se alimentiamo il suo sistema, l'obiezione
+sparisce. Ed è onesto su cosa sappiamo fare: siamo costruiti per catturare (400 ms,
+zero decisioni), non batteremo Notion sull'archivio, mai.
+
+Combacia anche con D12: si manda **sull'account dell'utente**, non sul nostro. Restiamo
+un'app locale senza backend e senza registrazione.
+
+**Il confine, e non è negoziabile: esportazione, mai sincronizzazione.** Una direzione
+sola, nessuna rilettura, nessuno stato condiviso con la destinazione. Sincronizzare
+vorrebbe dire ereditare la risoluzione dei conflitti con sistemi che non controlliamo:
+per uno sviluppatore solo è il modo di passare le giornate a leggere segnalazioni.
+
+**Quando si manda: mai nel momento della cattura.** Mandare richiede di scegliere una
+destinazione, cioè una decisione, nell'istante in cui l'utente non vuole decidere
+niente; e il riconoscimento del testo non è ancora arrivato. Si manda **dopo**,
+dall'archivio, una nota o molte insieme. È la missione applicata: cattura adesso,
+smista quando hai un minuto.
+
+**L'inchiostro diventa testo più immagine.** Keep e Notion accettano testo, non
+calligrafia. Si manda quindi il testo riconosciuto **con l'immagine dell'inchiostro
+allegata**: il testo serve a leggerla e ritrovarla dove è arrivata, l'immagine è
+l'originale e non sbaglia parole. Quando il riconoscimento non è completo lo dice il
+file stesso, non solo l'app: la nota vivrà altrove, e chi la rilegge lì deve saperlo.
+
+**Il fatto tecnico che decide il piano: Google Keep non si integra.** Non esiste un'API
+pubblica usabile da un'app di consumo — quella che esiste è riservata a Google Workspace
+Enterprise. Per Keep l'unica strada è il foglio di condivisione del sistema. **Da
+verificare prima di scriverlo in una scheda dello store.**
+
+**Il piano, in due fasi:**
+
+1. **Il foglio di condivisione, e basta.** Si produce testo più immagine e si passa al
+   sistema: da lì arriva a Keep, Notion, Obsidian, Bear, Apple Note, Todoist, mail,
+   messaggi — e ad app che ancora non esistono. Zero integrazioni, zero OAuth, zero
+   chiavi, zero backend. Copre quasi tutto in giorni, non settimane.
+2. **Una o due integrazioni vere, solo se qualcuno le chiede.** Notion (API seria,
+   pubblico che paga) e una cartella di Markdown (Obsidian e i sistemi a file).
+
+**Conseguenza sul Pro, e ripara il buco che D30 aveva aperto:** "widget multipli" non
+vale più niente su widget bianchi. "Manda le note dove vuoi, automaticamente" è una
+ragione vera per pagare. Il foglio di condivisione resta gratuito — è il minimo per non
+essere un'app che tiene in ostaggio le note.
+
+**Perché si registra ogni invio (`Note.exports`):** senza sapere cosa è già andato e
+dove, un secondo invio creerebbe una seconda pagina in Notion. L'utente si troverebbe
+**l'archivio altrui** pieno di doppioni per colpa nostra, ed è il tipo di danno che non
+si ripara con un aggiornamento. Il campo costa una riga adesso; dopo costa una
+migrazione e delle scuse — lo stesso argomento di D9 e D25.
+
+**Dettaglio che sembra un cavillo e non lo è:** registrare un invio **non** fa avanzare
+`revision`. Mandare una nota non la modifica, e se la revisione salisse ogni invio
+renderebbe "vecchi" tutti gli altri invii della stessa nota, che tornerebbero in coda
+per sempre.
+
+**Dove sta il codice:** `NoteExport` in `core:model`, accanto a `NoteSearch`, perché è
+una proiezione pura del modello come quella. Le destinazioni vere (l'API di Notion, il
+foglio di condivisione) sono codice di piattaforma e quando arriveranno avranno il loro
+modulo. La data della riga finale arriva **da fuori** già formattata: fuso orario e
+lingua sono cose di piattaforma, e il core non si tira dentro una libreria di date per
+una riga in fondo a un file.
+
 ---
 
 ## 5. Struttura del repository
@@ -748,7 +822,7 @@ contrasto. Vedi l'artboard `DueVarianti`.
 ```
 core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
   model/         Note, Stroke, VoiceClip, InkPoint, Pen, CanvasSize, mergeNotes,
-                 SearchText e NoteSearch (normalizzazione e pertinenza)
+                 SearchText e NoteSearch (ricerca), NoteExport (uscita verso altre app)
   ink/           StrokeBuilder, CatmullRom, WidthProfile, StrokeSimplifier, InkConfig
   geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline,
                  Bounds, NoteFraming (inquadrare una nota in un riquadro, dentro l'app)
@@ -824,6 +898,11 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 17. **`SearchText.VERSION` si alza ogni volta che la normalizzazione cambia
     risultato**, altrimenti l'archivio resta con un indice misto e alcune note
     diventano introvabili. (D27)
+18. **Verso l'esterno si esporta, non si sincronizza.** Una direzione sola, nessuna
+    rilettura. E ogni invio si registra, o si duplicano le note nell'archivio
+    dell'utente. (D31)
+19. **Non si manda niente durante la cattura.** Scegliere una destinazione è una
+    decisione, e nel momento della cattura non si chiedono decisioni. (D31)
 
 ---
 
@@ -847,7 +926,7 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 - **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
   coincidano. Va eseguito quando si toccano i file `.sq`.
 
-Stato attuale: **193 test, tutti verdi.** Sono meno di prima perché c'è meno codice:
+Stato attuale: **219 test, tutti verdi.** Sono meno di prima perché c'è meno codice:
 D30 ha cancellato `WidgetFraming` e i suoi test. L'app Android è scritta ma **non compilata
 da nessuno**: il primo build è sulla macchina del committente.
 
@@ -897,24 +976,30 @@ da nessuno**: il primo build è sulla macchina del committente.
    (migrazione 2 → 3).
 7. ~~Inquadratura dei widget~~ — fatto: `WidgetFraming` decide caselle, ritagli e
    dettaglio per i tre formati, con la leggibilità come vincolo (D29).
-8. **`core:billing`** — l'unico punto che risponde a "è Pro?" (D4), con le regole del
-   livello gratuito. Logica pura; l'SDK di RevenueCat si attacca dopo.
+8. ~~Uscita verso altre app~~ — fatto nella parte core: `NoteExport` prepara testo,
+   Markdown e nome del file; `Note.exports` registra cosa è già andato e dove, con
+   migrazione 3 → 4 e la coda `notesToSend` (D31).
+9. **`core:billing`** — l'unico punto che risponde a "è Pro?" (D4), con le regole del
+   livello gratuito. Ora ha una ragione d'essere più solida: il Pro poggia
+   sull'esportazione automatica, non più sui widget multipli.
 
 ### Dopo la misura
 
-9. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
+10. **Il foglio di condivisione** su entrambe le piattaforme: è il 90% di D31, e su
+    Android è anche l'unica strada per Keep.
+11. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
    all'avvio, così il giornale si svuota e le note vivono nel database.
-10. **`androidWidget`** — Glance. Dopo D30 è diventato quasi banale: un foglio bianco
+12. **`androidWidget`** — Glance. Dopo D30 è diventato quasi banale: un foglio bianco
     che apre la cattura, senza dati da leggere e senza aggiornamenti da pianificare.
-11. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
+13. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
     di blocco, Controllo e tasto Azione. **Serve un Mac con Xcode.**
-12. **`core:ocr`** — Vision e ML Kit dietro un'unica interfaccia.
-13. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
+14. **`core:ocr`** — Vision e ML Kit dietro un'unica interfaccia.
+15. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
     allora se il giornale debba coprire anche l'audio.
 
 ### Prima di pubblicare
 
-14. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
+16. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
     privacy. Contano più del codice per la scoperta, e il paywall va collegato.
 
 ## 10. Questioni ancora aperte
@@ -931,9 +1016,14 @@ da nessuno**: il primo build è sulla macchina del committente.
 - **Se il giornale debba coprire anche l'audio** (D25 lo lascia fuori per ora).
 - **Il foglio del widget: nudo o con un segno tenue?** Un rettangolo bianco vuoto può
   sembrare rotto. Proposta: un segno a basso contrasto (D30, artboard `DueVarianti`).
-- **Il Pro va rivisto dopo D30.** "Widget multipli" era una voce del livello Pro: con un
-  widget che non mostra niente, più widget bianchi valgono qualcosa? Probabile che il
-  Pro debba poggiare solo su ricerca OCR, punte, temi ed esportazione.
+- **Il Pro va rivisto dopo D30 e D31.** "Widget multipli" non vale più niente su widget
+  bianchi. La proposta è che il Pro poggi su esportazione automatica, ricerca OCR, punte
+  e temi, col foglio di condivisione sempre gratuito.
+- **Verificare che Keep non abbia davvero un'API di consumo** prima di scriverlo in una
+  scheda dello store (D31).
+- **Se l'invio possa diventare automatico.** Una coda visibile con un "manda tutte" a un
+  tocco è il compromesso proposto; un invio silenzioso a ogni nota ci trasformerebbe in
+  un motore di sincronizzazione travestito, contro l'invariante 18.
 - **Come si entra nella cattura vocale su Android** a telefono bloccato, dato che
   lì la scrittura sopra il blocco esiste già (D17) e la voce servirebbe soprattutto
   a mani occupate.

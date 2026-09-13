@@ -98,3 +98,84 @@ internal fun stroke(
     createdAt = createdAt,
     deletedAt = deletedAt,
 )
+
+/** Registrare dove una nota è già andata, per non duplicarla (D31). */
+class ExportRecordTest {
+
+    private val note = Note.empty(CANVAS, now = 1_000L)
+        .withStroke(stroke("a", createdAt = 1_100L), now = 1_100L)
+
+    @Test
+    fun `una nota nuova non è stata mandata da nessuna parte`() {
+        assertFalse(note.wasSentTo(ExportTarget.Notion))
+        assertFalse(note.needsResendTo(ExportTarget.Notion))
+        assertTrue(note.exports.isEmpty())
+    }
+
+    @Test
+    fun `registrare un invio non modifica la nota`() {
+        val sent = note.withExport(ExportTarget.Notion, now = 5_000L)
+
+        assertTrue(sent.wasSentTo(ExportTarget.Notion))
+        // Mandare una nota non la cambia: se la revisione salisse, ogni invio renderebbe
+        // vecchi tutti gli altri invii della stessa nota.
+        assertEquals(note.revision, sent.revision)
+        assertEquals(note.updatedAt, sent.updatedAt)
+        assertFalse(sent.needsResendTo(ExportTarget.Notion))
+    }
+
+    @Test
+    fun `se la nota cresce dopo l'invio, ha senso rimandarla`() {
+        val sent = note.withExport(ExportTarget.Notion, now = 5_000L)
+
+        val grown = sent.withStroke(stroke("b", createdAt = 6_000L), now = 6_000L)
+
+        assertTrue(grown.needsResendTo(ExportTarget.Notion))
+        assertFalse(grown.needsResendTo(ExportTarget.Markdown), "mai mandata lì: non è un rinvio")
+    }
+
+    @Test
+    fun `destinazioni diverse si registrano separatamente`() {
+        val sent = note
+            .withExport(ExportTarget.Notion, now = 5_000L)
+            .withExport(ExportTarget.SystemShare, now = 6_000L)
+
+        assertEquals(2, sent.exports.size)
+        assertTrue(sent.wasSentTo(ExportTarget.Notion))
+        assertTrue(sent.wasSentTo(ExportTarget.SystemShare))
+    }
+
+    @Test
+    fun `rimandare alla stessa destinazione aggiorna, non accumula`() {
+        val sent = note
+            .withExport(ExportTarget.Notion, now = 5_000L)
+            .withExport(ExportTarget.Notion, now = 9_000L)
+
+        assertEquals(1, sent.exports.size)
+        assertEquals(9_000L, sent.exports.single().sentAt)
+    }
+
+    @Test
+    fun `il merge tiene l'invio della revisione più avanzata`() {
+        val id = NoteId("n1")
+        fun copy(revision: Long, exportRevision: Long, sentAt: Long) = Note(
+            id = id,
+            canvas = CANVAS,
+            strokes = emptyList(),
+            exports = listOf(ExportRecord(ExportTarget.Notion, sentAt = sentAt, revision = exportRevision)),
+            createdAt = 1_000L,
+            updatedAt = sentAt,
+            revision = revision,
+        )
+
+        val merged = mergeNotes(
+            local = copy(revision = 5L, exportRevision = 3L, sentAt = 3_000L),
+            remote = copy(revision = 5L, exportRevision = 5L, sentAt = 9_000L),
+        )
+
+        // Perdere l'invio più avanzato farebbe rimandare la nota al dispositivo che non
+        // lo sa, e la duplicherebbe nell'archivio altrui.
+        assertEquals(5L, merged.exports.single().revision)
+        assertEquals(mergeNotes(merged, merged), merged)
+    }
+}

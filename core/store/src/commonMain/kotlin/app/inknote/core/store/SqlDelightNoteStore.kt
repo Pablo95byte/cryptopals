@@ -2,6 +2,8 @@ package app.inknote.core.store
 
 import app.cash.sqldelight.db.SqlDriver
 import app.inknote.core.model.CanvasSize
+import app.inknote.core.model.ExportRecord
+import app.inknote.core.model.ExportTarget
 import app.inknote.core.model.Note
 import app.inknote.core.model.NoteId
 import app.inknote.core.model.NoteSearch
@@ -13,11 +15,13 @@ import app.inknote.core.model.StrokeId
 import app.inknote.core.model.StrokePointCodec
 import app.inknote.core.model.VoiceClip
 import app.inknote.core.model.VoiceClipId
+import app.inknote.core.model.orderExports
 import app.inknote.core.model.orderStrokes
 import app.inknote.core.model.orderVoiceClips
 import app.inknote.core.store.db.InkNoteDatabase
 import app.inknote.core.store.db.Note as NoteRow
 import app.inknote.core.store.db.Stroke as StrokeRow
+import app.inknote.core.store.db.Note_export as ExportRow
 import app.inknote.core.store.db.SearchCandidates as SearchCandidate
 import app.inknote.core.store.db.Voice_clip as VoiceClipRow
 
@@ -88,6 +92,11 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
 
     override fun notesNeedingSearchIndex(limit: Int): List<Note> =
         queries.selectNotesNeedingSearchIndex(version = SearchText.VERSION.toLong(), limit = limit.toLong())
+            .executeAsList()
+            .map { it.toNote() }
+
+    override fun notesToSend(target: ExportTarget, limit: Int): List<Note> =
+        queries.selectNotesToSend(target = target.value, limit = limit.toLong())
             .executeAsList()
             .map { it.toNote() }
 
@@ -166,6 +175,20 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
                     id = clip.id.value,
                 )
             }
+            for (record in note.exports) {
+                queries.insertExportIfAbsent(
+                    noteId = note.id.value,
+                    target = record.target.value,
+                    sentAt = record.sentAt,
+                    revision = record.revision,
+                )
+                queries.updateExport(
+                    sentAt = record.sentAt,
+                    revision = record.revision,
+                    noteId = note.id.value,
+                    target = record.target.value,
+                )
+            }
         }
     }
 
@@ -186,6 +209,7 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
             // garantita, vedi il commento nello schema.
             queries.purgeStrokesOfDeletedNotes(before)
             queries.purgeVoiceClipsOfDeletedNotes(before)
+            queries.purgeExportsOfDeletedNotes(before)
             queries.purgeDeletedNotes(before)
         }
     }
@@ -196,17 +220,27 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
     private fun voiceClipsOf(noteId: String): List<VoiceClip> =
         orderVoiceClips(queries.selectVoiceClips(noteId).executeAsList().map { it.toVoiceClip() })
 
+    private fun exportsOf(noteId: String): List<ExportRecord> =
+        orderExports(queries.selectExports(noteId).executeAsList().map { it.toExportRecord() })
+
     private fun NoteRow.toNote() = Note(
         id = NoteId(id),
         canvas = CanvasSize(width = canvas_width.toFloat(), height = canvas_height.toFloat()),
         strokes = strokesOf(id),
         voiceClips = voiceClipsOf(id),
+        exports = exportsOf(id),
         createdAt = created_at,
         updatedAt = updated_at,
         revision = revision,
         deletedAt = deleted_at,
         recognizedText = recognized_text,
         recognizedFromRevision = recognized_from_revision,
+    )
+
+    private fun ExportRow.toExportRecord() = ExportRecord(
+        target = ExportTarget(target),
+        sentAt = sent_at,
+        revision = revision,
     )
 
     private fun VoiceClipRow.toVoiceClip() = VoiceClip(

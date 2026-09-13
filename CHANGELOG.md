@@ -47,7 +47,7 @@ solo cosa è cambiato nel codice.
     (decisione D11);
   - `Bounds`: rettangolo dell'inchiostro, spessore della penna compreso, per il
     ritaglio nei widget piccoli.
-- **193 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
+- **219 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
   Coprono fra l'altro l'idempotenza e la commutatività del merge, la tenuta della
   geometria su campioni duplicati o coincidenti, e il comportamento dello spessore
   in assenza di pressione, e il giro di andata e ritorno completo di una nota
@@ -87,6 +87,22 @@ solo cosa è cambiato nel codice.
 - **`JournalIngest`** in `core:store` — porta il giornale in archivio fondendolo con
   quanto già salvato. Prima salva, poi svuota: un test fallisce il salvataggio di
   proposito e verifica che il giornale sopravviva come unica copia dell'inchiostro.
+- **Uscita verso altre app di note** (decisione D31, dal committente): InkNote diventa
+  il livello di cattura del sistema di note che l'utente ha già — Keep, Notion,
+  Obsidian, una mail — invece di un archivio che compete con quelli.
+  - `NoteExport` prepara il testo nudo (per il foglio di condivisione), il Markdown (per
+    i sistemi a file) e il nome del file ricavato dalle prime parole;
+  - le parti dettate escono come citazioni, e la riga finale dice da dove viene la nota;
+  - quando il riconoscimento non è completo **lo dice il file stesso**, non solo l'app:
+    la nota vivrà altrove e chi la rilegge lì deve saperlo;
+  - `Note.exports` registra cosa è già stato mandato e dove, con migrazione 3 → 4 e la
+    coda `notesToSend`. Senza quella traccia un secondo invio duplicherebbe la nota
+    nell'archivio dell'utente, ed è un danno che non si ripara con un aggiornamento;
+  - registrare un invio **non** fa avanzare la revisione della nota: mandarla non la
+    modifica, e altrimenti ogni invio renderebbe vecchi tutti gli altri;
+  - confine scritto come invariante: **esportazione, mai sincronizzazione**, e niente
+    invii durante la cattura.
+- **219 test** sul core (erano 193).
 - **In home il widget è un foglio bianco** (decisione D30, dal committente): nessuna
   nota, nessun conteggio, niente da configurare. Si tocca in qualunque punto e il
   foglio vero si apre. Dalla home si aggiungono note, non si rileggono.

@@ -1,5 +1,6 @@
 package app.inknote.core.store
 
+import app.inknote.core.model.ExportTarget
 import app.inknote.core.model.Note
 import app.inknote.core.model.NoteId
 import app.inknote.core.model.VoiceClip
@@ -67,6 +68,15 @@ interface NoteStore {
      * SQLite non sa togliere gli accenti).
      */
     fun notesNeedingSearchIndex(limit: Int = 50): List<Note>
+
+    /**
+     * Le note vive che non sono mai state mandate a [target], o che sono cresciute dopo
+     * l'ultimo invio.
+     *
+     * È la coda di "manda tutte quelle nuove" (D31): tenerla come interrogazione, e non
+     * come stato da mantenere, evita che si disallinei.
+     */
+    fun notesToSend(target: ExportTarget, limit: Int = 50): List<Note>
 
     /**
      * Ricalcola l'indice di ricerca delle note che ne hanno bisogno.
