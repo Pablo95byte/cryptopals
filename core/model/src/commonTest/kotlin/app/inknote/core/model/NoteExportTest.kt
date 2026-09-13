@@ -90,6 +90,7 @@ class NoteExportTest {
         val content = NoteExport.prepare(note(recognized = null, withInk = true))!!
 
         assertNull(content.text, "non c'è ancora niente da scrivere")
+        assertNull(content.markdown, "un file con dentro solo una riga e un piè di pagina non serve a nessuno")
         assertTrue(content.hasInkImage, "ma l'inchiostro si può mandare come immagine")
         assertFalse(content.isComplete)
     }

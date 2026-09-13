@@ -47,7 +47,7 @@ solo cosa è cambiato nel codice.
     (decisione D11);
   - `Bounds`: rettangolo dell'inchiostro, spessore della penna compreso, per il
     ritaglio nei widget piccoli.
-- **219 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
+- **224 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
   Coprono fra l'altro l'idempotenza e la commutatività del merge, la tenuta della
   geometria su campioni duplicati o coincidenti, e il comportamento dello spessore
   in assenza di pressione, e il giro di andata e ritorno completo di una nota
@@ -102,7 +102,7 @@ solo cosa è cambiato nel codice.
     modifica, e altrimenti ogni invio renderebbe vecchi tutti gli altri;
   - confine scritto come invariante: **esportazione, mai sincronizzazione**, e niente
     invii durante la cattura.
-- **219 test** sul core (erano 193).
+- **224 test** sul core (erano 193): cinque sono regressioni sui bug qui sotto.
 - **In home il widget è un foglio bianco** (decisione D30, dal committente): nessuna
   nota, nessun conteggio, niente da configurare. Si tocca in qualunque punto e il
   foglio vero si apre. Dalla home si aggiungono note, non si rileggono.
@@ -168,6 +168,27 @@ solo cosa è cambiato nel codice.
 - **147 test** sul core (erano 113).
 
 ### Corretto
+
+- **La coda di invio poteva rimandare per sempre una nota già mandata, duplicandola
+  nell'archivio dell'utente.** `updateExport` alzava la revisione registrata con `max`,
+  mentre `updateNote` la assegnava secca: un salvataggio partito da una copia vecchia
+  faceva retrocedere la nota **sotto la revisione del suo stesso invio**, e la condizione
+  `revision = note.revision` non combaciava più. Tre correzioni: `revision` e
+  `updated_at` della nota si aggiornano con `max` — sono monotoni per costruzione, come
+  in `mergeNotes` — la coda confronta con `>=`, e `needsResendTo` usa `<` invece di `!=`.
+- **Una nota a cui erano stati cancellati tutti i tratti restava in coda per sempre**,
+  occupando un posto: `NoteExport.prepare` la rifiuta, quindi non poteva mai essere
+  marcata come mandata. La coda ora richiede almeno un tratto o una registrazione vivi.
+- **Una nota con inchiostro non ancora riconosciuto produceva un Markdown con dentro solo
+  una riga orizzontale e un piè di pagina.** Senza contenuto non si scrive un file: ora
+  `markdown` è `null` e chi chiama manda solo l'immagine dell'inchiostro.
+- **`updateExport` massimizzava istante e revisione separatamente**, producendo righe che
+  accoppiavano il timestamp di un invio con la revisione di un altro. Ora l'istante segue
+  la revisione che vince, come in `mergeNotes`.
+- **Aggiunta `GUIDA.md`**: cosa deve fare il committente, in ordine, col protocollo di
+  misura e le cose da non fare adesso.
+
+
 
 - **Un salvataggio da una copia vecchia poteva far resuscitare un tratto cancellato**
   o una nota cestinata, contro l'invariante 2 (decisione D26). Gli aggiornamenti di

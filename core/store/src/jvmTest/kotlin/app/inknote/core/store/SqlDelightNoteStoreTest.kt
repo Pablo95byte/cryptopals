@@ -215,6 +215,20 @@ class SqlDelightNoteStoreTest {
     }
 
     @Test
+    fun `un salvataggio da una copia vecchia non fa retrocedere la nota`() {
+        store.save(note("n1", updatedAt = 6_000L, revision = 5L))
+
+        store.save(note("n1", updatedAt = 1_000L, revision = 2L))
+
+        // Revisione e istante sono monotoni per costruzione: se retrocedono, la nota
+        // finisce sotto la revisione del suo stesso invio registrato e la coda di invio
+        // la rimanda per sempre.
+        val reread = store.note(NoteId("n1"))!!
+        assertEquals(5L, reread.revision)
+        assertEquals(6_000L, reread.updatedAt)
+    }
+
+    @Test
     fun `la pulizia rimuove solo i tombstone più vecchi della soglia`() {
         store.save(note("antica", updatedAt = 1_000L, deletedAt = 1_000L))
         store.save(note("appena-cestinata", updatedAt = 8_000L, deletedAt = 8_000L))

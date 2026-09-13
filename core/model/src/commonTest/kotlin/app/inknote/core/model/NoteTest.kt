@@ -135,6 +135,19 @@ class ExportRecordTest {
     }
 
     @Test
+    fun `un invio più avanti della nota non chiede di rimandare`() {
+        // Può succedere fondendo due dispositivi: uno ha mandato la nota a una revisione
+        // che questo non ha ancora visto. La destinazione è già aggiornata, e rimandare
+        // duplicherebbe.
+        val ahead = note.copy(
+            exports = listOf(ExportRecord(ExportTarget.Notion, sentAt = 9_000L, revision = note.revision + 3)),
+        )
+
+        assertFalse(ahead.needsResendTo(ExportTarget.Notion))
+        assertTrue(ahead.wasSentTo(ExportTarget.Notion))
+    }
+
+    @Test
     fun `destinazioni diverse si registrano separatamente`() {
         val sent = note
             .withExport(ExportTarget.Notion, now = 5_000L)

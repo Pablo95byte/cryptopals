@@ -87,7 +87,9 @@ data class Note(
      */
     fun needsResendTo(target: ExportTarget): Boolean {
         val record = exports.firstOrNull { it.target == target } ?: return false
-        return record.revision != revision
+        // `<` e non `!=`: se l'invio registrato è a una revisione pari o superiore, la
+        // destinazione ha già una versione aggiornata e rimandarla la duplicherebbe.
+        return record.revision < revision
     }
 
     /** Registra un invio, o ne aggiorna uno precedente verso la stessa destinazione. */

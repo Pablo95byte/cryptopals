@@ -2,6 +2,7 @@ package app.inknote.core.store
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.inknote.core.model.CanvasSize
+import app.inknote.core.model.ExportRecord
 import app.inknote.core.model.ExportTarget
 import app.inknote.core.model.InkPoint
 import app.inknote.core.model.Note
@@ -13,6 +14,7 @@ import app.inknote.core.model.StrokeId
 import app.inknote.core.store.db.InkNoteDatabase
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -129,5 +131,57 @@ class ExportStoreTest {
 
         assertNull(store.note(NoteId("antica")))
         assertTrue(database.inkNoteQueries.selectExports("antica").executeAsList().isEmpty())
+    }
+
+    @Test
+    fun `un salvataggio da una copia vecchia non rimette in coda una nota già mandata`() {
+        // La catena che produceva il danno: l'invio registrato veniva alzato con max, la
+        // revisione della nota veniva assegnata secca, la nota finiva **sotto** il suo
+        // stesso invio, e la coda la rimandava per sempre duplicandola in Notion.
+        val old = note("n1", revision = 2L, updatedAt = 1_000L)
+        store.save(note("n1", revision = 4L, updatedAt = 6_000L).withExport(ExportTarget.Notion, now = 7_000L))
+
+        store.save(old.withExport(ExportTarget.Notion, now = 5_000L))
+
+        assertTrue(store.notesToSend(ExportTarget.Notion).isEmpty(), "rimandarla la duplicherebbe")
+        val reread = store.note(NoteId("n1"))!!
+        assertEquals(4L, reread.revision, "la nota non deve retrocedere")
+        assertEquals(6_000L, reread.updatedAt)
+        assertFalse(reread.needsResendTo(ExportTarget.Notion))
+    }
+
+    @Test
+    fun `una nota a cui sono stati cancellati tutti i tratti non entra in coda`() {
+        val written = note("n1")
+        store.save(written)
+        assertEquals(listOf("n1"), store.notesToSend(ExportTarget.Notion).map { it.id.value })
+
+        store.save(written.withStrokeDeleted(StrokeId("n1-s"), now = 3_000L))
+
+        // NoteExport.prepare la rifiuta, quindi non potrebbe mai essere marcata come
+        // mandata: in coda occuperebbe un posto per sempre.
+        assertTrue(store.notesToSend(ExportTarget.Notion).isEmpty())
+    }
+
+    @Test
+    fun `l'istante dell'invio segue la revisione che vince`() {
+        fun sent(revision: Long, exportRevision: Long, sentAt: Long) =
+            note("n1", revision = revision, updatedAt = 1_000L + revision).copy(
+                exports = listOf(ExportRecord(ExportTarget.Notion, sentAt = sentAt, revision = exportRevision)),
+            )
+
+        store.save(sent(revision = 2L, exportRevision = 2L, sentAt = 9_000L))
+        store.save(sent(revision = 4L, exportRevision = 4L, sentAt = 3_000L))
+
+        // Massimizzare i due campi separatamente darebbe revisione 4 con istante 9000:
+        // la coppia di due invii diversi, che non è mai esistita.
+        var record = store.note(NoteId("n1"))!!.exports.single()
+        assertEquals(4L, record.revision)
+        assertEquals(3_000L, record.sentAt)
+
+        // A parità di revisione vince l'invio più recente, e uno più vecchio non scalza.
+        store.save(sent(revision = 4L, exportRevision = 4L, sentAt = 1_000L))
+        record = store.note(NoteId("n1"))!!.exports.single()
+        assertEquals(3_000L, record.sentAt)
     }
 }

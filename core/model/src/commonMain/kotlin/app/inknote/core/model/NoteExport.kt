@@ -75,16 +75,24 @@ object NoteExport {
         dateLabel: String?,
         isComplete: Boolean,
     ): String? {
-        val blocks = buildList {
+        val content = buildList {
             note.recognizedText?.let(::add)
             // Le parti dettate si citano: chi rilegge fra sei mesi deve sapere che quel
             // pezzo viene da una registrazione e non da ciò che ha scritto.
             for (transcript in transcripts) add(transcript.prependIndent("> "))
+        }
+        // Senza contenuto non si scrive un file: un Markdown con dentro solo una riga
+        // orizzontale e un piè di pagina non serve a nessuno. Chi chiama manda solo
+        // l'immagine dell'inchiostro.
+        if (content.isEmpty()) return null
 
-            val footer = buildList {
-                add(originLabel(note))
-                dateLabel?.let(::add)
-            }.joinToString(" · ")
+        val footer = buildList {
+            add(originLabel(note))
+            dateLabel?.let(::add)
+        }.joinToString(" · ")
+
+        return buildList {
+            addAll(content)
             add("---")
             add(footer)
             if (!isComplete) {
@@ -92,8 +100,7 @@ object NoteExport {
                 // rilegge lì deve sapere che il testo non è stato verificato.
                 add("*Il riconoscimento non era completo: controlla il testo con l'immagine.*")
             }
-        }
-        return blocks.joinToString("\n\n").ifEmpty { null }
+        }.joinToString("\n\n")
     }
 
     private fun originLabel(note: Note): String = when {

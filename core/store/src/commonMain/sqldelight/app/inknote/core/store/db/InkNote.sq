@@ -168,8 +168,13 @@ updateNote:
 UPDATE note SET
     canvas_width = :canvasWidth,
     canvas_height = :canvasHeight,
-    updated_at = :updatedAt,
-    revision = :revision,
+    -- max e non assegnazione secca: `revision` e `updated_at` sono monotoni per
+    -- costruzione (salgono solo, e mergeNotes prende il massimo), quindi un
+    -- salvataggio partito da una copia vecchia non deve poter far **retrocedere** la
+    -- nota. Se retrocede, finisce sotto la revisione del suo stesso invio registrato e
+    -- la coda di D31 la rimanda per sempre, duplicandola nell'archivio dell'utente.
+    updated_at = max(updated_at, :updatedAt),
+    revision = max(revision, :revision),
     -- coalesce e non assegnazione secca: un salvataggio partito da una copia vecchia
     -- della nota non deve poter cancellare un tombstone già in archivio, o la nota
     -- resusciterebbe (invariante 2).
@@ -266,7 +271,15 @@ VALUES (:noteId, :target, :sentAt, :revision);
 -- nota già arrivata e la duplicherebbe.
 updateExport:
 UPDATE note_export SET
-    sent_at = max(sent_at, :sentAt),
+    -- L'istante segue la revisione che vince, invece di essere massimizzato per conto
+    -- suo: altrimenti si otterrebbero righe che accoppiano il timestamp di un invio con
+    -- la revisione di un altro. È la stessa regola di mergeNotes — vince la revisione
+    -- più avanzata, a parità l'invio più recente — applicata al record intero.
+    sent_at = CASE
+        WHEN :revision > revision THEN :sentAt
+        WHEN :revision = revision AND :sentAt > sent_at THEN :sentAt
+        ELSE sent_at
+    END,
     revision = max(revision, :revision)
 WHERE note_id = :noteId AND target = :target;
 
@@ -275,11 +288,22 @@ WHERE note_id = :noteId AND target = :target;
 selectNotesToSend:
 SELECT note.* FROM note
 WHERE note.deleted_at IS NULL
+  -- Solo note che hanno davvero qualcosa da mandare. Una nota a cui sono stati
+  -- cancellati tutti i tratti resta viva, ma NoteExport.prepare la rifiuta: senza
+  -- questa condizione entrerebbe in coda, non potrebbe mai essere marcata come
+  -- mandata, e occuperebbe un posto per sempre.
+  AND (
+      EXISTS (SELECT 1 FROM stroke WHERE stroke.note_id = note.id AND stroke.deleted_at IS NULL)
+      OR EXISTS (SELECT 1 FROM voice_clip WHERE voice_clip.note_id = note.id AND voice_clip.deleted_at IS NULL)
+  )
+  -- `>=` e non `=`: un invio registrato a una revisione pari o superiore a quella della
+  -- nota descrive una destinazione già aggiornata. Con l'uguaglianza secca, una nota
+  -- retrocessa resterebbe in coda per sempre e verrebbe duplicata.
   AND NOT EXISTS (
       SELECT 1 FROM note_export
       WHERE note_export.note_id = note.id
         AND note_export.target = :target
-        AND note_export.revision = note.revision
+        AND note_export.revision >= note.revision
   )
 ORDER BY note.updated_at DESC
 LIMIT :limit;

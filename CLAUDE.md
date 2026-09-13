@@ -803,6 +803,14 @@ dove, un secondo invio creerebbe una seconda pagina in Notion. L'utente si trove
 si ripara con un aggiornamento. Il campo costa una riga adesso; dopo costa una
 migrazione e delle scuse — lo stesso argomento di D9 e D25.
 
+**Revisione monotona, e non è un dettaglio:** in archivio `revision` e `updated_at`
+della nota si aggiornano con `max`, non con un'assegnazione secca. Salgono solo, per
+costruzione, e `mergeNotes` prende già il massimo. Senza il `max`, un salvataggio partito
+da una copia vecchia faceva retrocedere la nota **sotto la revisione del suo stesso
+invio**, e la coda la rimandava per sempre duplicandola nell'archivio dell'utente. La
+coda confronta con `>=` e `needsResendTo` con `<`, per la stessa ragione. Cinque test di
+regressione, trovati da una revisione del codice.
+
 **Dettaglio che sembra un cavillo e non lo è:** registrare un invio **non** fa avanzare
 `revision`. Mandare una nota non la modifica, e se la revisione salisse ogni invio
 renderebbe "vecchi" tutti gli altri invii della stessa nota, che tornerebbero in coda
@@ -925,8 +933,11 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 
 - **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
   coincidano. Va eseguito quando si toccano i file `.sq`.
+- **[`GUIDA.md`](GUIDA.md)** dice cosa tocca al committente, in ordine: la misura di D19
+  col suo protocollo, le verifiche da fare col telefono in mano, le decisioni aperte e
+  le cose da non fare ancora.
 
-Stato attuale: **219 test, tutti verdi.** Sono meno di prima perché c'è meno codice:
+Stato attuale: **224 test, tutti verdi.** Sono meno di prima perché c'è meno codice:
 D30 ha cancellato `WidgetFraming` e i suoi test. L'app Android è scritta ma **non compilata
 da nessuno**: il primo build è sulla macchina del committente.
 
