@@ -47,7 +47,7 @@ solo cosa è cambiato nel codice.
     (decisione D11);
   - `Bounds`: rettangolo dell'inchiostro, spessore della penna compreso, per il
     ritaglio nei widget piccoli.
-- **224 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
+- **228 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
   Coprono fra l'altro l'idempotenza e la commutatività del merge, la tenuta della
   geometria su campioni duplicati o coincidenti, e il comportamento dello spessore
   in assenza di pressione, e il giro di andata e ritorno completo di una nota
@@ -167,7 +167,27 @@ solo cosa è cambiato nel codice.
     istruzioni descrivano lo stesso schema; solo quel test controlla i dati.
 - **147 test** sul core (erano 113).
 
+- **Il tetto dell'attrito diventa due numeri** (decisione D32, richiesta del
+  committente di scendere a 100 ms): **100 ms a caldo e 400 a freddo** per l'inchiostro
+  accettato, 150 e 500 per l'inchiostro visibile.
+  - a freddo 100 ms non sono disponibili: fra il tocco e la nostra prima istruzione il
+    sistema crea il processo, carica e verifica le classi e inizializza il framework, e
+    nessuno di quei passaggi è codice nostro. Un tetto che non si può rispettare viene
+    ignorato;
+  - a caldo sì, ed è il caso più frequente per chi usa l'app ogni giorno;
+  - `INK_ACCEPTED` e `INK_DRAWN` sono ora due tappe distinte con due tetti: la prima è
+    la missione (l'idea è al sicuro, e la superficie riceve i tocchi **prima** del primo
+    fotogramma), la seconda è la sensazione;
+  - il misuratore dice da quale caso partiva e riporta le tappe intermedie, perché
+    dicono **dove** si perde il tempo;
+  - individuata la leva vera sul freddo: un profilo di riferimento per l'avvio, da
+    generare su un dispositivo. E scartato il tenere il processo vivo a forza, che darebbe
+    il numero buono al prezzo della batteria e di una notifica persistente.
+- **228 test** sul core.
+
 ### Corretto
+
+
 
 - **La coda di invio poteva rimandare per sempre una nota già mandata, duplicandola
   nell'archivio dell'utente.** `updateExport` alzava la revisione registrata con `max`,

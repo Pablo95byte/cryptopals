@@ -16,6 +16,7 @@ import app.inknote.core.capture.CaptureMilestone
 import app.inknote.core.capture.CaptureSession
 import app.inknote.core.capture.FrictionTrace
 import app.inknote.core.capture.FrictionVerdict
+import app.inknote.core.capture.StartKind
 import app.inknote.core.capture.InkJournal
 import app.inknote.core.model.CanvasSize
 import app.inknote.core.model.Clock
@@ -45,8 +46,17 @@ class CaptureActivity : Activity() {
         // Due orologi, ognuno corretto per il suo scopo. Le durate si misurano su un
         // orologio monotono, che non salta se cambia l'ora di sistema; i timestamp
         // delle note sono ora di parete, perché devono avere senso fra dispositivi.
-        trace = FrictionTrace(Clock { SystemClock.elapsedRealtime() })
-        trace.markAt(CaptureMilestone.INTENT, intentAtElapsedRealtime())
+        val processStart = Process.getStartElapsedRealtime()
+        val sinceProcessStart = SystemClock.elapsedRealtime() - processStart
+        // A freddo il processo è appena nato; a caldo era già vivo. Sono due fenomeni
+        // fisici diversi e hanno due tetti diversi (D32).
+        val startKind = if (sinceProcessStart in 0..MAX_COLD_START_MS) StartKind.COLD else StartKind.WARM
+
+        trace = FrictionTrace(Clock { SystemClock.elapsedRealtime() }, startKind)
+        trace.markAt(
+            CaptureMilestone.INTENT,
+            atMillis = if (startKind == StartKind.COLD) processStart else SystemClock.elapsedRealtime(),
+        )
 
         super.onCreate(savedInstanceState)
         // Per sicurezza, oltre al tema: nessuna transizione da aspettare.
@@ -61,10 +71,14 @@ class CaptureActivity : Activity() {
 
         inkView = InkCanvasView(this).apply {
             onFirstFrame = { trace.mark(CaptureMilestone.FIRST_FRAME) }
-            onFirstInk = {
-                trace.mark(CaptureMilestone.FIRST_INK)
+            onInkAccepted = {
+                trace.mark(CaptureMilestone.INK_ACCEPTED)
                 // L'aggiornamento dell'interfaccia sì, al giro successivo: la tappa è
                 // già stata marcata, e qui siamo dentro la gestione di un tocco.
+                post { showMeasurement() }
+            }
+            onInkDrawn = {
+                trace.mark(CaptureMilestone.INK_DRAWN)
                 post { showMeasurement() }
             }
             attach(session)
@@ -147,22 +161,6 @@ class CaptureActivity : Activity() {
         )
     }
 
-    /**
-     * L'istante in cui l'utente ha toccato.
-     *
-     * Su un avvio a freddo è **prima** che il nostro codice esista, quindi il
-     * riferimento onesto è l'avvio del processo: marcare l'intenzione all'ingresso di
-     * `onCreate` misurerebbe un tempo più breve di quello che l'utente ha aspettato
-     * davvero. Su un avvio a caldo il processo c'era già, e allora il momento giusto è
-     * adesso.
-     */
-    private fun intentAtElapsedRealtime(): Long {
-        val processStart = Process.getStartElapsedRealtime()
-        val now = SystemClock.elapsedRealtime()
-        val sinceProcessStart = now - processStart
-        return if (sinceProcessStart in 0..MAX_COLD_START_MS) processStart else now
-    }
-
     /** Il foglio è grande quanto lo schermo, in unità logiche (D10). */
     private fun screenCanvasSize(): CanvasSize {
         val metrics = resources.displayMetrics
@@ -179,8 +177,11 @@ class CaptureActivity : Activity() {
 
     private companion object {
         /**
-         * Oltre questo tempo dall'avvio del processo non stiamo più misurando
-         * un'apertura: il processo era già in piedi per altri motivi.
+         * Soglia che distingue un'apertura a freddo da una a caldo.
+         *
+         * Se dall'avvio del processo è passato meno di questo, il processo è nato per
+         * questa apertura: è freddo, e il tetto è quello più largo. Oltre, il processo
+         * era già vivo per altri motivi e il tetto è quello severo (D32).
          */
         const val MAX_COLD_START_MS = 10_000L
     }

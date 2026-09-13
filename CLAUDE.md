@@ -90,7 +90,8 @@ posto solo invece che sparsi fra le decisioni.
 | Ritorno | **OK non salva, è solo un'uscita** (D5): nessun gesto è obbligatorio per non perdere la nota | nel codice |
 | Primo avvio | **Nessun account e nessun onboarding** (D12): all'apertura non c'è niente da configurare | deciso |
 | Mani occupate | **Cattura a voce** (D18): l'unica strada senza sblocco su iPhone | modello fatto, cattura da scrivere |
-| Tutti | **Il tetto dei 400 ms** (D19): non è una funzionalità, è ciò che impedisce alle altre di degradarsi | misuratore nel codice, misura da fare |
+| Tutti | **I tetti: 100 ms a caldo, 400 a freddo** (D19, D32). Non sono funzionalità: impediscono alle altre di degradarsi | misuratore nel codice, misura da fare |
+| Tutti | **Restare piccoli**: un processo leggero resta nella cache del sistema, e la seconda apertura della giornata è calda (D32) | nel codice, zero dipendenze |
 
 **Fuori da questa catena** sta la ricerca (OCR e trascrizioni, D2 e D25): riduce
 l'attrito del *ritrovare*, non dello scrivere. È la seconda metà della promessa, e non
@@ -405,7 +406,9 @@ scrittura resta l'identità — è quello che ci differenzia e ciò che si vede 
 screenshot dello store; la voce è il ripiego per le mani occupate, non il titolo.
 
 ### D19 — L'attrito è un numero, con un tetto che blocca il rilascio
-**Data:** 2026-09-12 · **Stato:** attiva
+**Data:** 2026-09-12 · **Stato:** attiva, **precisata da D32**: i tetti sono due (100 ms
+a caldo, 400 a freddo) e le tappe misurate sono due (inchiostro accettato e inchiostro
+visibile)
 
 **Tempo dal tocco al primo tratto disegnabile: massimo 400 ms**, misurato su un
 Android di fascia media reale e su un iPhone, non su un emulatore. Un misuratore
@@ -823,6 +826,62 @@ modulo. La data della riga finale arriva **da fuori** già formattata: fuso orar
 lingua sono cose di piattaforma, e il core non si tira dentro una libreria di date per
 una riga in fondo a un file.
 
+### D32 — Il tetto dell'attrito è due numeri, non uno: 100 ms a caldo, 400 a freddo
+**Data:** 2026-09-13 · **Stato:** attiva · **Precisa D19**
+
+Si misurano **due tappe** con **due tetti**, e separatamente per apertura a freddo e a
+caldo:
+
+| | a caldo | a freddo |
+|---|---|---|
+| **Inchiostro accettato** — l'idea non si perde più | **100 ms** | 400 ms |
+| **Inchiostro visibile** — l'utente vede il tratto | 150 ms | 500 ms |
+
+**Perché non 100 ms a freddo.** Il committente ha chiesto di scendere a 100 ms, e a
+freddo non è disponibile. Fra il tocco e la nostra prima istruzione il sistema fa:
+gestione del tocco nel launcher, creazione del processo, caricamento e verifica delle
+classi, inizializzazione del framework. **Nessuno di quei passaggi è codice nostro e
+nessuno si può saltare**, e sono la fetta grossa; la nostra parte — `onCreate`, la
+superficie, il primo fotogramma — è la più piccola. Un tetto che non si può rispettare
+viene ignorato dopo due settimane: tanto vale non averlo.
+
+**Perché 100 ms a caldo sì.** Con il processo già vivo resta la nostra parte più un
+fotogramma. È ambizioso ma raggiungibile, **ed è il caso più frequente per chi usa l'app
+ogni giorno** — quindi è anche il numero che conta di più per l'esperienza reale.
+
+**Perché due tappe e non una.** "Accettato" e "visibile" sono due promesse diverse.
+L'accettazione è la missione: da lì l'idea è al sicuro, e la superficie riceve i tocchi
+**appena esiste**, prima del primo fotogramma. La visibilità è la sensazione, e arriva
+dopo di almeno un intervallo di aggiornamento dello schermo — ritardo che non è nostro.
+Mescolarle in un numero solo nascondeva la tappa che conta.
+
+**La conseguenza strategica, e non è codice più furbo:** il modo di stare a 100 ms il più
+spesso possibile è **restare piccoli**. Un processo leggero sopravvive più a lungo nella
+cache del sistema, quindi la seconda apertura della giornata è calda. È la seconda
+ragione — arrivata dopo — per cui `:androidApp` non ha nessuna dipendenza esterna (D23).
+
+**Le leve vere sul freddo, in ordine di resa:**
+
+1. **Profilo di riferimento** (baseline profile): precompila il percorso di avvio e
+   taglia il tempo a freddo in misura significativa. È gratuito e non cambia una riga di
+   logica. **Va generato su un dispositivo**, quindi aspetta la misura.
+2. **Niente `Application` personalizzata, nessun `ContentProvider` nel manifest.** Ogni
+   componente dichiarato viene inizializzato prima della nostra Activity. Oggi non ne
+   abbiamo: va tenuto così, ed è una cosa che si perde per distrazione aggiungendo una
+   libreria (molte ne registrano uno di nascosto per inizializzarsi).
+3. **Accettare l'inchiostro prima del primo fotogramma**, che è già come funziona e che
+   ora la misura dichiara invece di nascondere.
+
+**Scartato: tenere il processo vivo a forza.** Un servizio in primo piano o una notifica
+persistente terrebbero il processo caldo sempre, e darebbero il numero buono. Ma costano
+batteria, occupano la barra delle notifiche e sono il genere di cosa per cui un'app viene
+disinstallata. Non vale 300 ms.
+
+**Come si itera, e in che ordine.** Non si ottimizza un numero che non si è mai misurato:
+il misuratore ora riporta anche le tappe intermedie (`superficie`, `primo fotogramma`)
+proprio perché dicono **dove** si perde il tempo, e la cura è diversa a seconda del
+punto. Prima la misura, poi la leva giusta.
+
 ---
 
 ## 5. Struttura del repository
@@ -891,8 +950,8 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 11. **Fuori dall'app non si legge nessuna nota.** Né sulla schermata di blocco (D17)
     né nel widget della home (D30): il widget è un foglio bianco. Dalla home si
     aggiunge, non si rilegge.
-12. **400 ms dal tocco al primo tratto** è un tetto che blocca il rilascio, non un
-    obiettivo. (D19)
+12. **I tetti dell'attrito bloccano il rilascio**, non sono obiettivi: 100 ms a caldo e
+    400 a freddo dal gesto all'inchiostro accettato. (D19, D32)
 13. **Il giornale si svuota solo dopo che i record sono in archivio.** (D22)
 14. **`core:capture` non dipende da `core:store`.** Se un giorno serve, la risposta
     è quasi certamente spostare il chiamante, non aggiungere la dipendenza. (D22)
@@ -937,7 +996,7 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
   col suo protocollo, le verifiche da fare col telefono in mano, le decisioni aperte e
   le cose da non fare ancora.
 
-Stato attuale: **224 test, tutti verdi.** Sono meno di prima perché c'è meno codice:
+Stato attuale: **228 test, tutti verdi.** Sono meno di prima perché c'è meno codice:
 D30 ha cancellato `WidgetFraming` e i suoi test. L'app Android è scritta ma **non compilata
 da nessuno**: il primo build è sulla macchina del committente.
 
@@ -996,21 +1055,24 @@ da nessuno**: il primo build è sulla macchina del committente.
 
 ### Dopo la misura
 
-10. **Il foglio di condivisione** su entrambe le piattaforme: è il 90% di D31, e su
+10. **Profilo di riferimento per l'avvio a freddo** (baseline profile): la leva più
+    grossa sul numero a freddo, gratuita e senza cambiare logica. Va generata su un
+    dispositivo, quindi subito dopo la misura (D32).
+11. **Il foglio di condivisione** su entrambe le piattaforme: è il 90% di D31, e su
     Android è anche l'unica strada per Keep.
-11. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
+12. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
    all'avvio, così il giornale si svuota e le note vivono nel database.
-12. **`androidWidget`** — Glance. Dopo D30 è diventato quasi banale: un foglio bianco
+13. **`androidWidget`** — Glance. Dopo D30 è diventato quasi banale: un foglio bianco
     che apre la cattura, senza dati da leggere e senza aggiornamenti da pianificare.
-13. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
+14. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
     di blocco, Controllo e tasto Azione. **Serve un Mac con Xcode.**
-14. **`core:ocr`** — Vision e ML Kit dietro un'unica interfaccia.
-15. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
+15. **`core:ocr`** — Vision e ML Kit dietro un'unica interfaccia.
+16. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
     allora se il giornale debba coprire anche l'audio.
 
 ### Prima di pubblicare
 
-16. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
+17. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
     privacy. Contano più del codice per la scoperta, e il paywall va collegato.
 
 ## 10. Questioni ancora aperte

@@ -11,10 +11,21 @@ numero, scrivere la seconda app è lavoro a rischio.
 
 ### Perché
 
-Tutta l'architettura poggia su una promessa misurabile: **dal tocco al primo tratto,
-massimo 400 ms** su un telefono vero. Se il pavimento è molto oltre, la conseguenza
-cambia il progetto di **entrambe** le app — e allora è meglio saperlo prima di scriverne
-una seconda.
+Tutta l'architettura poggia su una promessa misurabile. I tetti sono **due**, perché
+un'apertura a freddo e una a caldo sono due fenomeni fisici diversi:
+
+| | a caldo | a freddo |
+|---|---|---|
+| **Inchiostro accettato** — l'idea non si perde più | **100 ms** | 400 ms |
+| **Inchiostro visibile** — vedi il tratto | 150 ms | 500 ms |
+
+A freddo la maggior parte del tempo è creazione del processo e inizializzazione del
+sistema: non è codice nostro e non si può saltare, ed è la ragione per cui 100 ms a
+freddo non sono disponibili. A caldo invece resta solo la nostra parte, e lì 100 ms sono
+l'obiettivo — ed è il caso più frequente per chi usa l'app ogni giorno.
+
+Se il pavimento è molto oltre, la conseguenza cambia il progetto di **entrambe** le
+app — e allora è meglio saperlo prima di scriverne una seconda.
 
 Io non posso prenderla: nell'ambiente in cui sviluppo il dominio di Google è bloccato,
 quindi non ho né SDK Android né modo di compilare un APK.
@@ -42,11 +53,11 @@ compila"** più sotto: c'è un rischio noto e la sua soluzione già scritta.
 
 ### Come misurare (questo conta più di come sembra)
 
-Il numero appare **in alto a sinistra** appena tracci il primo segno, verde se è entro i
-400 ms e rosso se è oltre:
+Il numero appare **in alto a sinistra** appena tracci il primo segno, verde se è entro il
+tetto e rosso se è oltre. Dice anche da quale caso partiva:
 
 ```
-attrito: 210ms (entro 400ms) · superficie 150ms · primo fotogramma 180ms
+attrito freddo: 310ms (entro 400ms) · visibile 340ms · superficie 240ms · 1° fotogramma 280ms
 ```
 
 **Misura a freddo, che è il caso vero:**
@@ -59,14 +70,23 @@ attrito: 210ms (entro 400ms) · superficie 150ms · primo fotogramma 180ms
    delle altre: se guardi solo quella ti spaventi per niente. Serve l'intervallo, non un
    numero solo.
 
-Poi fai due o tre aperture **a caldo** (riapri subito dopo aver chiuso) per confronto.
+**Poi misura a caldo, che è il caso che conta di più:** riapri subito dopo aver chiuso,
+tre o quattro volte. Lì il tetto è 100 ms, e il misuratore lo scrive da sé.
 
 ### Cosa mandarmi
 
 - Modello del telefono e versione di Android.
 - I cinque numeri a freddo e i due o tre a caldo, copiati come li vedi.
-- Se è oltre i 400 ms: anche i due numeri intermedi (`superficie` e `primo fotogramma`),
-  perché dicono **dove** si perde il tempo, e la cura è diversa a seconda del punto.
+- Se è oltre il tetto: **copia la riga intera**. I due numeri intermedi (`superficie` e
+  `1° fotogramma`) dicono **dove** si perde il tempo, e la cura è diversa a seconda del
+  punto — non serve che li interpreti tu.
+
+### Se il numero a freddo è alto
+
+Non ottimizzo alla cieca: prima serve la tua riga, poi si usa la leva giusta. La più
+grossa è già individuata — un **profilo di riferimento** che precompila il percorso di
+avvio, gratuito e senza cambiare una riga di logica. Si genera su un dispositivo, quindi
+subito dopo la tua misura.
 
 ---
 

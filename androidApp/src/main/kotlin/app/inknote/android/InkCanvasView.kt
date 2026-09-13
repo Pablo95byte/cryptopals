@@ -29,14 +29,20 @@ class InkCanvasView(context: Context) : View(context) {
     var pen: Pen = Pen(color = InkPalette.INK, kind = PenKind.BALLPOINT, baseWidth = 3.2f)
 
     /**
-     * Scattano una volta sola: sono le tappe della misura (D19).
+     * Scattano una volta sola: sono le tappe della misura (D19, D32).
      *
      * Vengono invocate **in modo sincrono**, nell'istante esatto della tappa. Chi le
      * riceve deve limitarsi a registrare il tempo: aggiornare l'interfaccia da qui
      * significa toccare il layout durante un disegno.
+     *
+     * [onInkAccepted] e [onInkDrawn] sono due cose diverse e hanno due tetti diversi:
+     * la prima è il momento in cui l'idea non si perde più, la seconda quello in cui
+     * l'utente vede il proprio tratto. La superficie riceve i tocchi appena esiste,
+     * quindi la prima può scattare **prima** del primo fotogramma.
      */
     var onFirstFrame: (() -> Unit)? = null
-    var onFirstInk: (() -> Unit)? = null
+    var onInkAccepted: (() -> Unit)? = null
+    var onInkDrawn: (() -> Unit)? = null
 
     private var session: CaptureSession? = null
 
@@ -44,7 +50,8 @@ class InkCanvasView(context: Context) : View(context) {
     private val liveSamples = ArrayList<InkPoint>()
     private var liveStartedAtEventTime = 0L
     private var reportedFirstFrame = false
-    private var reportedFirstInk = false
+    private var reportedInkAccepted = false
+    private var reportedInkDrawn = false
 
     private val rule = InkDraw.rulePaint()
 
@@ -69,6 +76,11 @@ class InkCanvasView(context: Context) : View(context) {
         drawRules(canvas)
 
         for (painted in committed) canvas.drawPath(painted.path, painted.paint)
+
+        if (liveSamples.isNotEmpty() && !reportedInkDrawn) {
+            reportedInkDrawn = true
+            onInkDrawn?.invoke()
+        }
 
         if (liveSamples.isNotEmpty()) {
             val live = Stroke(
@@ -174,11 +186,11 @@ class InkCanvasView(context: Context) : View(context) {
         }
         liveSamples += sample
 
-        if (!reportedFirstInk) {
-            reportedFirstInk = true
+        if (!reportedInkAccepted) {
+            reportedInkAccepted = true
             // Sincrona di proposito: la richiamata marca solo la tappa, e rimandarla al
             // giro successivo del loop aggiungerebbe millisecondi alla misura falsandola.
-            onFirstInk?.invoke()
+            onInkAccepted?.invoke()
         }
     }
 
