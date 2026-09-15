@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #2E5AA8; } a:hover { color: #1F3F78; }
+    .ui { font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif; }
+    .ink { font-family: 'Caveat', 'Bradley Hand', 'Segoe Script', cursive; }
+    .bar { width: 5px; border-radius: 3px; background: #2E5AA8; }
+  </style>
+</helmet>
+
+<div class="ui" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FBF8F1;">
+
+  <!--
+    La seconda modalità di cattura (decisione D18). Serve quando le mani sono
+    occupate — in bici, con le borse, al volante — dove scrivere a mano non è
+    attrito zero e non lo diventerà. Su iPhone è anche l'unico modo di catturare
+    senza sbloccare.
+  -->
+  <div style="display: flex; align-items: center; gap: 8px; padding: 70px 26px 0 26px;">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B4402F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"></path><path d="M12 18v3"></path>
+    </svg>
+    <span style="font-size: 12.5px; font-weight: 600; color: #B4402F; letter-spacing: 0.02em;">sto ascoltando</span>
+  </div>
+
+  <!-- La trascrizione compare mentre parli, e avviene sul dispositivo. -->
+  <div style="padding: 22px 26px 0 26px; font-size: 25px; line-height: 1.42; color: #23201B; text-wrap: pretty;">
+    ricordati di chiamare l'idraulico per il bagno, meglio mercoledì mattina
+    <span style="color: #ADA492;">prima delle nove</span>
+  </div>
+
+  <!-- Forma d'onda -->
+  <div style="position: absolute; left: 26px; right: 26px; bottom: 186px; height: 72px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+    <div class="bar" style="height: 14px; opacity: 0.35;"></div>
+    <div class="bar" style="height: 26px; opacity: 0.45;"></div>
+    <div class="bar" style="height: 44px; opacity: 0.55;"></div>
+    <div class="bar" style="height: 30px; opacity: 0.65;"></div>
+    <div class="bar" style="height: 58px; opacity: 0.75;"></div>
+    <div class="bar" style="height: 40px; opacity: 0.85;"></div>
+    <div class="bar" style="height: 68px;"></div>
+    <div class="bar" style="height: 52px;"></div>
+    <div class="bar" style="height: 34px;"></div>
+    <div class="bar" style="height: 60px;"></div>
+    <div class="bar" style="height: 22px;"></div>
+    <div class="bar" style="height: 46px; opacity: 0.85;"></div>
+    <div class="bar" style="height: 30px; opacity: 0.7;"></div>
+    <div class="bar" style="height: 16px; opacity: 0.55;"></div>
+    <div class="bar" style="height: 24px; opacity: 0.4;"></div>
+    <div class="bar" style="height: 12px; opacity: 0.3;"></div>
+  </div>
+
+  <div style="position: absolute; left: 26px; right: 26px; bottom: 44px; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+    <div style="width: 76px; height: 76px; border-radius: 50%; background: #B4402F; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 8px rgba(180,64,47,0.14), 0 10px 26px rgba(180,64,47,0.30);">
+      <div style="width: 26px; height: 26px; border-radius: 6px; background: #FBF8F1;"></div>
+    </div>
+    <span style="font-size: 13px; font-weight: 500; color: #8B8374;">tocca per fermare e salvare</span>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

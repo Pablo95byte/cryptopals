@@ -1,0 +1,320 @@
+-- Schema dell'archivio locale.
+--
+-- Due tabelle e non una: i tratti sono righe proprie perché sono l'unità di
+-- sincronizzazione e ognuno ha il suo tombstone (vedi CLAUDE.md, decisione D8).
+-- Tenere i tratti dentro un unico blob per nota renderebbe impossibile fondere
+-- due dispositivi senza riscrivere tutta la nota.
+
+CREATE TABLE note (
+    id TEXT NOT NULL PRIMARY KEY,
+    canvas_width REAL NOT NULL,
+    canvas_height REAL NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    revision INTEGER NOT NULL,
+    -- Tombstone: le note cancellate restano, altrimenti al primo sync tornerebbero.
+    deleted_at INTEGER,
+    recognized_text TEXT,
+    recognized_from_revision INTEGER,
+    -- Percorso della PNG ridotta per il widget. Non fa parte del modello: è un
+    -- prodotto del disegno, non contenuto della nota.
+    widget_image_path TEXT,
+    -- ⚠️ Le colonne aggiunte da una migrazione vanno **in fondo**, nell'ordine in cui
+    -- la migrazione le aggiunge, anche quando starebbero meglio accanto alla colonna
+    -- di cui sono la forma normalizzata.
+    --
+    -- `ALTER TABLE ADD COLUMN` accoda: un database creato da zero e uno migrato
+    -- avrebbero le colonne in ordine diverso, e `SELECT *` le legge per posizione.
+    -- `verifySqlDelightMigration` se ne accorge, ed è esattamente il motivo per cui
+    -- quel controllo esiste.
+
+    -- Forma normalizzata di recognized_text, per la ricerca (D27). Si scrive nello
+    -- stesso statement della sua sorgente: così non possono andare fuori sincrono.
+    recognized_text_normalized TEXT,
+    -- Versione della normalizzazione con cui l'indice è stato calcolato. Se è diversa
+    -- da SearchText.VERSION la nota va reindicizzata.
+    search_version INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX note_updated_at ON note(updated_at DESC);
+
+CREATE TABLE stroke (
+    id TEXT NOT NULL PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    pen_color INTEGER NOT NULL,
+    pen_kind TEXT NOT NULL,
+    pen_base_width REAL NOT NULL,
+    created_at INTEGER NOT NULL,
+    deleted_at INTEGER,
+    -- Campioni nel formato binario versionato di StrokePointCodec.
+    points BLOB NOT NULL
+);
+
+CREATE INDEX stroke_note_id ON stroke(note_id);
+
+-- Le registrazioni vocali (decisione D25). Righe proprie e con tombstone, come i
+-- tratti e per la stessa ragione: sono unità di sincronizzazione.
+-- L'audio non sta qui dentro ma su disco: audio_path. Un blob di qualche centinaio
+-- di kilobyte per nota renderebbe il database lento a leggersi per l'elenco, che è
+-- l'operazione più frequente dell'app.
+CREATE TABLE voice_clip (
+    id TEXT NOT NULL PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    recorded_at INTEGER NOT NULL,
+    duration_ms INTEGER NOT NULL,
+    transcript TEXT,
+    audio_path TEXT,
+    deleted_at INTEGER,
+    -- In fondo, come sopra: la migrazione l'ha accodata.
+    transcript_normalized TEXT
+);
+
+CREATE INDEX voice_clip_note_id ON voice_clip(note_id);
+
+-- Dove ogni nota è già stata mandata (D31). Una riga per coppia nota/destinazione:
+-- non serve lo storico di tutti gli invii, serve sapere se rimandare.
+CREATE TABLE note_export (
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    target TEXT NOT NULL,
+    sent_at INTEGER NOT NULL,
+    revision INTEGER NOT NULL,
+    PRIMARY KEY (note_id, target)
+);
+
+CREATE INDEX note_export_target ON note_export(target);
+
+selectNote:
+SELECT * FROM note WHERE id = ?;
+
+selectRecentNotes:
+SELECT * FROM note WHERE deleted_at IS NULL ORDER BY updated_at DESC LIMIT :limit;
+
+-- Restringe la ricerca a una sola parola, e riporta il minimo che serve a decidere:
+-- id, istante, e tutto il testo normalizzato della nota in un campo solo.
+--
+-- Non riporta la nota intera di proposito. Caricare tratti e registrazioni di ogni
+-- candidata vorrebbe dire due query per nota su centinaia di candidate, per poi
+-- scartarne quasi tutte: le note complete si leggono solo per le poche che finiscono
+-- davvero nei risultati.
+searchCandidates:
+SELECT note.id AS id,
+       note.updated_at AS updated_at,
+       coalesce(note.recognized_text_normalized, '') || ' ' || coalesce(
+           (SELECT group_concat(voice_clip.transcript_normalized, ' ')
+            FROM voice_clip
+            WHERE voice_clip.note_id = note.id AND voice_clip.deleted_at IS NULL),
+           ''
+       ) AS haystack
+FROM note
+WHERE note.deleted_at IS NULL AND (
+    note.recognized_text_normalized LIKE '%' || :token || '%'
+    OR EXISTS (
+        SELECT 1 FROM voice_clip
+        WHERE voice_clip.note_id = note.id
+          AND voice_clip.deleted_at IS NULL
+          AND voice_clip.transcript_normalized LIKE '%' || :token || '%'
+    )
+)
+ORDER BY note.updated_at DESC
+LIMIT :limit;
+
+-- Le note il cui indice è stato calcolato da una normalizzazione precedente, o mai.
+selectNotesNeedingSearchIndex:
+SELECT * FROM note
+WHERE deleted_at IS NULL AND search_version != :version
+ORDER BY updated_at DESC
+LIMIT :limit;
+
+countLiveNotes:
+SELECT count(*) FROM note WHERE deleted_at IS NULL;
+
+-- La condizione sull'inchiostro non è una rifinitura: senza di essa una nota di sola
+-- voce resterebbe in questa coda per sempre, senza mai avere niente da leggere.
+selectNotesNeedingRecognition:
+SELECT note.* FROM note
+WHERE note.deleted_at IS NULL
+  AND (note.recognized_from_revision IS NULL OR note.recognized_from_revision != note.revision)
+  AND EXISTS (SELECT 1 FROM stroke WHERE stroke.note_id = note.id AND stroke.deleted_at IS NULL)
+ORDER BY note.updated_at DESC
+LIMIT :limit;
+
+-- ## Perché l'inserimento è in due statement e non un upsert
+--
+-- La sintassi ON CONFLICT DO UPDATE esiste da SQLite 3.24, che su Android vuol
+-- dire Android 11: significherebbe imporre minSdk 30 per una comodità di
+-- scrittura, tagliando fuori dei telefoni per niente. INSERT OR IGNORE seguito
+-- da UPDATE funziona su qualsiasi versione e, dentro una transazione, è
+-- equivalente.
+--
+-- L'inserimento inoltre NON è un INSERT OR REPLACE: REPLACE cancella la riga e la
+-- reinserisce, quindi farebbe scattare la cascata sulla chiave esterna portando
+-- via tutti i tratti della nota, e azzererebbe widget_image_path a ogni
+-- salvataggio.
+
+insertNoteIfAbsent:
+INSERT OR IGNORE INTO note(
+    id, canvas_width, canvas_height, created_at, updated_at, revision,
+    deleted_at, recognized_text, recognized_from_revision,
+    recognized_text_normalized, search_version
+) VALUES (
+    :id, :canvasWidth, :canvasHeight, :createdAt, :updatedAt, :revision,
+    :deletedAt, :recognizedText, :recognizedFromRevision,
+    :recognizedTextNormalized, :searchVersion
+);
+
+-- created_at non compare: l'istante di creazione di una nota non cambia.
+-- widget_image_path non compare: non fa parte del modello.
+updateNote:
+UPDATE note SET
+    canvas_width = :canvasWidth,
+    canvas_height = :canvasHeight,
+    -- max e non assegnazione secca: `revision` e `updated_at` sono monotoni per
+    -- costruzione (salgono solo, e mergeNotes prende il massimo), quindi un
+    -- salvataggio partito da una copia vecchia non deve poter far **retrocedere** la
+    -- nota. Se retrocede, finisce sotto la revisione del suo stesso invio registrato e
+    -- la coda di D31 la rimanda per sempre, duplicandola nell'archivio dell'utente.
+    updated_at = max(updated_at, :updatedAt),
+    revision = max(revision, :revision),
+    -- coalesce e non assegnazione secca: un salvataggio partito da una copia vecchia
+    -- della nota non deve poter cancellare un tombstone già in archivio, o la nota
+    -- resusciterebbe (invariante 2).
+    deleted_at = coalesce(deleted_at, :deletedAt),
+    recognized_text = :recognizedText,
+    recognized_from_revision = :recognizedFromRevision,
+    recognized_text_normalized = :recognizedTextNormalized,
+    search_version = :searchVersion
+WHERE id = :id;
+
+markNoteDeleted:
+UPDATE note SET deleted_at = :deletedAt, updated_at = :updatedAt, revision = revision + 1
+WHERE id = :id AND deleted_at IS NULL;
+
+setWidgetImagePath:
+UPDATE note SET widget_image_path = :path WHERE id = :id;
+
+selectWidgetImagePath:
+SELECT widget_image_path FROM note WHERE id = ?;
+
+-- I figli si cancellano a mano, prima della nota.
+--
+-- Non basta la cascata sulla chiave esterna: in SQLite le chiavi esterne sono
+-- disattivate per difetto e si accendono con un PRAGMA **per connessione**, e la
+-- connessione la apre la piattaforma (D14). Contare su quel PRAGMA vorrebbe dire
+-- lasciare tratti e registrazioni orfani in archivio per sempre, su un dispositivo
+-- dove nessuno se ne accorge.
+purgeStrokesOfDeletedNotes:
+DELETE FROM stroke WHERE note_id IN (
+    SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
+);
+
+purgeVoiceClipsOfDeletedNotes:
+DELETE FROM voice_clip WHERE note_id IN (
+    SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
+);
+
+purgeDeletedNotes:
+DELETE FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before;
+
+selectStrokes:
+SELECT * FROM stroke WHERE note_id = ? ORDER BY created_at ASC, id ASC;
+
+-- Un tratto è immutabile: l'unico campo che può cambiare dopo la creazione è il
+-- tombstone, quindi l'aggiornamento si limita a quello.
+
+insertStrokeIfAbsent:
+INSERT OR IGNORE INTO stroke(
+    id, note_id, pen_color, pen_kind, pen_base_width, created_at, deleted_at, points
+) VALUES (
+    :id, :noteId, :penColor, :penKind, :penBaseWidth, :createdAt, :deletedAt, :points
+);
+
+-- Come sopra: il tombstone si può mettere, non togliere.
+updateStrokeDeletedAt:
+UPDATE stroke SET deleted_at = coalesce(deleted_at, :deletedAt) WHERE id = :id;
+
+deleteStrokesOfNote:
+DELETE FROM stroke WHERE note_id = ?;
+
+selectVoiceClips:
+SELECT * FROM voice_clip WHERE note_id = ? ORDER BY recorded_at ASC, id ASC;
+
+insertVoiceClipIfAbsent:
+INSERT OR IGNORE INTO voice_clip(
+    id, note_id, recorded_at, duration_ms, transcript, transcript_normalized,
+    audio_path, deleted_at
+) VALUES (
+    :id, :noteId, :recordedAt, :durationMs, :transcript, :transcriptNormalized,
+    :audioPath, :deletedAt
+);
+
+-- coalesce su tutti e tre i campi mutabili, e in tre direzioni diverse:
+-- una trascrizione o un audio già presenti non si perdono se chi salva non li ha
+-- (fra "c'è" e "non c'è ancora" vince "c'è"), e un tombstone non si toglie.
+updateVoiceClip:
+UPDATE voice_clip SET
+    transcript = coalesce(:transcript, transcript),
+    -- Segue la trascrizione: se quella resta, resta anche il suo indice.
+    transcript_normalized = coalesce(:transcriptNormalized, transcript_normalized),
+    audio_path = coalesce(:audioPath, audio_path),
+    deleted_at = coalesce(deleted_at, :deletedAt)
+WHERE id = :id;
+
+selectExports:
+SELECT * FROM note_export WHERE note_id = ? ORDER BY target ASC;
+
+insertExportIfAbsent:
+INSERT OR IGNORE INTO note_export(note_id, target, sent_at, revision)
+VALUES (:noteId, :target, :sentAt, :revision);
+
+-- L'invio più avanzato vince, come nel merge del modello: un aggiornamento non deve
+-- poter far retrocedere la revisione registrata, o il dispositivo rimanderebbe una
+-- nota già arrivata e la duplicherebbe.
+updateExport:
+UPDATE note_export SET
+    -- L'istante segue la revisione che vince, invece di essere massimizzato per conto
+    -- suo: altrimenti si otterrebbero righe che accoppiano il timestamp di un invio con
+    -- la revisione di un altro. È la stessa regola di mergeNotes — vince la revisione
+    -- più avanzata, a parità l'invio più recente — applicata al record intero.
+    sent_at = CASE
+        WHEN :revision > revision THEN :sentAt
+        WHEN :revision = revision AND :sentAt > sent_at THEN :sentAt
+        ELSE sent_at
+    END,
+    revision = max(revision, :revision)
+WHERE note_id = :noteId AND target = :target;
+
+-- Le note vive mai mandate a questa destinazione, o mandate a una revisione vecchia:
+-- è la coda di "manda tutte quelle nuove".
+selectNotesToSend:
+SELECT note.* FROM note
+WHERE note.deleted_at IS NULL
+  -- Solo note che hanno davvero qualcosa da mandare. Una nota a cui sono stati
+  -- cancellati tutti i tratti resta viva, ma NoteExport.prepare la rifiuta: senza
+  -- questa condizione entrerebbe in coda, non potrebbe mai essere marcata come
+  -- mandata, e occuperebbe un posto per sempre.
+  AND (
+      EXISTS (SELECT 1 FROM stroke WHERE stroke.note_id = note.id AND stroke.deleted_at IS NULL)
+      OR EXISTS (SELECT 1 FROM voice_clip WHERE voice_clip.note_id = note.id AND voice_clip.deleted_at IS NULL)
+  )
+  -- `>=` e non `=`: un invio registrato a una revisione pari o superiore a quella della
+  -- nota descrive una destinazione già aggiornata. Con l'uguaglianza secca, una nota
+  -- retrocessa resterebbe in coda per sempre e verrebbe duplicata.
+  AND NOT EXISTS (
+      SELECT 1 FROM note_export
+      WHERE note_export.note_id = note.id
+        AND note_export.target = :target
+        AND note_export.revision >= note.revision
+  )
+ORDER BY note.updated_at DESC
+LIMIT :limit;
+
+purgeExportsOfDeletedNotes:
+DELETE FROM note_export WHERE note_id IN (
+    SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
+);
+
+selectClipsNeedingTranscription:
+SELECT * FROM voice_clip
+WHERE deleted_at IS NULL AND transcript IS NULL
+ORDER BY recorded_at ASC
+LIMIT :limit;

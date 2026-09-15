@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #8FB8F0; } a:hover { color: #B4D0F6; }
+    .ui { font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif; }
+    .ink { font-family: 'Caveat', 'Bradley Hand', 'Segoe Script', cursive; }
+  </style>
+</helmet>
+
+<div class="ui" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: radial-gradient(110% 75% at 75% 10%, #4C5A48 0%, #33402F 45%, #232A20 100%);">
+
+  <!-- La schermata di blocco, che resta dietro: non è stato sbloccato niente. -->
+  <div style="position: absolute; inset: 0; padding: 96px 26px 0 26px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+    <span style="font-size: 15px; font-weight: 500; color: rgba(240,240,232,0.72);">sabato 12 settembre</span>
+    <span style="font-size: 74px; font-weight: 400; color: #F2F2EA; line-height: 1.05; letter-spacing: -0.02em;">9:41</span>
+  </div>
+
+  <div style="position: absolute; inset: 0; background: rgba(18,22,16,0.55);"></div>
+
+  <!--
+    Il foglio sopra il blocco. È CIECO di proposito: nessun elenco, nessuna
+    anteprima, nessuna ricerca. Chi raccoglie il telefono da un tavolo può
+    scrivere una nota, e va bene; non deve poter leggere le tue (decisione D17).
+  -->
+  <div style="position: absolute; left: 18px; right: 18px; top: 250px; background: #FBF8F1; border-radius: 26px; box-shadow: 0 30px 70px rgba(0,0,0,0.55); overflow: hidden;">
+
+    <div style="display: flex; align-items: center; gap: 7px; padding: 14px 20px 0 20px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B3AA98" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.2"></rect><path d="M8 10.5V7.2a4 4 0 0 1 8 0v3.3"></path>
+      </svg>
+      <span style="font-size: 11.5px; font-weight: 500; color: #B3AA98; letter-spacing: 0.01em;">schermo bloccato · solo scrittura</span>
+    </div>
+
+    <div style="position: relative; height: 300px;">
+      <div style="position: absolute; inset: 0; background-image: repeating-linear-gradient(to bottom, transparent 0 34px, #EDE5D3 34px 35px); background-position: 0 42px;"></div>
+      <div class="ink" style="position: relative; padding: 24px 24px 0 24px; font-size: 35px; line-height: 1.3; color: #1F2430;">
+        <div style="transform: rotate(-0.6deg);">via Manzoni 14</div>
+        <div style="transform: rotate(0.5deg); margin-top: 2px;">citofono Rossi</div>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: flex-end; padding: 0 16px 16px 16px;">
+      <div style="width: 92px; height: 52px; border-radius: 16px; background: #23201B; display: flex; align-items: center; justify-content: center; gap: 7px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FBF8F1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 13l4.5 4.5L19 7"></path>
+        </svg>
+        <span style="font-size: 16px; font-weight: 600; color: #FBF8F1;">OK</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

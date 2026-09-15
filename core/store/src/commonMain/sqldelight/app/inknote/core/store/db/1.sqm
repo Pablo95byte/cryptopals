@@ -1,0 +1,22 @@
+-- Migrazione 1 → 2: le note vocali (decisione D25).
+--
+-- È la prima migrazione di questo progetto, e arriva di proposito **prima** che
+-- esistano utenti: il momento per scoprire che il meccanismo delle migrazioni non
+-- funziona è adesso, non dopo la pubblicazione. `./gradlew verifySqlDelightMigration`
+-- controlla che applicando questo file allo schema 1 si ottenga esattamente lo schema
+-- descritto in InkNote.sq.
+--
+-- Solo aggiunte: nessuna colonna esistente viene toccata, quindi una nota già salvata
+-- si rilegge identica e senza voci vocali.
+
+CREATE TABLE voice_clip (
+    id TEXT NOT NULL PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    recorded_at INTEGER NOT NULL,
+    duration_ms INTEGER NOT NULL,
+    transcript TEXT,
+    audio_path TEXT,
+    deleted_at INTEGER
+);
+
+CREATE INDEX voice_clip_note_id ON voice_clip(note_id);

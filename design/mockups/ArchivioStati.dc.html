@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #2E5AA8; } a:hover { color: #1F3F78; }
+    .ui { font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif; }
+    .ink { font-family: 'Caveat', 'Bradley Hand', 'Segoe Script', cursive; }
+    .card { border-radius: 16px; padding: 13px 15px; display: flex; flex-direction: column; gap: 9px; }
+    .meta { font-size: 11px; font-weight: 500; }
+  </style>
+</helmet>
+
+<div class="ui" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F6F1E7;">
+
+  <!--
+    Gli stati che il codice già produce e che il prodotto deve saper dire:
+    una nota vocale, una non ancora riconosciuta, una a cui è mancato un tratto.
+    Sono le schermate che rendono l'app onesta invece di farla sembrare perfetta.
+  -->
+
+  <div style="padding: 64px 18px 0 18px; display: flex; flex-direction: column; gap: 14px;">
+
+    <span style="font-size: 30px; font-weight: 600; color: #23201B; letter-spacing: -0.015em;">Le tue note</span>
+
+    <div style="height: 50px; background: #FFFFFF; border: 1px solid #E7DFCD; border-radius: 15px; display: flex; align-items: center; gap: 10px; padding: 0 14px;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8B8374" stroke-width="1.9" stroke-linecap="round">
+        <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M15.5 15.5L21 21"></path>
+      </svg>
+      <span style="font-size: 16px; color: #ADA492;">cerca nelle tue note</span>
+    </div>
+
+    <!-- Nota vocale: nessun inchiostro, il testo è quello trascritto (D18). -->
+    <div class="card" style="background: #FFFDF6; border: 1px solid #EDE4D2;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+        <div style="display: flex; gap: 10px;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#B4402F" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 3px;">
+            <rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"></path><path d="M12 18v3"></path>
+          </svg>
+          <span style="font-size: 16px; line-height: 1.42; color: #23201B; text-wrap: pretty;">chiamare l'idraulico per il bagno, meglio mercoledì mattina</span>
+        </div>
+        <span class="meta" style="color: #ADA492; white-space: nowrap; padding-top: 3px;">oggi</span>
+      </div>
+      <span class="meta" style="color: #ADA492;">nota vocale · 8 secondi</span>
+    </div>
+
+    <!-- Un tratto perso nel giornale si dice. Non si nasconde (D22). -->
+    <div class="card" style="background: #FBEFC6; border: 1px solid #F0E0AC;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+        <div class="ink" style="font-size: 26px; line-height: 1.16; color: #2A2014; transform: rotate(-0.5deg);">via Manzoni 14<br>citofono Rossi</div>
+        <span class="meta" style="color: #B0A278; white-space: nowrap; padding-top: 4px;">ieri</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 7px; background: #F6E3B4; border-radius: 9px; padding: 8px 10px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A6A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+          <path d="M12 4.5l8.5 15H3.5z"></path><path d="M12 10v4M12 17h.01"></path>
+        </svg>
+        <span style="font-size: 11.5px; line-height: 1.35; color: #6E5518;">L'app si è chiusa mentre scrivevi: un tratto non è stato salvato.</span>
+      </div>
+    </div>
+
+    <!-- Riconoscimento non ancora fatto: la nota c'è, ma non si trova cercando. -->
+    <div class="card" style="background: #E6F1E7; border: 1px solid #D2E4D4;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+        <div class="ink" style="font-size: 26px; line-height: 1.16; color: #1B2A1E; transform: rotate(0.6deg);">idea: podcast<br>sul vino naturale</div>
+        <span class="meta" style="color: #9BAE9D; white-space: nowrap; padding-top: 4px;">3 min</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 7px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9BAE9D" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5v5l3 2"></path>
+        </svg>
+        <span style="font-size: 11.5px; color: #7E947F;">non ancora cercabile · riconoscimento in corso</span>
+      </div>
+    </div>
+
+    <!-- Una nota normale, per confronto. -->
+    <div class="card" style="background: #FFFDF6; border: 1px solid #EDE4D2;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+        <div class="ink" style="font-size: 26px; line-height: 1.16; color: #23201B; transform: rotate(-0.4deg);">wifi cantiere<br>ospiti2026</div>
+        <span class="meta" style="color: #ADA492; white-space: nowrap; padding-top: 4px;">28 feb</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 7px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ADA492" stroke-width="2" stroke-linecap="round">
+          <path d="M4 7h16M4 12h11M4 17h7"></path>
+        </svg>
+        <span style="font-size: 11.5px; color: #8E8676;">wifi cantiere ospiti2026</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; right: 20px; bottom: 30px; width: 60px; height: 60px; border-radius: 50%; background: #23201B; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px rgba(35,32,27,0.30);">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FBF8F1" stroke-width="2.4" stroke-linecap="round">
+      <path d="M12 5v14M5 12h14"></path>
+    </svg>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

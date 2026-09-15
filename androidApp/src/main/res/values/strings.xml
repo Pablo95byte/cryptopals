@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InkNote</string>
+    <string name="ok">OK</string>
+    <string name="recovered_title">Note nel giornale</string>
+    <string name="clear_journal">Svuota il giornale</string>
+</resources>

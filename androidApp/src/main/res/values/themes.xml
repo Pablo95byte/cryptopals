@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.InkNote" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:colorBackground">#FBF8F1</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!--
+        Il tema della cattura. windowAnimationStyle nullo non è estetica: ogni
+        animazione di apertura è tempo che l'utente aspetta prima di poter scrivere,
+        e il bilancio è 400 ms in tutto (D19).
+    -->
+    <style name="Theme.InkNote.Capture" parent="Theme.InkNote">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowContentTransitions">false</item>
+    </style>
+
+</resources>
