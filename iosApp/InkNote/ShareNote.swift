@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 
 /// "Manda a…" (D31): il foglio di condivisione del sistema, con il testo, l'immagine
-/// dell'inchiostro e le foto. Da lì la nota arriva a Notes, Notion, Keep, Obsidian, una
+/// dell'inchiostro, le foto e le registrazioni. Da lì la nota arriva a Notes, Notion, Keep, Obsidian, una
 /// mail — e ad app che ancora non esistono.
 enum ShareNote {
 
@@ -20,6 +20,14 @@ enum ShareNote {
         if let ink = inkImage(of: note) { items.append(ink) }
         for path in archive.photoPaths(note: note) {
             if let photo = PhotoFiles.load(path) { items.append(photo) }
+        }
+        // Le registrazioni come file: la trascrizione è già nel testo, l'audio è l'originale
+        // (D25). Chi riceve può riascoltare ciò che il riconoscimento ha capito male.
+        for voice in archive.voiceItems(note: note) {
+            if let path = voice.path, let url = PhotoFiles.url(of: path),
+               FileManager.default.fileExists(atPath: url.path) {
+                items.append(url)
+            }
         }
         return items
     }

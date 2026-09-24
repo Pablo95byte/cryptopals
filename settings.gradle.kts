@@ -51,8 +51,22 @@ val androidSdkDir: File? = sequenceOf(
         ?.trim(),
 ).filterNotNull().map(::File).firstOrNull { it.isDirectory }
 
-if (androidSdkDir != null) {
+/**
+ * Quando è Xcode a chiamare Gradle, per costruire InkNoteKit, l'app Android non serve:
+ * configurarla costerebbe solo tempo a ogni build iOS, e su un Mac con l'SDK Android —
+ * come quelli di Codemagic — la trascinerebbe dentro un build che non la riguarda (D57).
+ */
+val calledByXcode = System.getenv("XCODE_VERSION_ACTUAL") != null
+
+val withAndroidApp = androidSdkDir != null && !calledByXcode
+
+// La radice ne ha bisogno per mettere il plugin Android sul suo classpath (D58).
+(gradle as ExtensionAware).extra["inknote.androidApp"] = withAndroidApp
+
+if (withAndroidApp) {
     include(":androidApp")
+} else if (calledByXcode) {
+    println("InkNote: build chiamato da Xcode, :androidApp escluso.")
 } else {
     println(
         "InkNote: SDK Android non trovato, :androidApp escluso dal build. " +

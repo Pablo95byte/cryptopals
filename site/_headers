@@ -1,0 +1,10 @@
+# Cloudflare Pages: intestazioni per tutte le pagine (D61, D68). Nessun dato di chi
+# visita esce verso i siti linkati, e le pagine non si possono incorniciare altrove.
+/*
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable

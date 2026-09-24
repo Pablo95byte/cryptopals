@@ -1,6 +1,5 @@
 {
   "sourceLanguage": "en",
-  "version": "1.0",
   "strings": {
     "CFBundleDisplayName": {
       "localizations": {
@@ -21,6 +20,27 @@
           }
         }
       }
+    },
+    "NSMicrophoneUsageDescription": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per registrare note vocali quando hai le mani occupate."
+          }
+        }
+      }
+    },
+    "NSSpeechRecognitionUsageDescription": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per trasformare le note vocali in testo cercabile, sul tuo iPhone. Niente viene mandato altrove."
+          }
+        }
+      }
     }
-  }
+  },
+  "version": "1.0"
 }

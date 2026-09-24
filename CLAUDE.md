@@ -95,13 +95,14 @@ posto solo invece che sparsi fra le decisioni.
 | Sblocco + ricerca dell'ingresso | **"Scrivi" nell'elenco delle app**: nel dock, o sul tasto laterale dei Samsung (D39) | nel codice |
 | Scrittura | **Foglio senza righe e tratto da pennarello col dito**: si scrive grande, l'archivio rimpicciolisce (D42) | nel codice, da provare |
 | Mani occupate | **Tastiera e foto dal foglio**, a un tocco, anche a telefono bloccato; la fotocamera sta dentro il foglio (D38, D45) | nel codice |
-| Mani occupate | **Cattura a voce** (D18): l'unica strada senza sblocco su iPhone | modello fatto, cattura da scrivere |
+| Mani occupate | **Cattura a voce** (D18): il microfono sul foglio, trascrizione sul dispositivo (D63) | iOS nel codice, Android no (D65) |
+| Sblocco, su iPhone | **"Ehi Siri, aggiungi una nota a Instink"**: si detta a telefono bloccato, senza aprire l'app (D63) | iOS nel codice |
 | Scrittura, di notte | **Il foglio si scurisce col tema scuro**: a letto al buio non acceca (D52) | nel codice, Android e iOS |
 | Ritorno | **Una vibrazione breve su "Fatto"**: la nota è al sicuro, senza guardare (D52) | nel codice, Android e iOS |
 | Tutti | **I tetti: foglio pronto in 100 ms a caldo, 400 a freddo; tratto dietro al dito di al massimo 50 ms** (D19, D32, D36). Non sono funzionalità: impediscono alle altre di degradarsi | **tutti verdi** sul Samsung S8: 86 ms a caldo, 358–387 a freddo, tratto 13–14 ms a caldo e 30 a freddo |
 | Tutti | **Restare piccoli**: un processo leggero resta nella cache del sistema, e la seconda apertura della giornata è calda (D32) | nel codice, zero dipendenze |
 
-**Fuori da questa catena** sta la ricerca (OCR e trascrizioni, D2 e D25): riduce
+**Fuori da questa catena** sta la ricerca (OCR e trascrizioni, D2 e D25; su iOS D62 e D63): riduce
 l'attrito del *ritrovare*, non dello scrivere. È la seconda metà della promessa, e non
 va confusa con la prima — è esattamente l'errore che D30 ha corretto, quando il widget
 mostrava le vecchie note.
@@ -132,7 +133,7 @@ calligrafia resta l'identità del prodotto, ma si vede dentro l'app e negli scre
 dello store, non sulla home dell'utente.
 
 ### D2 — Le note diventano cercabili con l'OCR della scrittura
-**Data:** 2026-09-12 · **Stato:** attiva, da implementare
+**Data:** 2026-09-12 · **Stato:** attiva · **iOS in D62**, Android da fare (D65)
 
 Un riconoscimento del testo scritto a mano gira in sottofondo e rende le note
 cercabili, senza mai sostituire l'inchiostro mostrato.
@@ -158,7 +159,8 @@ riconosce: l'inchiostro resta la nota, il testo è solo un indice.
 scelta ragionevole sarebbe stata Swift nativo con PencilKit.
 
 ### D4 — Gratis con sblocco una volta sola; abbonamento solo quando esisterà il sync
-**Data:** 2026-09-12 · **Stato:** attiva, da implementare
+**Data:** 2026-09-12 · **Stato:** attiva, da implementare · **rivista da D67** (proposta):
+Pro dal lancio, annuale o a vita, con StoreKit e senza RevenueCat
 
 | Livello | Cosa comprende |
 |---|---|
@@ -1559,10 +1561,11 @@ né Vision né ML Kit danno. Esistono motori commerciali (MyScript) con licenze 
 Si decide dopo il riconoscimento normale (D2), e solo se gli studenti lo chiedono.
 
 **Su Android**, per ora, solo foglio di notte e vibrazione: smistamento e riemersione sono
-nel core e aspettano l'interfaccia, dopo iOS (D48).
+nel core e aspettano l'interfaccia, dopo iOS (D48). **Arrivate con D64.**
 
 ### D53 — Il CI è Codemagic, con tre workflow
-**Data:** 2026-09-24 · **Stato:** attiva, **da provare** al primo giro
+**Data:** 2026-09-24 · **Stato:** attiva, **provata per iOS**: il 2026-09-24 la build 5
+(versione 0.1) è arrivata su TestFlight, firmata ed elaborata da Apple
 
 `codemagic.yaml` nella radice:
 
@@ -1723,6 +1726,404 @@ qualunque branch. Un push che cambia solo la documentazione non consuma minuti d
 L'Apple ID di Instink (`6815617566`) è nel file: il numero della build su TestFlight ora
 parte dall'ultimo caricato.
 
+**Primo giro verde** (2026-09-24, build 4): lo Swift scritto senza compilatore ha
+compilato al primo tentativo, dopo la correzione di Gradle di D57. Nove minuti, di cui
+**sei per salvare la cache** (1,1 GB): la cache di Gradle cambia a ogni build e veniva
+ricaricata ogni volta. Sui Mac ora si tiene solo il compilatore Kotlin/Native, che non
+cambia e quindi non si ricarica; la cache di Gradle resta ai workflow Linux. **Verificato
+al giro dopo (build 6): da 9 minuti a 3**, e il salvataggio della cache da sei minuti a
+meno di un secondo.
+
+
+### D57 — Il plugin Kotlin per Android si dichiara nella radice, e Xcode non vede l'app Android
+**Data:** 2026-09-24 · **Stato:** attiva · **Trovata dal primo giro di D56** · **l'ultimo
+paragrafo è SUPERATO da D58**: il plugin Android non può restare solo in `:androidApp`
+
+Il primo `ios-check` su Codemagic si è fermato prima dello Swift, in Gradle:
+*"plugin 'org.jetbrains.kotlin.android' already on the classpath with an unknown
+version"*. Il Mac di Codemagic ha l'SDK Android, quindi `:androidApp` entrava nel build
+(D23). Il plugin Kotlin per Android sta **nello stesso jar** di quello multipiattaforma,
+che la radice carica: `:androidApp` lo chiedeva con una versione, e Gradle non poteva
+confrontarla con quella di un plugin arrivato sotto un altro id.
+
+**Due correzioni, perché sono due problemi.**
+
+1. **La radice dichiara anche `kotlinAndroid`, `apply false`**, con la stessa versione. Ora
+   Gradle sa quale versione è sul classpath. È la causa, e colpiva ogni macchina con l'SDK:
+   anche i workflow Linux di Codemagic, che l'SDK ce l'hanno.
+2. **Quando Gradle è chiamato da Xcode** (`XCODE_VERSION_ACTUAL` nell'ambiente),
+   `:androidApp` resta fuori. Per costruire InkNoteKit non serve, e configurarla è tempo
+   perso a ogni build iOS. Non è un rimedio al punto 1, è igiene: il build iOS non deve
+   poter rompersi per colpa dell'app Android.
+
+~~**Perché non anche il plugin Android nella radice**, come fanno i modelli ufficiali: la
+radice lo scaricherebbe sempre, anche dove il dominio di Google è bloccato, e il core non
+si compilerebbe più ovunque (D23). Il plugin Android resta caricato da `:androidApp`, come
+nel build che ha già funzionato sul telefono del committente.~~ **Sbagliato, vedi D58.**
+
+
+### D58 — Il plugin Android sta nella radice, ma solo quando serve
+**Data:** 2026-09-24 · **Stato:** attiva · **Corregge D57** · trovata dal primo giro di
+`ios-testflight`
+
+Con D57 la radice carica il plugin Kotlin anche per Android, ma il plugin **Android** lo
+caricava ancora `:androidApp`, in un classloader figlio. Il plugin Kotlin per Android deve
+vederne le classi, e dal classloader della radice non le vede: Gradle si fermava su
+`com/android/build/gradle/api/BaseVariant`. È successo nel passo "Test della facciata per
+Swift" di `ios-testflight`, che gira fuori da Xcode su un Mac con l'SDK. **Lo stesso guasto
+avrebbe colpito ogni build con l'SDK**: il telefono del committente, i workflow Android di
+Codemagic, `core-tests`. D57 aveva tolto un errore e ne aveva messo un altro, e l'ambiente
+di sviluppo non poteva vederlo perché qui l'SDK non c'è.
+
+**La correzione, nel modo che non rompe D23.** Il plugin Android entra nel classpath della
+radice con un `buildscript` **condizionato**: `settings.gradle.kts` decide se `:androidApp`
+entra nel build e lo scrive in una proprietà (`inknote.androidApp`), e la radice mette il
+plugin Android sul suo classpath solo in quel caso. Plugin Kotlin e plugin Android stanno
+così nello stesso classloader, e dove l'SDK non c'è — o il dominio di Google è bloccato, o
+chiama Xcode — il plugin Android non viene nemmeno cercato.
+
+**Conseguenze:**
+
+- `:androidApp` chiede il plugin Android **senza versione**, perché è già sul classpath della
+  radice; con la versione Gradle si fermerebbe come in D57.
+- **La versione del plugin Android sta in due posti**: `buildscript` della radice e
+  `gradle/libs.versions.toml`. Un commento in entrambi lo ricorda. Il `buildscript` non
+  legge il catalogo delle versioni.
+
+**Verificato qui:** senza SDK il build non cerca il plugin Android; con un SDK finto lo cerca
+nella radice (e qui fallisce solo perché Google è bloccato); con un SDK finto e Xcode,
+`:androidApp` resta fuori e il build passa. **Verificato su Codemagic** lo stesso giorno: il
+Mac con l'SDK ha superato il test della facciata e ha caricato la build su TestFlight.
+
+**La lezione, per le prossime volte:** una modifica al build di Gradle va provata anche nel
+caso "SDK presente", che qui non si vede. Il modo meno costoso è lanciare `core-tests` su
+Codemagic prima dei workflow su Mac.
+
+
+### D59 — Tenendo premuta una nota nell'archivio: "Manda a…" ed "Elimina"
+**Data:** 2026-09-24 · **Stato:** attiva, chiesta dal committente dopo la prima prova su
+iPhone
+
+Nell'archivio, tenere premuto un bigliettino apre un menu con **"Manda a…"** oltre a
+"Elimina", su iOS e su Android (dove prima il tocco prolungato non faceva niente).
+
+**Perché.** Mandare una nota è l'azione più frequente dopo scriverla (D31), e aprirla solo
+per mandarla è un passaggio in più. L'invio si registra comunque solo se l'utente sceglie
+una destinazione (invariante 18). Su Android eliminare chiede conferma, come nella nota
+aperta.
+
+**La prima prova su iPhone** (TestFlight, build 5): il foglio si apre subito, i widget
+funzionano.
+
+### D60 — Il lancio si racconta da un file solo, e i soldi si fanno con la fedeltà
+**Data:** 2026-09-24 · **Stato:** proposta, **da confermare col committente**
+
+**Lo storytelling sta in [`lancio/STORIA.md`](lancio/STORIA.md)**: la frase ("Instink. Write
+on instinct."), la storia in trenta secondi, tre messaggi in un ordine fisso, per chi è e
+per chi no, i testi dello store, gli screenshot come sequenza, il video di 15 secondi col
+cronometro, e l'ordine dei canali. Ogni parola pubblica parte da lì: scheda, sito, post e
+stampa dicono la stessa cosa.
+
+**Il sito: sì, subito, ma piccolo.** Privacy e assistenza sono obbligatorie per TestFlight
+esterno e per lo store (D50); la pagina vera, col video, dopo che il disegno è definitivo.
+
+**Notion e le altre integrazioni: non ancora.** "Manda a…" arriva già a Notion, Keep,
+Obsidian e Note attraverso il foglio di condivisione, perché quelle app ci stanno dentro.
+Un'integrazione vera (l'API di Notion) serve solo per l'invio **automatico**, ed è la
+ragione più forte per il Pro (D31, D47): si scrive quando i tester lo chiedono.
+
+**"Diventare ricchi": i numeri, detti onestamente.** Con l'acquisto singolo di D4 a 6,99 €,
+tolte IVA e la commissione di Apple del 15%, restano circa **4,90 € per vendita**. Per
+50.000 € l'anno servono circa **10.000 vendite**; se compra fra il 2% e il 4% di chi
+scarica, servono **250.000–500.000 download l'anno**. Si può, per un'app che finisce in
+vetrina, ma non è un piano. Il piano è un altro:
+
+1. **Fedeltà prima di tutto**: se la gente la usa ancora dopo trenta giorni, i download
+   arrivano (passaparola, recensioni, vetrina Apple). Se non la usa, nessun prezzo salva.
+2. **Un ricavo ricorrente** quando esiste un servizio che lo giustifica: invio automatico,
+   sincronizzazione fra iPhone, iPad e Mac, backup nostro (D4). Le app di note che hanno
+   costruito aziende vere (Bear, Drafts, Craft) vivono di abbonamenti, non di acquisti
+   singoli.
+3. **Il prezzo lo decidono i dati del test**, non l'intuito: la struttura di D4 si rivede
+   dopo i primi 30 giorni di utenti veri.
+
+
+### D61 — Il sito: tre pagine statiche, due lingue, zero richieste a terzi
+**Data:** 2026-09-24 · **Stato:** attiva · **Attua la parte urgente di D50**
+
+`site/` contiene la home piccola, l'**informativa sulla privacy** e l'**assistenza**, in
+inglese alla radice e in italiano in `site/it/`. HTML e un foglio di stile, nient'altro.
+
+**Perché adesso.** L'URL della privacy è obbligatorio per il test esterno di TestFlight e
+per lo store; quello dell'assistenza per la prima versione nello store (D60).
+
+**Nessuna richiesta a terzi, nemmeno per il carattere.** Instrument Sans è servito dal
+sito stesso (lo stesso file dell'app Android, licenza OFL accanto): Google Fonts
+registra l'indirizzo di chi visita, e in Europa è già stato giudicato un trasferimento di
+dati personali. Una pagina che dice "nessun tracciamento" non può farlo alla prima riga.
+Nessuno script: il segno che si disegna è un'animazione CSS, spenta per chi ha chiesto
+meno movimento.
+
+**L'informativa dice solo cose vere, e anche quelle scomode.** Nessun dato raccolto, ma:
+le richieste a Siri le elabora Apple; chi prova con TestFlight ci manda la sua email
+insieme ai commenti; Apple e Google possono mandarci rapporti anonimi sugli arresti se
+l'utente lo ha permesso; su Android le foto restano fuori dal backup nel cloud (D49); una
+nota eliminata non si recupera dall'app (D26). Copre anche le funzioni di D62 e D63
+(riconoscimento e voce), che rispettano la stessa promessa: tutto sul dispositivo.
+**Ogni funzione nuova che tocca dati va confrontata con questa pagina prima di uscire.**
+
+**Dove si ospita: Cloudflare Pages**, non GitHub Pages. Funziona col repository privato
+senza un piano a pagamento, dà un indirizzo decente subito (`instink.pages.dev`), e lo
+stesso posto vende il dominio al prezzo di costo e inoltra la posta di `instink.app`
+alla casella del committente, che così non compare mai in pubblico.
+
+**L'indirizzo di contatto è `hello@instink.app`** in tutte le pagine: funziona quando il
+dominio è comprato e l'inoltro è acceso (GUIDA §0quater). L'indirizzo personale del
+committente non si pubblica.
+
+
+### D62 — La scrittura si legge su iOS con Vision, dopo, e il testo non può tornare indietro
+**Data:** 2026-09-24 · **Stato:** attiva, **da compilare e provare** · **Attua D2 su iOS**
+
+Quando si apre l'archivio, dopo l'assorbimento del giornale, le note con inchiostro non
+ancora letto (`notesNeedingRecognition`) passano da **Vision** (`VNRecognizeTextRequest`,
+modo accurato, correzione della lingua, le lingue del telefono): l'inchiostro si disegna su
+carta chiara a 1400 pixel — lo stesso disegno di "Manda a…" — e il testo torna riga per
+riga, dall'alto in basso. Diventa la didascalia nell'elenco, la ricerca lo trova, le date
+scritte a mano diventano promemoria (D52), e "Manda a…" lo mette nel testo (D31).
+
+**Perché dopo e non sul foglio.** Leggere costa secondi; sul foglio non entra niente che
+non serva a scrivere (D20). E chi scrive non ha bisogno del testo: ne ha bisogno chi cerca,
+dopo.
+
+**Perché Vision e non un modello nostro.** Sta nel sistema, gira sul dispositivo (D12,
+D61), legge anche la scrittura a mano, e non pesa niente nell'app. Il corsivo stretto lo
+legge male: è il limite già dichiarato in D2, e l'interfaccia non lo mostra come un errore —
+senza testo la nota resta la sua calligrafia.
+
+**Due regole nell'archivio, perché il testo arriva da fuori e in ritardo:**
+
+1. **Si scrive solo sulla revisione letta** (`setRecognizedText`, con lettura e scrittura
+   nella stessa transazione). Se mentre Vision lavora la nota cresce, il testo descrive un
+   inchiostro che non c'è più: non si scrive, la nota resta in coda e la prossima passata
+   la rilegge intera.
+2. **Un salvataggio vecchio non lo cancella.** `updateNote` assegnava `recognized_text`
+   secco: finché il testo non esisteva non importava, ma con il riconoscimento che arriva
+   in ritardo sarebbe bastato tenere una nota letta un attimo prima per **cancellare il
+   testo**, e la nota sarebbe sparita dalla ricerca. Ora il
+   testo si sostituisce solo con uno calcolato su una revisione pari o più recente — la
+   stessa forma monotona di revisione e tombstone (D26, D31). Test di regressione.
+
+**Un esito vuoto è un esito.** Uno scarabocchio senza parole riceve un testo vuoto e
+**esce dalla coda**: altrimenti ci si rigirerebbe sopra a ogni apertura.
+
+**Limite di lavoro:** quaranta note per apertura, a lotti di otto. Un archivio grande
+arrivato da un aggiornamento si recupera in qualche apertura, senza scaldare il telefono.
+
+**Android: non ancora** (D65).
+
+### D63 — La voce su iPhone: un microfono sul foglio, e Siri a telefono bloccato
+**Data:** 2026-09-24 · **Stato:** attiva, **da compilare e provare** · **Attua D18 su iOS,
+chiude la questione aperta di D25 sul giornale**
+
+**Sul foglio, il terzo strumento è il microfono**, accanto a tastiera e fotocamera (D38):
+un tocco comincia, una pillola rossa col contatore dice che si sta registrando e, toccata,
+ferma. La registrazione è un `VoiceClip` della nota, accanto all'inchiostro (D25), e sul
+foglio compare come una piccola forma d'onda con la durata. AAC mono a 22 kHz: la voce
+resta chiara e un minuto pesa meno di mezzo megabyte nel backup (D49).
+
+**La trascrizione arriva dopo, nell'archivio, e solo sul dispositivo**
+(`requiresOnDeviceRecognition`). Se il telefono non sa riconoscere il parlato senza rete,
+la registrazione aspetta con l'audio intatto: **nessun audio lascia il telefono** (D12,
+D61). "Nessun parlato" è un esito, e toglie la registrazione dalla coda; ogni altro errore
+la lascia per la prossima volta. Nella nota aperta la registrazione si riascolta, e sotto
+c'è ciò che è stato capito; "Manda a…" allega il file audio.
+
+**"Ehi Siri, aggiungi una nota a Instink".** Un'azione che **non apre l'app** e **funziona
+a telefono bloccato** (`authenticationPolicy = .alwaysAllowed`): Siri chiede "Qual è la
+nota?", si detta, e il testo va nel giornale come testo digitato. È l'unica cattura sopra
+il blocco che Apple concede (D17), quindi su iPhone è **il percorso più corto che
+esista**. Rispetta l'invariante 11: si aggiunge, non si legge — Siri risponde "Salvata" e
+non ripete nemmeno il testo. È anche l'unico punto in cui il riconoscimento non è nostro:
+la dettatura la fa Siri, e l'informativa lo dice (D61).
+
+**Il giornale porta le registrazioni: versione 3.** Un record nuovo, `KIND_VOICE`, scritto
+**a registrazione chiusa**: un file AAC interrotto a metà non si riascolta, quindi prima
+non c'è niente da proteggere. Si perde solo una registrazione in corso quando il processo
+muore — ma il foglio chiude e salva la registrazione appena perde lo schermo (D34), e a
+foglio aperto il processo non muore. **Ogni record si scrive con la versione più bassa che
+lo sa esprimere**: tratti, testi e foto restano alla 2. Così una build precedente — un
+ritorno indietro su TestFlight — legge tutto ciò che capisce e si ferma davanti a una
+registrazione senza consumarla (D13, D35). Un tipo nuovo dentro la versione 2, per lei,
+sarebbe stato spazzatura da saltare, cioè da cancellare.
+
+**La trascrizione è definitiva** (D25): `setTranscript` scrive una volta e non
+sovrascrive. L'eliminazione definitiva dopo trenta giorni riporta anche i file audio, oltre
+alle foto.
+
+**Primo caricamento rifiutato da Apple** (build 6, errore 90626): la descrizione
+dell'azione diceva "senza sbloccare l'iPhone", e le descrizioni delle azioni di Siri non
+possono contenere "iPhone". Ora dice "senza sbloccare". Regola per il futuro: **nei testi
+delle azioni (titoli, descrizioni, frasi) niente nomi di prodotti Apple**; il controllo lo
+fa solo App Store Connect al caricamento, non `ios-check`.
+
+**I permessi si chiedono al primo tocco sul microfono**, non all'apertura: microfono e
+riconoscimento vocale insieme, una volta sola. Senza il secondo, l'audio si registra e non
+si trascrive.
+
+**Android: non ancora** (D65).
+
+### D64 — Smistamento e riemersione anche su Android
+**Data:** 2026-09-24 · **Stato:** attiva, **compila contro Android 15 (D44), da provare** ·
+**Completa D52**
+
+Le stesse due cose di iOS, con le View di piattaforma (D39):
+
+- **"Smista N"** nell'intestazione dell'archivio, tenue — il solo pulsante pieno resta
+  "Scrivi" (D46) — e **solo se c'è qualcosa da smistare**. Apre `TriageActivity`: una carta
+  alla volta, trascinata a destra si manda, a sinistra si tiene, in basso si butta; gli
+  stessi tre gesti come pulsanti rotondi per chi non trascina e per TalkBack. Mentre si
+  trascina, la parola sopra la carta dice cosa succederà lasciando andare.
+- **La riemersione** in cima all'archivio, sotto la ricerca: un bigliettino piccolo con
+  l'inchiostro e "una settimana fa, oggi"; tocco per aprire, crocetta per toglierla per
+  oggi. Il giorno tolto sta nelle preferenze di chi guarda, non in archivio (D52). Mai
+  durante una ricerca.
+
+**"Manda" non toglie la nota dalla coda da solo.** Il foglio di condivisione registra
+l'invio solo a destinazione scelta (invariante 18): se l'utente lo chiude, la carta esce
+dallo schermo ma la nota è ancora da smistare alla prossima apertura. È giusto: non è
+arrivata da nessuna parte.
+
+**"Tieni" rilegge la nota prima di salvarla**, invece di salvare la copia in mano: il
+salvataggio unisce comunque (D14), ma una copia vecchia non ha motivo di viaggiare.
+
+### D65 — Cosa resta fuori da questo giro, e cosa serve per farlo
+**Data:** 2026-09-24 · **Stato:** attiva
+
+1. **"Condividi verso Instink" su iOS** (D47, punto 5). Un'estensione di condivisione è un
+   processo a parte, e per scrivere dove l'app legge serve un **App Group**. Tocca al
+   committente, prima di una riga di codice: registrare `group.app.inknote`, aggiungere
+   la capacità App Groups a `app.inknote.ios`, registrare `app.inknote.ios.share` con la
+   stessa capacità, rigenerare i profili App Store e caricarli su Codemagic (GUIDA
+   §0quinquies). **Scrivere il target prima rompe la firma di ogni build su TestFlight**,
+   perché `ios_signing` cerca un profilo per ogni estensione. Il disegno è deciso:
+   l'estensione scrive in un **giornale suo** nel contenitore condiviso, con lo stesso
+   formato, e l'app lo assorbe insieme al proprio. Nessun cambio al giornale di oggi.
+2. **Riconoscimento della scrittura su Android.** ML Kit Digital Ink sta sul Maven di
+   Google, che qui è bloccato: il codice non si potrebbe nemmeno compilare per controllo
+   (D44). E registra un `ContentProvider` per inizializzarsi (invariante 21), da togliere
+   dal manifest e sostituire con un'inizializzazione a mano nel processo dell'archivio.
+   Si fa sulla macchina del committente, con l'SDK.
+3. **Voce su Android.** Il riconoscimento del parlato sul dispositivo da un file registrato
+   non esiste come API pubblica prima di Android 13, e con limiti dopo; il riconoscimento
+   dal vivo va scritto registrando e riconoscendo insieme. È un lavoro a sé, e su Android
+   la cattura a telefono bloccato c'è già (D17, D33): la voce è meno urgente che su iPhone.
+4. **Le formule** restano dove le ha messe D52.
+
+
+### D66 — Il segno: il ricciolo scritto a inchiostro, e una goccia calda
+**Data:** 2026-09-24 · **Stato:** attiva, **da vedere sul telefono** · **Precisa D16 e D30**
+
+L'icona è il ricciolo del widget (D30), ma disegnato **come inchiostro**: sottile
+all'attacco, pieno nel corpo, un po' più stretto alla fine, la stessa idea dello spessore
+che segue la mano nell'app. Accanto, una **goccia vermiglia** (`#E4572E`) dove andrebbe il
+punto di una "i": l'istinto. È l'unico colore del marchio, e sta solo nel segno — non
+nell'interfaccia, dove la gerarchia la fanno ancora inchiostro e carta (D46).
+
+**Perché cambiarla, con la monetizzazione come metro (D67).** L'icona è la prima cosa che
+si vede nei risultati di ricerca dello store, accanto a quelle dei concorrenti, e decide
+se qualcuno tocca. Quella di prima era elegante ma occupava un terzo del quadrato, era
+tutta crema e grigio, e a 40 punti si leggeva come una "h". Ora il segno riempie la
+griglia di Apple, il tratto ha peso, e la goccia la fa riconoscere a colpo d'occhio anche
+piccola, in mezzo a icone colorate.
+
+**Un solo generatore per tutto** (`tools/brand/icons.py` e `render.mjs`): icona iOS con le
+varianti **scura** e **colorata** di iOS 18, icona adattiva Android con la versione
+**monocromatica** di Android 13, icona e grafica in evidenza per il Play Store, favicon,
+icona per la home dell'iPhone e **anteprima dei link** (`og.png`) per il sito. Cambiare il
+segno vuol dire cambiare una funzione e rigenerare, non ridisegnare dodici file. Le
+immagini per gli store **non hanno il canale alfa**: Apple rifiuta la build, Google il file.
+
+**Scartato: l'icona scura** ("gesso su lavagna", D16). Più di moda, ma su una home scura
+sparisce, e la carta chiara è ciò che dice "foglio bianco" (D30) prima ancora del nome.
+
+### D67 — Si guadagna da subito: Pro al lancio, abbonamento o acquisto a vita, la ricerca come ragione
+**Data:** 2026-09-24 · **Stato:** proposta, **da confermare col committente** ·
+**Rivede D4, D43 (punto 3) e D47** · **Precisa D54 (punto 5)**
+
+Il committente: *"l'obiettivo finale è monetizzare, quindi ogni scelta deve essere presa
+con quello scopo."* Riletti con quel metro, tre punti del piano precedente vanno cambiati.
+
+**1. Pro c'è dal lancio, non dopo** (D43 diceva "gratis al lancio, tutto incluso").
+I primi utenti sono quelli disposti a pagare di più: chi scarica un'app nuova il primo
+giorno è un appassionato. Aggiungere un pagamento dopo vuol dire **togliere** qualcosa a chi
+l'aveva gratis, e si paga in recensioni. E un incasso vero dal primo giorno è il solo dato
+che dice se il prezzo è giusto: le opinioni no.
+
+**2. Cosa è gratis, per sempre, e perché.** Tutta la **cattura**: foglio, tastiera, foto,
+voce, Siri, tutti gli ingressi, l'archivio, "Manda a…", lo smistamento, la riemersione, il
+foglio di notte. È la promessa (§1) e il gancio: una cattura a pagamento non la prova
+nessuno, e senza chi la prova non c'è nessuno a cui vendere Pro (D47). E **"Manda a…" non
+si chiude mai**: un'app che tiene in ostaggio le note si merita le recensioni che riceve
+(D31).
+
+**3. Pro è il ritrovare, non lo scrivere.** Il momento in cui si paga volentieri è quando le
+note sono tante e ne serve una: allora la ricerca vale soldi.
+
+- **La ricerca gratuita copre gli ultimi 30 giorni; Pro cerca in tutto, per sempre.** Il
+  riconoscimento di scrittura e voce gira comunque su tutte le note (D62, D63): chi compra
+  Pro trova **subito** anche le note di un anno fa, ed è il momento migliore dell'acquisto.
+  Chi non paga vede il valore ogni giorno, e il limite si fa sentire da solo quando
+  l'archivio cresce.
+- **I promemoria dalle date scritte a mano** (D52): si vedono sempre, si usano con Pro.
+- **Senza la riga "Scritta con Instink"** in fondo alle note mandate fuori. Quella riga,
+  gratis, è l'anello di crescita di D47: ogni nota mandata fuori porta il nome a qualcun
+  altro.
+- **Poi, man mano**: invio automatico a Notion e a una cartella (D31), punte e colori,
+  sincronizzazione fra iPhone, iPad e Mac. Ogni cosa nuova entra in Pro, e un abbonato la
+  riceve senza pagare di nuovo: è ciò che giustifica il rinnovo.
+
+**4. Il prezzo** (rivede D4: lì era un acquisto singolo da 6,99 €, e l'abbonamento solo
+col sync).
+
+| | prezzo | netto per noi, circa | perché |
+|---|---|---|---|
+| **Annuale** | 14,99 € con **7 giorni di prova** | 10,40 € l'anno | la prova converte, e il rinnovo è dove sta il guadagno (D60) |
+| **A vita** | 34,99 € — **24,99 € per i primi tre mesi** | 24,40 € (17,40 al prezzo d'esordio) | per chi rifiuta l'abbonamento su un'app locale: toglie l'obiezione di D4 senza rinunciare alla vendita. Il prezzo d'esordio dà una ragione per comprare adesso |
+| Mensile | no | — | una scelta in più sul paywall è una decisione in più (§1), e rende meno |
+
+Il netto toglie l'IVA italiana (22%) e la commissione di Apple col programma per le piccole
+imprese (15%, **da richiedere**, GUIDA §0octies: senza è il 30%). Per 50.000 € l'anno
+servono circa **4.800 abbonati** — o un misto con le vendite a vita — contro le 10.000
+vendite dell'acquisto singolo di D60. E gli abbonati si sommano di anno in anno.
+
+**5. Il paywall compare solo dove serve**, mai sul foglio e mai all'apertura:
+
+- quando la ricerca trova risultati oltre i 30 giorni: *"Altre 4 note più vecchie
+  corrispondono. Cerca in tutto con Pro."* È il momento in cui l'utente vuole proprio
+  quella cosa;
+- toccando "Ricordamelo";
+- in una voce delle impostazioni.
+
+Mai durante la cattura, per la stessa ragione per cui non si manda niente durante la
+cattura (invariante 19): è una decisione chiesta a chi vuole solo scrivere.
+
+**6. StoreKit, senza RevenueCat** (rivede D4). RevenueCat riceverebbe gli acquisti con un
+identificativo dell'utente, e la scheda non potrebbe più dire **"Nessun dato raccolto"**:
+per un'app di note è un argomento che vende. StoreKit 2 fa tutto sul telefono, e App Store
+Connect dà già prove, conversioni e disdette senza nessun SDK. Su Android, Play Billing
+quando arriverà Android.
+
+**7. Il nome nello store porta le parole chiave** (precisa D54, punto 5): "Instink:
+Handwritten Notes" / "Instink: Note scritte a mano". Il nome è il campo che pesa di più
+nella ricerca dell'App Store, e lasciarlo a un nome inventato vuol dire rinunciare a chi
+cerca "handwritten notes". Sotto l'icona resta "Instink". I testi completi, con i limiti
+di caratteri controllati da uno script, sono in [`lancio/STORE.md`](lancio/STORE.md).
+
+**Cosa si decide col committente prima di scrivere il codice:** i due prezzi, il limite dei
+30 giorni, e se i promemoria stanno in Pro. Il codice è una settimana: StoreKit, il
+paywall, il limite nella ricerca, la riga in fondo alle note mandate fuori.
+
 ---
 
 ## 5. Struttura del repository
@@ -1734,7 +2135,8 @@ core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
   ink/           StrokeBuilder, CatmullRom, WidthProfile, StrokeSimplifier, InkConfig
   geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline,
                  Bounds, NoteFraming (inquadrare una nota in un riquadro, dentro l'app)
-  capture/       CaptureSession, InkJournal, FrictionTrace — non vede l'archivio
+  capture/       CaptureSession, InkJournal (tratti, testo, foto, voce), FrictionTrace — non
+                 vede l'archivio
   store/         NoteStore, JournalIngest, schema SQLDelight e schema versionato
 shared/          Il core in un framework per iOS, InkNoteKit, più la facciata per Swift
                  (InkSheet, InkArchive, InkPreview) con i suoi test (D48)
@@ -1745,8 +2147,13 @@ androidApp/      L'app Android: il foglio (cattura, D20), l'archivio (D39), il w
                  piattaforma; una sola dipendenza esterna, il driver SQLite.
 tools/
   android-check/ Compilazione di controllo di :androidApp senza SDK (D44)
+  brand/         Il segno e tutte le icone (icons.py, render.mjs, D66); i testi degli store
+                 con i limiti di caratteri controllati (store_texts.py, D67)
 codemagic.yaml   Il CI: test del core a ogni push, TestFlight e Play interno su tag (D53)
+lancio/          La storia del prodotto (STORIA.md, D60) e i testi degli store (STORE.md, D67)
+site/            Il sito statico: home, privacy, assistenza, in inglese e italiano (D61)
 design/
+  brand/         Il segno in SVG e le immagini per gli store (D66)
   mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato:
                  home iOS, cattura nuda, cattura con strumenti, Android da
                  schermo bloccato, Android sopra il launcher, voce, archivio,
@@ -1870,9 +2277,13 @@ Stato attuale: **tutti i test verdi** (`./gradlew jvmTest`). L'app Android **com
 Galaxy S8, 2026-09-24, nessuna modifica al codice). Misure in D36: tutte verdi. Widget,
 riquadro sopra il blocco e privacy **provati sul telefono**. Archivio, tastiera, foto e
 condivisione (D38–D40) **compilano contro Android 15** (D44) ma non sono ancora stati
-costruiti con l'SDK né provati sul telefono. L'app iOS (D48, D52) è scritta e **non è mai stata
-compilata**: qui non c'è Swift. La prima compilazione è sul Mac del committente o su
-Codemagic (D53).
+costruiti con l'SDK né provati sul telefono. L'app iOS (D48, D52) **compila**, app e widget
+insieme al core Kotlin/Native: primo giro verde di `ios-check` su Codemagic, 2026-09-24,
+dopo la correzione di Gradle (D57). **È su TestFlight** (build 5, 2026-09-24), firmata con
+il certificato di distribuzione del committente, e **provata su iPhone**: il foglio si apre
+subito, i widget funzionano (D59). Riconoscimento della scrittura, voce e Siri (D62, D63)
+**non sono ancora compilati**: li compila il prossimo `ios-check`. Smistamento e riemersione
+su Android (D64) compilano contro Android 15. 318 test.
 
 ---
 
@@ -1952,14 +2363,17 @@ Codemagic (D53).
     smistamento, riemersione, promemoria dalle date, foglio di notte, vibrazione (D52).
     Scritta, **da compilare** insieme alla prima.
 20. **Test chiuso del Play Store in parallelo** — i 14 giorni corrono mentre si fa iOS (D48).
-21. **`core:ocr`** — riconoscimento della scrittura (D2): Vision su iOS, ML Kit su
-    Android, che registra un `ContentProvider` da togliere (invariante 21).
-22. ~~Smistamento a carte e riemersione~~ — core e iOS fatti (D52). **Su Android manca
-    l'interfaccia.**
-22bis. **Codemagic al primo giro** (D53): i tre workflow, con le chiavi del committente.
-23. **`core:voice`** (D18), **"Condividi verso InkNote"**.
-24. **Il sito** (D50): privacy e assistenza subito, la pagina vera dopo il nome.
-25. **`core:billing`** — il Pro (D4), dopo il lancio (D43, D47).
+21. ~~Riconoscimento della scrittura su iOS~~ (D62). **Android** con ML Kit, sulla
+    macchina del committente (D65).
+22. ~~Smistamento a carte e riemersione~~ — core, iOS (D52) e Android (D64).
+22bis. ~~Codemagic al primo giro~~ (D53): iOS arriva su TestFlight. Restano da provare i
+    workflow Android.
+23. ~~Voce su iOS~~ — microfono sul foglio e Siri a telefono bloccato (D63). **"Condividi
+    verso Instink"** aspetta l'App Group (D65); la voce su Android dopo.
+24. ~~Il sito, privacy e assistenza~~ (D61): scritti, da mettere in rete. La pagina vera,
+    col video, dopo il disegno definitivo (D50).
+25. **Pro con StoreKit** (D67): da confermare col committente, poi paywall, limite di 30
+    giorni nella ricerca e riga "Scritta con Instink". **Prima del lancio**, non dopo.
 
 ### Prima di pubblicare
 
@@ -1972,7 +2386,8 @@ Codemagic (D53).
   dominio.
 - **Quanti widget nel livello gratuito.** Uno è la proposta; va verificato che non
   renda il livello gratuito inutile e quindi l'app non recensita.
-- **Prezzo effettivo del Pro**, per mercato.
+- **Prezzo effettivo del Pro**, per mercato: proposta in D67 (14,99 € l'anno, 34,99 € a
+  vita), da confermare.
 - **Gesto della gomma** con dito e con pennino, che sono casi diversi.
 - **Scrivere in corsivo col dito è difficile** (primo telefono vero). Da capire se è
   latenza, spessore, righe troppo fitte o la natura del dito. Se è la dimensione, la
@@ -1981,11 +2396,12 @@ Codemagic (D53).
 - **Il recupero dal cestino.** Azzerare `deletedAt` non funziona: l'archivio non lo
   permette più (D26) e al primo sync la cancellazione vincerebbe comunque. Probabile
   soluzione: copiare la nota sotto un id nuovo, accettando di perdere lo storico.
-- **Se il giornale debba coprire anche l'audio** (D25 lo lascia fuori per ora).
-- **Il piano di lancio (D43) e la strategia di crescita (D47)**: da confermare.
+- ~~Se il giornale debba coprire anche l'audio~~ — sì, a registrazione chiusa (D63).
+- **Il piano di lancio (D43), la strategia di crescita (D47) e la storia (D60)**: da
+  confermare.
 - **Le formule in LaTeX** (D51, D52): serve un motore di riconoscimento matematico a
   pagamento. Dopo D2, e solo se richiesto.
-- **Smistamento e riemersione su Android**: il core c'è, l'interfaccia no (D52).
+- ~~Smistamento e riemersione su Android~~ — fatti (D64).
 - ~~Il backup è spento~~ — acceso, sull'account dell'utente (D49).
 - **La fascia di scrittura ingrandita** per il corsivo col dito (D42): dopo aver provato
   foglio senza righe e tratto più spesso.

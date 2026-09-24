@@ -32,7 +32,7 @@ struct NoteItem: Identifiable {
         id = archive.idOf(note: note)
         self.note = note
         date = Date(timeIntervalSince1970: TimeInterval(note.updatedAt) / 1000)
-        caption = note.typedText ?? note.recognizedText
+        caption = archive.captionOf(note: note)
     }
 }
 
@@ -82,12 +82,15 @@ final class ArchiveModel: ObservableObject {
         let now = Now.millis
         ArchiveBackend.shared.run({ archive -> Bool in
             let torn = archive.ingest(journalSink: FileJournalSink.shared)
-            // Le note cestinate da più di trenta giorni, con le loro foto (D39).
+            // Le note cestinate da più di trenta giorni, con foto e registrazioni (D39, D63).
             PhotoFiles.delete(archive.purge(nowMillis: now))
             return torn
         }, then: { [weak self] torn in
             if torn { self?.lostStroke = true }
             self?.reload()
+            // Poi, con calma, si legge la scrittura e si trascrive la voce (D62, D63): una
+            // nota appena scritta diventa cercabile qualche secondo dopo.
+            Recognition.runPending { self?.reload() }
         })
     }
 

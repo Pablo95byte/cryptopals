@@ -1,8 +1,9 @@
 import UIKit
 
-/// Le foto delle note su disco (D38).
+/// Le foto delle note su disco (D38), e con loro le registrazioni (D63): stessa cartella,
+/// stesse regole sui percorsi.
 ///
-/// Il modello conosce solo percorsi **relativi** ("photos/<id>.jpg"): la cartella vera è una
+/// Il modello conosce solo percorsi **relativi** ("photos/<id>.jpg", "voice/<id>.m4a"): la cartella vera è una
 /// faccenda della piattaforma, e su iOS sta in Application Support, che va nel backup di
 /// iCloud insieme all'archivio (D49).
 enum PhotoFiles {

@@ -12,6 +12,8 @@ import app.inknote.core.model.DateHints
 import app.inknote.core.model.ExportTarget
 import app.inknote.core.model.Resurface
 import app.inknote.core.model.Resurfaced
+import app.inknote.core.model.VoiceClip
+import app.inknote.core.model.VoiceClipId
 import app.inknote.core.store.JournalIngest
 import app.inknote.core.store.NoteStore
 
@@ -66,9 +68,44 @@ class InkArchive(private val store: NoteStore) {
     /**
      * Elimina davvero le note cestinate da più di trenta giorni, come su Android (D39).
      *
-     * @return i percorsi delle foto da cancellare dal disco: i file li conosce la piattaforma.
+     * @return i percorsi di foto e registrazioni da cancellare dal disco: i file li conosce
+     *   la piattaforma.
      */
     fun purge(nowMillis: Long): List<String> = store.purgeDeleted(before = nowMillis - PURGE_AFTER_DAYS * DAY_MS)
+
+    /**
+     * Il testo con cui presentare una nota nell'elenco: quello digitato, se no quello
+     * letto nella scrittura, se no la prima trascrizione.
+     */
+    fun captionOf(note: Note): String? =
+        note.typedText
+            ?: note.recognizedText?.trim()?.ifEmpty { null }
+            ?: note.visibleVoiceClips.firstNotNullOfOrNull { clip -> clip.transcript?.trim()?.ifEmpty { null } }
+
+    /** Le registrazioni visibili della nota, per il foglio aperto e la condivisione (D63). */
+    fun voiceItems(note: Note): List<VoiceItem> = note.visibleVoiceClips.map(VoiceItem::of)
+
+    // --- Riconoscimento della scrittura (D2, D62) ---
+
+    /** Le note il cui inchiostro va letto, dalla più recente. */
+    fun toRecognize(limit: Int): List<Note> = store.notesNeedingRecognition(limit)
+
+    /**
+     * Il testo letto nell'inchiostro della nota alla revisione [revision].
+     *
+     * @return `false` se la nota è cambiata nel frattempo: resta in coda, e la prossima
+     *   passata la rilegge per intero.
+     */
+    fun setRecognized(id: String, text: String, revision: Long): Boolean =
+        store.setRecognizedText(NoteId(id), text, forRevision = revision)
+
+    // --- Trascrizione delle registrazioni (D63) ---
+
+    /** Le registrazioni ancora da trascrivere, dalla più vecchia. */
+    fun toTranscribe(limit: Int): List<VoiceItem> = store.clipsNeedingTranscription(limit).map(VoiceItem::of)
+
+    /** @return `false` se la registrazione aveva già una trascrizione, che non si sovrascrive. */
+    fun setTranscript(clipId: String, text: String): Boolean = store.setTranscript(VoiceClipId(clipId), text)
 
     // --- Smistamento a carte (D52) ---
 
@@ -112,6 +149,28 @@ class InkArchive(private val store: NoteStore) {
 
         /** Abbastanza per scegliere bene, poche per leggerle in un attimo. */
         const val RESURFACE_CANDIDATES = 400
+    }
+}
+
+/**
+ * Una registrazione vista da Swift (D63): tipi semplici, senza i tipi valore di Kotlin.
+ *
+ * @param path percorso relativo del file audio, `null` se il file non c'è più.
+ * @param transcript `null` finché non è trascritta; vuota se non c'era niente da capire.
+ */
+data class VoiceItem(
+    val id: String,
+    val path: String?,
+    val durationMs: Int,
+    val transcript: String?,
+) {
+    internal companion object {
+        fun of(clip: VoiceClip) = VoiceItem(
+            id = clip.id.value,
+            path = clip.audioPath,
+            durationMs = clip.durationMs,
+            transcript = clip.transcript,
+        )
     }
 }
 

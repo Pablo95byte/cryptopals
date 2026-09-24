@@ -2,8 +2,9 @@
 
 Questo file dice cosa tocca a te, in ordine. Tutto il resto lo faccio io.
 
-Se leggi solo una cosa: **adesso tocca a iOS** (§0 e §0bis). Il resto aspetta che l'app
-giri sul tuo iPhone.
+Se leggi solo una cosa: **accetta l'accordo per le app a pagamento e iscriviti allo Small
+Business Program** (§0octies, Apple ci mette giorni), **metti in rete il sito** (§0quater),
+e manda una build nuova su TestFlight per vedere l'icona nuova (§0septies).
 
 ---
 
@@ -188,8 +189,8 @@ Il file è già nel repository: `codemagic.yaml`. Su codemagic.io:
 2. **La chiave di App Store Connect.** In App Store Connect → Utenti e accesso →
    Integrazioni → Chiavi API: crea una chiave col ruolo **App Manager** e scarica il file
    `.p8` (si scarica una volta sola). Su Codemagic: Team settings → Integrations → App
-   Store Connect → aggiungi la chiave, e **chiamala `InkNote ASC`**, che è il nome scritto
-   nel file.
+   Store Connect → aggiungi la chiave. Il file usa quella che c'è già per l'altra app, di
+   nome **`codemagic`**: una chiave vale per tutto il team.
 3. **Certificato e profili iOS.** Team settings → codemagic.yaml settings → Code signing
    identities:
    - iOS certificates → **Generate certificate** di tipo *Apple Distribution*;
@@ -214,6 +215,152 @@ TestFlight: *Start new build* → workflow **iOS — TestFlight**, oppure un tag
 
 **Il primo giro iOS dura di più** (una ventina di minuti): scarica il compilatore di
 Kotlin/Native. Dal secondo è in cache.
+
+## 0quater. Il sito su Cloudflare, passo per passo (D61)
+
+Le pagine sono pronte in `site/`: home, **privacy** e **assistenza**, in inglese e in
+italiano, con l'icona, le anteprime per chi condivide il link e nessun tracciamento.
+Tempo: venti minuti, più l'attesa del dominio. Costo: il dominio, una quindicina di euro
+l'anno. Il resto è gratis.
+
+**Prima di cominciare:** unisci la PR di questo branch in `master`, così Cloudflare
+pubblica sempre `master` e non un branch di lavoro. Se non vuoi aspettare, al punto 2
+scegli `claude/notes-homescreen-app-drbsfv` e cambialo dopo (Settings → Builds →
+Branch control).
+
+1. **L'account.** Vai su dash.cloudflare.com e registrati (gratis). Conferma l'email.
+2. **Il sito.** Nel menu a sinistra: **Workers & Pages** → **Create** → scheda **Pages**
+   → **Connect to Git** (o "Import an existing Git repository"). Autorizza GitHub e
+   concedi l'accesso **solo** al repository `cryptopals`. Poi:
+   - Project name: **`instink`** (diventa `instink.pages.dev`; se è preso, `instink-app`);
+   - Production branch: **`master`**;
+   - Framework preset: **None**;
+   - Build command: **lascia vuoto**;
+   - Build output directory: **`site`**;
+   - **Save and Deploy**. Dopo un minuto il sito è su `https://instink.pages.dev`. Aprilo
+     dal telefono e controlla privacy e assistenza.
+   Da qui in poi ogni push su `master` aggiorna il sito da solo.
+3. **Il dominio.** Nel menu: **Domain Registration** → **Register Domains** → cerca
+   `instink.app` → acquista (Cloudflare lo vende al prezzo di costo, senza rincari
+   al rinnovo). Già che ci sei guarda se c'è `instink.com`: se costa il prezzo normale,
+   prendilo, perché la gente scrive ".com" per abitudine. Se costa centinaia di euro, no.
+4. **Il dominio sul sito.** **Workers & Pages** → `instink` → **Custom domains** → **Set up
+   a custom domain** → `instink.app` → Activate. Ripeti per `www.instink.app`. Il
+   certificato HTTPS arriva da solo in pochi minuti.
+5. **L'email.** Cloudflare → il dominio `instink.app` → **Email** → **Email Routing** →
+   **Get started**. Crea l'indirizzo **`hello`**, destinazione la tua Gmail, conferma dal
+   link che ti arriva, e lascia che Cloudflare aggiunga da solo i record DNS. Scrivi una
+   prova a `hello@instink.app` da un altro indirizzo. Per **rispondere** da quell'indirizzo:
+   Gmail → Impostazioni → Account → "Invia messaggio come" → aggiungi `hello@instink.app`
+   (serve una password per le app di Google; se è un problema, all'inizio rispondi pure
+   dalla tua casella).
+6. **Controlla l'anteprima del link:** incolla `https://instink.app` in una chat di
+   WhatsApp con te stesso. Deve comparire l'immagine col segno e "Write on instinct.".
+
+**Piano B, senza collegare GitHub:** Workers & Pages → Create → Pages → **Upload assets**,
+e trascini la cartella `site` scaricata dal repository. Funziona, ma ogni modifica va
+ricaricata a mano.
+
+**In App Store Connect**, appena il sito è in rete:
+
+- Informazioni sull'app → **URL della privacy**: `https://instink.app/privacy.html`
+  (o `https://instink.pages.dev/privacy.html` finché il dominio non c'è);
+- **Privacy dell'app** → Inizia → **No, non raccogliamo dati**. È vero, e nella scheda
+  compare "Nessun dato raccolto": per chi scarica un'app di note è un argomento;
+- TestFlight → **Informazioni sul test**: URL della privacy e email per i commenti, che
+  servono per il **test esterno**;
+- alla prima versione per lo store: **URL di assistenza**
+  `https://instink.app/support.html` e **URL di marketing** `https://instink.app`.
+
+## 0quinquies. Cosa provare: scrittura letta, voce, Siri (D62–D64)
+
+Prima una build nuova: Codemagic → **iOS — TestFlight** (il controllo `ios-check` parte da
+solo a ogni push; se è rosso, copiami il blocco "ERRORI").
+
+1. **La scrittura letta.** Scrivi a mano "latte pane" sul foglio, Fatto, apri l'app.
+   Dopo qualche secondo il bigliettino ha sotto la didascalia "latte pane", e cercando
+   "pane" la nota si trova. Prova anche corsivo e stampatello: dimmi quale legge male.
+2. **Una data scritta a mano.** "Dentista domani alle 10", a mano. Aprendo la nota compare
+   "Ricordamelo".
+3. **Il microfono.** Sul foglio, terza icona in basso. La prima volta chiede microfono e
+   riconoscimento vocale. Parla qualche secondo, tocca la pillola rossa: sul foglio compare
+   la forma d'onda con la durata. Fatto. Nell'app, la nota ha il tasto ▶ e, dopo qualche
+   secondo, il testo. Se il testo non arriva mai: Impostazioni → Generali → Tastiera →
+   Dettatura, controlla che la lingua sia scaricata (serve per il riconoscimento senza rete).
+4. **Siri a telefono bloccato.** Blocca l'iPhone e di' **"Ehi Siri, aggiungi una nota a
+   Instink"**, poi detta. Siri risponde "Salvata" senza chiederti di sbloccare. Sblocca,
+   apri l'app: la nota c'è. Se Siri non riconosce la frase, apri Comandi rapidi una volta:
+   le frasi di un'app nuova a volte compaiono solo dopo.
+5. **"Manda a…" di una nota vocale**: nel foglio di condivisione, oltre al testo, c'è il
+   file audio.
+6. **Android** (quando rifai il build): nell'archivio, "Smista N" in alto a destra e, se
+   hai note di più di una settimana, la nota riemersa sotto la ricerca.
+
+Dimmi cosa non torna, anche le sensazioni: "la pillola rossa è troppo", "il testo letto è
+sbagliato", "Siri non capisce il nome".
+
+## 0sexies. Per "Condividi verso Instink": l'App Group (D65)
+
+Da qualunque app — Safari, Messaggi, Foto — "Condividi → Instink" per farne una nota. Serve
+un'estensione, e un'estensione può scrivere dove l'app legge solo con un **App Group**. È
+configurazione tua, sul portale Apple, e va fatta **prima** che io scriva l'estensione: se la
+scrivo prima, ogni build su TestFlight si ferma sulla firma.
+
+Su developer.apple.com → Certificates, IDs & Profiles:
+
+1. **Identifiers → + → App Groups** → `group.app.inknote`.
+2. **Identifiers → `app.inknote.ios`** → spunta **App Groups** → Configure → scegli
+   `group.app.inknote` → Save.
+3. **Identifiers → + → App IDs → App** → Bundle ID `app.inknote.ios.share`, descrizione
+   "Instink Share", spunta **App Groups** con `group.app.inknote`.
+4. **Profiles**: rigenera il profilo App Store di `app.inknote.ios` (è cambiato al punto 2)
+   e creane uno nuovo App Store per `app.inknote.ios.share`.
+5. **Codemagic** → Code signing identities → iOS provisioning profiles → Fetch profiles, e
+   prendi i due.
+
+Poi dimmi "fatto" e scrivo l'estensione.
+
+## 0septies. Le icone (D66)
+
+Tutto è già nel repository, e si rigenera con tre comandi (sono in
+`tools/brand/icons.py`).
+
+| Dove | File | Cosa fare |
+|---|---|---|
+| iOS, l'app | `iosApp/.../AppIcon.appiconset/` | niente: entra nella prossima build, con le varianti **scura** e **colorata** di iOS 18 |
+| App Store | `design/brand/store/app-store-1024.png` | niente: App Store Connect la prende dalla build |
+| Android, l'app | `androidApp/src/main/res/drawable/ic_launcher_*.xml` | niente: entra nel prossimo build, anche monocromatica per Android 13 |
+| Play Store | `design/brand/store/play-store-512.png` | caricala nella scheda dello store, "Icona dell'app" |
+| Play Store | `design/brand/store/play-feature-graphic-1024x500.png` | "Grafica in evidenza" |
+| Sito | `site/favicon.svg`, `apple-touch-icon.png`, `og.png` | niente: sono già nelle pagine |
+
+Manda una build nuova su TestFlight e guarda l'icona sulla tua home, di giorno e col tema
+scuro. Se non ti convince, dimmi cosa: si cambia in un punto solo e si rigenera tutto.
+
+## 0octies. Per guadagnare: cosa fare adesso in App Store Connect (D67)
+
+Tre cose da fare **subito**, perché Apple ci mette giorni a elaborarle, e senza la prima
+**nessun acquisto in app può esistere**:
+
+1. **Accordo per le app a pagamento.** App Store Connect → **Business** (Accordi, tasse e
+   banche) → *Paid Apps* → accetta, poi **conto bancario** e **moduli fiscali** (da persona
+   fisica in Italia è il W-8BEN, e dice agli Stati Uniti che paghi le tasse qui). Finché lo
+   stato non è "Attivo" non si possono vendere né provare gli acquisti su TestFlight.
+2. **Small Business Program.** developer.apple.com → Programma per le piccole imprese →
+   iscriviti. La commissione di Apple scende **dal 30% al 15%**: sui conti di D67 vale il
+   doppio del guadagno netto a parità di vendite. È gratis e si fa una volta.
+3. **I testi dello store**, da `lancio/STORE.md`, in inglese e in italiano: nome,
+   sottotitolo, parole chiave, testo promozionale, descrizione. Il **nome dello store**
+   diventa "Instink: Handwritten Notes" — sotto l'icona resta "Instink". Si cambia alla
+   prossima versione inviata per la revisione.
+
+**Non creare ancora i prodotti in app**: prima dimmi se il piano di D67 ti convince
+(prezzi, cosa è gratis e cosa è Pro). Poi ti scrivo esattamente quali creare, con quali
+id, e scrivo l'abbonamento nell'app.
+
+**Su Google Play**, quando arriva Android: anche lì la commissione è il 15% sul primo
+milione di ricavi l'anno, ma va richiesta nel Play Console (la voce riguarda la "service
+fee" e il gruppo di account). Se non la trovi, chiedimelo quando ci arriviamo.
 
 ## 1bis. Il giro di prova dell'app intera (D38–D42)
 
@@ -321,12 +468,13 @@ Nessuna blocca il codice, ma prima o poi servono. In ordine di quanto pesano:
 
 Ti risparmia soldi e tempo:
 
-- **Non creare le schede negli store.** Una scheda aperta troppo presto invecchia, e i
-  testi vanno scritti quando l'app è finita, non prima.
-- **Non aprire l'account RevenueCat** e non configurare prodotti in-app. Serve quando il
-  paywall esiste davvero, ed è gratuito fino a 2500 $ al mese di ricavi: non c'è fretta.
-- **Non comprare domini a caso** né aprire profili social prima di aver scelto il nome:
-  il dominio si compra il giorno in cui il nome è deciso, non prima (D54).
+- ~~Non creare le schede negli store~~: la scheda App Store esiste, e i testi sono pronti
+  in `lancio/STORE.md` (§0octies). Quella del Play Store aspetta Android.
+- **Non aprire l'account RevenueCat.** Su iOS gli acquisti si fanno con StoreKit, senza
+  intermediari: così la scheda resta "Nessun dato raccolto" (D67). E **non creare ancora i
+  prodotti in app** finché il piano di D67 non è confermato.
+- ~~Non comprare domini prima di aver scelto il nome~~: il nome è Instink, e `instink.app`
+  va comprato adesso (§0quater).
 
 ---
 
@@ -335,10 +483,12 @@ Ti risparmia soldi e tempo:
 Il **core condiviso è scritto e verificato**: modello dati pronto per il sync, motore
 d'inchiostro, archivio SQLite con cinque migrazioni provate, giornale che mette
 l'inchiostro al sicuro dal primo tratto, ricerca, uscita verso altre app, smistamento,
-riemersione e date. **302 test, tutti verdi, su qualunque macchina.**
+riemersione e date, lettura della scrittura e voce. **318 test, tutti verdi, su qualunque
+macchina.**
 
-L'**app Android compila e gira** sul tuo S8, con le misure tutte verdi. L'**app iOS è
-scritta** — le due tappe — e **aspetta la prima compilazione**, sul tuo Mac o su Codemagic.
+L'**app Android compila e gira** sul tuo S8, con le misure tutte verdi. L'**app iOS è su
+TestFlight** e funziona sul tuo iPhone; la scrittura letta, la voce e Siri (D62, D63)
+aspettano la prossima build.
 
 Le ragioni di ogni scelta stanno in [`CLAUDE.md`](CLAUDE.md), che è la memoria del
 progetto: se una decisione ti sembra sbagliata, lì c'è scritto perché era stata presa e

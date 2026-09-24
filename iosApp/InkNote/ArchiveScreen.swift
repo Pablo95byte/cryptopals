@@ -9,6 +9,7 @@ struct ArchiveScreen: View {
     @StateObject private var model = ArchiveModel()
     @Environment(\.scenePhase) private var scenePhase
     @State private var sorting = false
+    @State private var share: SharePayload?
 
     var body: some View {
         NavigationStack {
@@ -29,6 +30,12 @@ struct ArchiveScreen: View {
                                 NavigationLink(value: item.id) { NoteCard(item: item) }
                                     .buttonStyle(.plain)
                                     .contextMenu {
+                                        // Tenendo premuto: mandare senza aprire la nota (D59).
+                                        Button {
+                                            SharePayload.prepare(noteId: item.id) { payload in share = payload }
+                                        } label: {
+                                            Label("Send to…", systemImage: "square.and.arrow.up")
+                                        }
                                         Button(role: .destructive) { model.delete(item) } label: {
                                             Label("Delete", systemImage: "trash")
                                         }
@@ -75,6 +82,14 @@ struct ArchiveScreen: View {
         .fullScreenCover(isPresented: $sorting) {
             TriageScreen { model.reload() }
         }
+        .sheet(item: $share) { payload in
+            // L'invio si registra solo se l'utente sceglie una destinazione (invariante 18).
+            ShareSheet(items: payload.items) { sent in
+                share = nil
+                if sent { SharePayload.markSent(payload.id) { model.reload() } }
+            }
+            .presentationDetents([.medium, .large])
+        }
         .onAppear { model.refresh() }
         .onChange(of: scenePhase) { _, phase in if phase == .active { model.refresh() } }
         .onChange(of: router.isCapturing) { _, capturing in if !capturing { model.refresh() } }
@@ -93,13 +108,20 @@ private struct NoteCard: View {
             Group {
                 if item.note.hasInk {
                     InkThumbnail(note: item.note)
-                } else {
-                    Text(item.caption ?? "")
+                } else if let caption = item.caption {
+                    Text(caption)
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(Brand.ink)
                         .lineLimit(7)
                         .padding(16)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                } else {
+                    // Una registrazione non ancora trascritta, o solo una foto: un segno
+                    // tenue invece di un bigliettino vuoto che sembra rotto.
+                    Image(systemName: item.note.hasVoice ? "waveform" : "photo")
+                        .font(.system(size: 28, weight: .light))
+                        .foregroundStyle(Brand.inkMuted)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
             .frame(height: 150)

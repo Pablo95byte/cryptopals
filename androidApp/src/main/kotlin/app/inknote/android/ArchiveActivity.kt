@@ -1,6 +1,7 @@
 package app.inknote.android
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -14,6 +15,7 @@ import android.text.TextWatcher
 import android.text.format.DateUtils
 import android.util.LruCache
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -24,9 +26,13 @@ import android.widget.FrameLayout
 import android.widget.GridView
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import app.inknote.core.model.Note
+import app.inknote.core.model.Resurface
+import app.inknote.core.model.Resurfaced
+import java.util.TimeZone
 
 /**
  * L'archivio: tutte le note, la ricerca, e il pulsante per scriverne una nuova (D39).
@@ -52,6 +58,12 @@ class ArchiveActivity : Activity() {
     private lateinit var empty: View
     private lateinit var emptyTitle: TextView
     private lateinit var emptyBody: TextView
+    private lateinit var sortButton: TextView
+    private lateinit var resurfacedCard: View
+    private lateinit var resurfacedTitle: TextView
+    private lateinit var resurfacedCaption: TextView
+    private lateinit var resurfacedInk: InkPreviewView
+    private var resurfacedNote: Note? = null
     private val reloadTask = Runnable { reload() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,11 +85,28 @@ class ArchiveActivity : Activity() {
 
     private fun reload() {
         val term = search.text.toString()
+        val now = System.currentTimeMillis()
+        val offset = TimeZone.getDefault().getOffset(now).toLong()
+        val today = Resurface.dayOf(now, offset)
+        val dismissedToday = prefs().getLong(PREF_RESURFACE_DISMISSED, Long.MIN_VALUE) == today
         Archive.run(this, { store ->
-            val notes = if (term.isBlank()) store.recentNotes(limit = 500) else store.search(term, limit = 200)
-            notes to store.liveNoteCount()
-        }) { (notes, total) ->
+            val searching = term.isNotBlank()
+            val notes = if (!searching) store.recentNotes(limit = 500) else store.search(term, limit = 200)
+            // La riemersione (D52): una nota vecchia al giorno, in cima, mai durante una
+            // ricerca. Un giorno di margine: l'età si conta in giorni di calendario.
+            val resurfaced = if (searching || dismissedToday) null else Resurface.pick(
+                store.notesCreatedBefore(before = now - (Resurface.MIN_AGE_DAYS - 1) * DAY_MS, limit = 400),
+                now,
+                offset,
+            )
+            ArchiveState(notes, store.liveNoteCount(), store.notesToSortCount(), resurfaced)
+        }) { (notes, total, toSort, resurfaced) ->
             adapter.submit(notes)
+            // Il pulsante compare solo se c'è qualcosa da smistare: "0 da smistare" sarebbe
+            // un compito, e un'app di cattura non ne dà (D51).
+            sortButton.text = getString(R.string.sort_button, toSort.toInt())
+            sortButton.visibility = if (toSort > 0) View.VISIBLE else View.GONE
+            showResurfaced(resurfaced)
             subtitle.text = resources.getQuantityString(R.plurals.note_count, total.toInt(), total.toInt())
             subtitle.visibility = if (total > 0) View.VISIBLE else View.INVISIBLE
             val searching = term.isNotBlank()
@@ -110,6 +139,11 @@ class ArchiveActivity : Activity() {
             setOnItemClickListener { _, _, position, _ ->
                 val note = this@ArchiveActivity.adapter.getItem(position)
                 startActivity(Intent(this@ArchiveActivity, NoteActivity::class.java).putExtra(NoteActivity.EXTRA_NOTE_ID, note.id.value))
+            }
+            // Tenendo premuto: mandare o eliminare senza aprire la nota (D59).
+            setOnItemLongClickListener { _, view, position, _ ->
+                showNoteMenu(view, this@ArchiveActivity.adapter.getItem(position))
+                true
             }
             // Scorrendo, la tastiera della ricerca si chiude: si stava guardando, non scrivendo.
             setOnScrollListener(object : AbsListView.OnScrollListener {
@@ -149,9 +183,24 @@ class ArchiveActivity : Activity() {
         })
         subtitle = Ui.text(this, Ui.CAPTION + 1, Ui.MEDIUM, getColor(R.color.text_secondary)).apply {
             visibility = View.INVISIBLE
-            setPadding(dp(2), dp(2), 0, dp(14))
+            setPadding(dp(2), dp(2), 0, 0)
         }
-        header.addView(subtitle)
+        // Tenue: il solo pulsante pieno della schermata resta "Scrivi" (D46).
+        sortButton = Ui.pill(this, "", R.drawable.ic_keep, primary = false) {
+            startActivity(Intent(this, TriageActivity::class.java))
+        }.apply {
+            visibility = View.GONE
+            minHeight = dp(40)
+            setPadding(dp(16), 0, dp(16), 0)
+        }
+        val subtitleRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, 0, 0, dp(14))
+            addView(subtitle, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            addView(sortButton, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)))
+        }
+        header.addView(subtitleRow, Ui.matchWidth())
 
         // La ricerca: una pillola, non una riga sottolineata.
         val secondary = getColor(R.color.text_secondary)
@@ -195,8 +244,74 @@ class ArchiveActivity : Activity() {
             addView(clearSearch)
         }
         header.addView(pill, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)))
+        resurfacedCard = buildResurfacedCard()
+        header.addView(resurfacedCard, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(14)
+        })
         return header
     }
+
+    /**
+     * La nota tornata a galla (D52): un bigliettino piccolo, "una settimana fa, oggi", che
+     * si apre con un tocco e si toglie per oggi con la crocetta. Nessuna notifica: la
+     * trova chi apre l'archivio, e basta.
+     */
+    private fun buildResurfacedCard(): View {
+        resurfacedInk = InkPreviewView(this).apply { setPadding(dp(6), dp(6), dp(6), dp(6)) }
+        resurfacedTitle = Ui.text(this, Ui.CAPTION + 0.5f, Ui.SEMIBOLD, getColor(R.color.on_paper_muted), maxLines = 1)
+        resurfacedCaption = Ui.text(this, Ui.LABEL, Ui.MEDIUM, getColor(R.color.on_paper), maxLines = 2)
+        val texts = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(resurfacedTitle)
+            addView(resurfacedCaption)
+        }
+        val close = Ui.iconButton(this, R.drawable.ic_close, getString(R.string.resurface_hide), getColor(R.color.on_paper_muted)) {
+            prefs().edit().putLong(PREF_RESURFACE_DISMISSED, Resurface.dayOf(System.currentTimeMillis(), TimeZone.getDefault().getOffset(System.currentTimeMillis()).toLong())).apply()
+            resurfacedCard.visibility = View.GONE
+        }
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(10), dp(10), dp(4), dp(10))
+            Ui.card(this, context, radiusDp = 18f)
+            foreground = Ui.pressable(context, null, dp(18).toFloat())
+            visibility = View.GONE
+            addView(resurfacedInk, LinearLayout.LayoutParams(dp(64), dp(64)).apply { marginEnd = dp(12) })
+            addView(texts, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            addView(close)
+            setOnClickListener {
+                val note = resurfacedNote ?: return@setOnClickListener
+                startActivity(Intent(this@ArchiveActivity, NoteActivity::class.java).putExtra(NoteActivity.EXTRA_NOTE_ID, note.id.value))
+            }
+        }
+    }
+
+    private fun showResurfaced(resurfaced: Resurfaced?) {
+        resurfacedNote = resurfaced?.note
+        if (resurfaced == null) {
+            resurfacedCard.visibility = View.GONE
+            return
+        }
+        val note = resurfaced.note
+        // "Un anno fa, oggi" tocca più di "365 giorni fa".
+        resurfacedTitle.text = when {
+            resurfaced.isAnniversary && resurfaced.daysAgo == 365 -> getString(R.string.resurface_year)
+            resurfaced.isAnniversary && resurfaced.daysAgo == 90 -> getString(R.string.resurface_quarter)
+            resurfaced.isAnniversary && resurfaced.daysAgo == 30 -> getString(R.string.resurface_month)
+            resurfaced.isAnniversary && resurfaced.daysAgo == 7 -> getString(R.string.resurface_week)
+            else -> getString(R.string.resurface_days, resurfaced.daysAgo)
+        }
+        val caption = note.typedText
+            ?: note.recognizedText?.trim()?.ifEmpty { null }
+            ?: note.visibleVoiceClips.firstNotNullOfOrNull { clip -> clip.transcript?.trim()?.ifEmpty { null } }
+        resurfacedCaption.text = caption ?: ""
+        resurfacedCaption.visibility = if (caption == null) View.GONE else View.VISIBLE
+        resurfacedInk.note = note
+        resurfacedInk.visibility = if (note.hasInk) View.VISIBLE else View.GONE
+        resurfacedCard.visibility = View.VISIBLE
+    }
+
+    private fun prefs() = getSharedPreferences(PREFS, MODE_PRIVATE)
 
     private fun buildEmptyState(): View = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
@@ -221,6 +336,32 @@ class ArchiveActivity : Activity() {
         addView(emptyBody)
     }
 
+    private fun showNoteMenu(anchor: View, note: Note) {
+        anchor.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        PopupMenu(this, anchor).apply {
+            menu.add(0, MENU_SHARE, 0, R.string.share)
+            menu.add(0, MENU_DELETE, 1, R.string.delete)
+            setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    MENU_SHARE -> ShareNote.share(this@ArchiveActivity, note)
+                    MENU_DELETE -> confirmDelete(note)
+                }
+                true
+            }
+        }.show()
+    }
+
+    private fun confirmDelete(note: Note) {
+        AlertDialog.Builder(this)
+            .setMessage(R.string.delete_confirm)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                // Un tombstone, non una cancellazione (D8, D26).
+                Archive.run(this, { it.markDeleted(note.id, System.currentTimeMillis()) }) { reload() }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
     private fun hideKeyboard() {
         getSystemService(android.view.inputmethod.InputMethodManager::class.java)?.hideSoftInputFromWindow(search.windowToken, 0)
         search.clearFocus()
@@ -228,8 +369,23 @@ class ArchiveActivity : Activity() {
 
     private fun dp(value: Int): Int = Ui.dp(this, value.toFloat())
 
+    /** Ciò che l'archivio mostra, letto in un colpo solo sul thread dell'archivio. */
+    private data class ArchiveState(
+        val notes: List<Note>,
+        val total: Long,
+        val toSort: Long,
+        val resurfaced: Resurfaced?,
+    )
+
     private companion object {
         const val SEARCH_DELAY_MS = 200L
+        const val DAY_MS = 86_400_000L
+
+        /** Preferenze di chi guarda, non dati delle note: stanno fuori dall'archivio (D52). */
+        const val PREFS = "archive"
+        const val PREF_RESURFACE_DISMISSED = "resurface.dismissedDay"
+        const val MENU_SHARE = 1
+        const val MENU_DELETE = 2
     }
 }
 

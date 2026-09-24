@@ -1,0 +1,56 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Add a note to ${applicationName}": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi una nota a ${applicationName}"
+          }
+        }
+      }
+    },
+    "Add an ${applicationName} note": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi una nota ${applicationName}"
+          }
+        }
+      }
+    },
+    "New ${applicationName} note": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuova nota ${applicationName}"
+          }
+        }
+      }
+    },
+    "Take a note in ${applicationName}": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prendi una nota in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Write a note in ${applicationName}": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scrivi una nota in ${applicationName}"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -1,6 +1,5 @@
 {
   "sourceLanguage": "en",
-  "version": "1.0",
   "strings": {
     "%lld days ago": {
       "localizations": {
@@ -48,6 +47,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Un anno fa, oggi"
+          }
+        }
+      }
+    },
+    "Add a note": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi una nota"
           }
         }
       }
@@ -102,6 +111,26 @@
         }
       }
     },
+    "Dictate": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detta"
+          }
+        }
+      }
+    },
+    "Dictate a note to Instink without unlocking.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detta una nota a Instink senza sbloccare."
+          }
+        }
+      }
+    },
     "Done": {
       "localizations": {
         "it": {
@@ -132,6 +161,16 @@
         }
       }
     },
+    "Microphone is off": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il microfono è spento"
+          }
+        }
+      }
+    },
     "New notes will wait here until you have a minute.": {
       "localizations": {
         "it": {
@@ -142,12 +181,32 @@
         }
       }
     },
+    "Not now": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non ora"
+          }
+        }
+      }
+    },
     "Not today": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Non oggi"
+          }
+        }
+      }
+    },
+    "Note": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nota"
           }
         }
       }
@@ -182,6 +241,16 @@
         }
       }
     },
+    "Nothing to save.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non c'è niente da salvare."
+          }
+        }
+      }
+    },
     "OK": {
       "localizations": {
         "it": {
@@ -212,6 +281,16 @@
         }
       }
     },
+    "Pause": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa"
+          }
+        }
+      }
+    },
     "Photo": {
       "localizations": {
         "it": {
@@ -222,12 +301,42 @@
         }
       }
     },
+    "Play voice note": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ascolta la nota vocale"
+          }
+        }
+      }
+    },
+    "Record": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra"
+          }
+        }
+      }
+    },
     "Remind me · %@": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Ricordamelo · %@"
+          }
+        }
+      }
+    },
+    "Saved to Instink.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvata in Instink."
           }
         }
       }
@@ -262,12 +371,32 @@
         }
       }
     },
+    "Settings": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impostazioni"
+          }
+        }
+      }
+    },
     "Sort %lld": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Smista %lld"
+          }
+        }
+      }
+    },
+    "Stop recording": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ferma la registrazione"
           }
         }
       }
@@ -312,12 +441,52 @@
         }
       }
     },
+    "To record voice notes, allow Instink to use the microphone in Settings.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per registrare note vocali, consenti a Instink di usare il microfono nelle Impostazioni."
+          }
+        }
+      }
+    },
+    "Transcript on its way": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La trascrizione sta arrivando"
+          }
+        }
+      }
+    },
     "Type": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Scrivi a tastiera"
+          }
+        }
+      }
+    },
+    "Voice note": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nota vocale"
+          }
+        }
+      }
+    },
+    "What's the note?": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qual è la nota?"
           }
         }
       }
@@ -352,5 +521,6 @@
         }
       }
     }
-  }
+  },
+  "version": "1.0"
 }

@@ -35,4 +35,21 @@
         <item quantity="one">%d nota</item>
         <item quantity="other">%d note</item>
     </plurals>
+    <!-- Smistamento a carte e riemersione (D52, D64) -->
+    <string name="sort_button">Smista %d</string>
+    <plurals name="to_sort">
+        <item quantity="one">%d da smistare</item>
+        <item quantity="other">%d da smistare</item>
+    </plurals>
+    <string name="keep">Tieni</string>
+    <string name="send">Manda</string>
+    <string name="close">Chiudi</string>
+    <string name="all_sorted">Tutto smistato</string>
+    <string name="all_sorted_body">Le note nuove ti aspettano qui finché hai un minuto.</string>
+    <string name="resurface_year">Un anno fa, oggi</string>
+    <string name="resurface_quarter">Tre mesi fa, oggi</string>
+    <string name="resurface_month">Un mese fa, oggi</string>
+    <string name="resurface_week">Una settimana fa, oggi</string>
+    <string name="resurface_days">%d giorni fa</string>
+    <string name="resurface_hide">Nascondi per oggi</string>
 </resources>

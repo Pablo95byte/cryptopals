@@ -248,7 +248,8 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
 
     override fun purgeDeleted(before: Long): List<String> = database.transactionWithResult {
         // I percorsi prima delle righe: dopo non si saprebbe più quali file cancellare.
-        val photoPaths = queries.selectPhotoPathsOfPurgeableNotes(before).executeAsList()
+        val filePaths = queries.selectPhotoPathsOfPurgeableNotes(before).executeAsList() +
+            queries.selectAudioPathsOfPurgeableNotes(before).executeAsList().mapNotNull { it }
         run {
             // I figli prima della nota: la cascata sulle chiavi esterne non è
             // garantita, vedi il commento nello schema.
@@ -259,8 +260,36 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
             queries.purgeExportsOfDeletedNotes(before)
             queries.purgeDeletedNotes(before)
         }
-        photoPaths
+        filePaths
     }
+
+    // Lettura e scrittura nella stessa transazione, e non `changes()`: il driver di iOS
+    // legge da un gruppo di connessioni, e `changes()` letto da un'altra connessione
+    // direbbe zero.
+    override fun setRecognizedText(id: NoteId, text: String, forRevision: Long): Boolean =
+        database.transactionWithResult {
+            val current = queries.selectRevision(id.value).executeAsOneOrNull()
+            if (current != forRevision) return@transactionWithResult false
+            queries.setRecognizedText(
+                recognizedText = text,
+                recognizedTextNormalized = SearchText.normalize(text),
+                revision = forRevision,
+                id = id.value,
+            )
+            true
+        }
+
+    override fun setTranscript(clipId: VoiceClipId, transcript: String): Boolean =
+        database.transactionWithResult {
+            val pending = queries.selectTranscriptPending(clipId.value).executeAsOneOrNull() ?: false
+            if (!pending) return@transactionWithResult false
+            queries.setTranscript(
+                transcript = transcript,
+                transcriptNormalized = SearchText.normalize(transcript),
+                id = clipId.value,
+            )
+            true
+        }
 
     private fun strokesOf(noteId: String): List<Stroke> =
         orderStrokes(queries.selectStrokes(noteId).executeAsList().map { it.toStroke() })

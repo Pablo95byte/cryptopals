@@ -88,6 +88,11 @@
             android:name=".NoteActivity"
             android:exported="false" />
 
+        <!-- Lo smistamento a carte (D52, D64): dall'archivio, mai dal foglio. -->
+        <activity
+            android:name=".TriageActivity"
+            android:exported="false" />
+
         <!-- La ricevuta del foglio di condivisione: registra l'invio (D31). -->
         <receiver
             android:name=".ShareResultReceiver"

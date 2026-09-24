@@ -3,7 +3,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
-    alias(libs.plugins.androidApplication)
+    // Senza versione: il plugin Android è già sul classpath della radice (D58), e chiederlo
+    // con una versione farebbe fermare Gradle ("already on the classpath").
+    id("com.android.application")
     alias(libs.plugins.kotlinAndroid)
 }
 

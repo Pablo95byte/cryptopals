@@ -39,4 +39,21 @@
         <item quantity="one">%d note</item>
         <item quantity="other">%d notes</item>
     </plurals>
+    <!-- Smistamento a carte e riemersione (D52, D64) -->
+    <string name="sort_button">Sort %d</string>
+    <plurals name="to_sort">
+        <item quantity="one">%d to sort</item>
+        <item quantity="other">%d to sort</item>
+    </plurals>
+    <string name="keep">Keep</string>
+    <string name="send">Send</string>
+    <string name="close">Close</string>
+    <string name="all_sorted">All sorted</string>
+    <string name="all_sorted_body">New notes will wait here until you have a minute.</string>
+    <string name="resurface_year">A year ago today</string>
+    <string name="resurface_quarter">Three months ago today</string>
+    <string name="resurface_month">A month ago today</string>
+    <string name="resurface_week">A week ago today</string>
+    <string name="resurface_days">%d days ago</string>
+    <string name="resurface_hide">Hide for today</string>
 </resources>
