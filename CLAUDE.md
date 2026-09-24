@@ -93,7 +93,7 @@ posto solo invece che sparsi fra le decisioni.
 | Ritorno | **OK non salva, è solo un'uscita** (D5): nessun gesto è obbligatorio per non perdere la nota | nel codice |
 | Primo avvio | **Nessun account e nessun onboarding** (D12): all'apertura non c'è niente da configurare | deciso |
 | Mani occupate | **Cattura a voce** (D18): l'unica strada senza sblocco su iPhone | modello fatto, cattura da scrivere |
-| Tutti | **I tetti: 100 ms a caldo, 400 a freddo** (D19, D32). Non sono funzionalità: impediscono alle altre di degradarsi | misuratore nel codice, misura da fare |
+| Tutti | **I tetti: foglio pronto in 100 ms a caldo, 400 a freddo; tratto dietro al dito di al massimo 50 ms** (D19, D32, D36). Non sono funzionalità: impediscono alle altre di degradarsi | prima misura fatta: 86 ms a caldo, 358–387 a freddo |
 | Tutti | **Restare piccoli**: un processo leggero resta nella cache del sistema, e la seconda apertura della giornata è calda (D32) | nel codice, zero dipendenze |
 
 **Fuori da questa catena** sta la ricerca (OCR e trascrizioni, D2 e D25): riduce
@@ -835,7 +835,8 @@ lingua sono cose di piattaforma, e il core non si tira dentro una libreria di da
 una riga in fondo a un file.
 
 ### D32 — Il tetto dell'attrito è due numeri, non uno: 100 ms a caldo, 400 a freddo
-**Data:** 2026-09-13 · **Stato:** attiva · **Precisa D19**
+**Data:** 2026-09-13 · **Stato:** attiva · **Precisa D19** · **le tappe misurate sono
+corrette da D36**: i tetti 100/400 valgono fino al foglio pronto, non fino al primo tocco
 
 Si misurano **due tappe** con **due tetti**, e separatamente per apertura a freddo e a
 caldo:
@@ -1006,6 +1007,45 @@ non risale più al chiamante: lo conta il sink, e il foglio mostra un avviso —
 testo che può comparire prima del primo tratto, perché è l'unico caso in cui la promessa
 non vale.
 
+### D36 — Il misuratore misura il telefono, non la mano
+**Data:** 2026-09-24 · **Stato:** attiva · **Corregge le tappe di D32**
+
+I tetti di D32 (100 ms a caldo, 400 a freddo) valgono **dal gesto al foglio pronto**, cioè
+al primo fotogramma: da lì un dito che tocca il vetro lascia inchiostro. Il secondo
+numero è la **latenza del tratto**: dal dito sul vetro — l'istante dell'hardware, non
+quello in cui l'evento ci arriva — all'inchiostro disegnato, con un tetto di **50 ms**
+uguale a freddo e a caldo.
+
+**Cosa era sbagliato.** D32 misurava fino al "primo inchiostro accettato", che arriva solo
+quando l'utente tocca. Il numero conteneva quindi **il tempo della mano**: sul primo
+telefono vero il misuratore diceva 1468 ms in rosso, mentre `am start -W` diceva che il
+foglio era pronto in 360. Un tetto che dipende da quanto in fretta si muove chi prova
+l'app non misura l'app, e un numero rosso falso è peggio di nessun numero: insegna a
+ignorare il rosso.
+
+**Perché il tocco dall'istante dell'hardware.** Ogni `MotionEvent` porta il momento in cui
+il digitizer ha sentito il dito. Misurare da quando l'evento ci viene consegnato
+nasconderebbe proprio il ritardo di consegna, che è parte di ciò che l'utente sente.
+
+**Perché 50 ms.** È circa tre fotogrammi a 60 Hz. Oltre, l'inchiostro resta visibilmente
+indietro rispetto al dito, e scrivere diventa difficile — che è esattamente la
+lamentela che conta per un'app di scrittura. Il numero è **provvisorio**: va rivisto
+quando avremo le prime misure.
+
+**La prima misura vera (Samsung Galaxy S8, Android 9, 2026-09-24), con `am start -W`:**
+
+| | primo fotogramma |
+|---|---|
+| a caldo | 86 ms — entro 100 |
+| a freddo, dopo l'installazione | 1313 ms — il codice non è ancora compilato dal sistema |
+| a freddo, le volte successive | 358–387 ms — entro 400, ma col margine di un fotogramma o due |
+
+Sul freddo siamo al limite, su un telefono del 2017. La leva è il profilo di riferimento
+(D32, leva 1), e il primo passo è misurare quanto potrebbe dare: compilare tutto in
+anticipo a mano sul telefono e rimisurare. Il caso "subito dopo l'installazione" è
+esattamente quello che il profilo di riferimento cura, e sarà la prima impressione di
+ogni utente nuovo.
+
 ---
 
 ## 5. Struttura del repository
@@ -1077,7 +1117,8 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
     aggiunge, non si rilegge. Vale anche per il foglio stesso: quando esce dallo
     schermo si chiude, e non compare fra le app recenti (D34).
 12. **I tetti dell'attrito bloccano il rilascio**, non sono obiettivi: 100 ms a caldo e
-    400 a freddo dal gesto all'inchiostro accettato. (D19, D32)
+    400 a freddo dal gesto al foglio pronto, 50 ms dal dito all'inchiostro. Il tempo
+    della mano non entra in nessuno dei due. (D19, D32, D36)
 13. **Il giornale si svuota solo dopo che i record sono in archivio, e solo dei byte
     letti.** Non esiste uno svuotamento totale: un tratto arrivato dopo la lettura resta
     dov'è. (D22, D35)
@@ -1130,9 +1171,9 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
   le cose da non fare ancora.
 
 Stato attuale: **233 test, tutti verdi.** L'app Android **compila e si installa** (Samsung
-Galaxy S8, 2026-09-24, nessuna modifica al codice). Prima lettura:
-`am start -W` → `TotalTime: 86` ms, senza sapere se l'avvio era a freddo o a caldo. Le
-misure ripetute e le verifiche col telefono in mano sono ancora da fare.
+Galaxy S8, 2026-09-24, nessuna modifica al codice). Prime misure in D36: 86 ms a caldo,
+358–387 a freddo. Il widget funziona. Il riquadro rapido e la privacy sono ancora da
+provare.
 
 ---
 
@@ -1172,11 +1213,9 @@ misure ripetute e le verifiche col telefono in mano sono ancora da fare.
 
 ### Bloccato sulla misura
 
-7. **Prendere il numero di D19** su un telefono vero. Istruzioni in
-   [`GUIDA.md`](GUIDA.md). **Tocca al committente**, e va prima
-   di scrivere altro codice di piattaforma: se il pavimento è molto oltre i 400 ms la
-   conseguenza cambia l'architettura di entrambe le app, e scriverne una seconda prima
-   di saperlo è lavoro a rischio.
+7. ~~Prendere il numero di D19~~ — preso sul Samsung S8: il pavimento regge, a freddo
+   al limite (D36). **Resta da misurare quanto dà la compilazione anticipata**, prima di
+   investire nel profilo di riferimento. Istruzioni in [`GUIDA.md`](GUIDA.md).
 
 ### Si può fare adesso, senza telefono (core puro, verificabile qui)
 
@@ -1220,6 +1259,10 @@ misure ripetute e le verifiche col telefono in mano sono ancora da fare.
   renda il livello gratuito inutile e quindi l'app non recensita.
 - **Prezzo effettivo del Pro**, per mercato.
 - **Gesto della gomma** con dito e con pennino, che sono casi diversi.
+- **Scrivere in corsivo col dito è difficile** (primo telefono vero). Da capire se è
+  latenza, spessore, righe troppo fitte o la natura del dito. Se è la dimensione, la
+  risposta classica è una fascia di scrittura ingrandita (si scrive grande, la riga si
+  rimpicciolisce): cambia il foglio, quindi va decisa col committente, non introdotta.
 - **Il recupero dal cestino.** Azzerare `deletedAt` non funziona: l'archivio non lo
   permette più (D26) e al primo sync la cancellazione vincerebbe comunque. Probabile
   soluzione: copiare la nota sotto un id nuovo, accettando di perdere lo storico.

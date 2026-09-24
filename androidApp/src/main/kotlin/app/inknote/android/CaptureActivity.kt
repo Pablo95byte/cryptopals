@@ -97,6 +97,13 @@ class CaptureActivity : Activity() {
 
         inkView = InkCanvasView(this).apply {
             onFirstFrame = { trace.mark(CaptureMilestone.FIRST_FRAME) }
+            onTouch = { eventUptime ->
+                // L'evento porta l'istante dell'hardware sull'orologio `uptimeMillis`;
+                // la misura sta su `elapsedRealtime`. Da svegli la differenza fra i due
+                // è costante, quindi basta spostarlo.
+                val offset = SystemClock.elapsedRealtime() - SystemClock.uptimeMillis()
+                trace.markAt(CaptureMilestone.TOUCH, atMillis = eventUptime + offset)
+            }
             onInkAccepted = {
                 trace.mark(CaptureMilestone.INK_ACCEPTED)
                 // L'aggiornamento dell'interfaccia sì, al giro successivo: la tappa è
@@ -218,9 +225,14 @@ class CaptureActivity : Activity() {
         val meter = meter ?: return
         meter.text = trace.report()
         meter.setTextColor(
-            when (trace.verdict()) {
-                FrictionVerdict.WITHIN_BUDGET -> Color.parseColor("#2F6B3A")
-                else -> Color.parseColor("#B4402F")
+            // Rosso se una delle due sfora: il foglio lento ad aprirsi o il tratto che
+            // resta indietro rispetto al dito (D36).
+            if (trace.verdict() == FrictionVerdict.OVER_BUDGET ||
+                trace.touchVerdict() == FrictionVerdict.OVER_BUDGET
+            ) {
+                Color.parseColor("#B4402F")
+            } else {
+                Color.parseColor("#2F6B3A")
             },
         )
     }

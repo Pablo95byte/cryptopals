@@ -35,12 +35,12 @@ class InkCanvasView(context: Context) : View(context) {
      * riceve deve limitarsi a registrare il tempo: aggiornare l'interfaccia da qui
      * significa toccare il layout durante un disegno.
      *
-     * [onInkAccepted] e [onInkDrawn] sono due cose diverse e hanno due tetti diversi:
-     * la prima è il momento in cui l'idea non si perde più, la seconda quello in cui
-     * l'utente vede il proprio tratto. La superficie riceve i tocchi appena esiste,
-     * quindi la prima può scattare **prima** del primo fotogramma.
+     * [onTouch] porta l'istante del tocco secondo l'hardware (`MotionEvent.eventTime`,
+     * orologio `uptimeMillis`), non quello in cui l'evento ci arriva: la latenza del
+     * tratto si misura da lì (D36).
      */
     var onFirstFrame: (() -> Unit)? = null
+    var onTouch: ((eventUptimeMillis: Long) -> Unit)? = null
     var onInkAccepted: (() -> Unit)? = null
     var onInkDrawn: (() -> Unit)? = null
 
@@ -53,6 +53,17 @@ class InkCanvasView(context: Context) : View(context) {
     private val liveSamples = ArrayList<InkPoint>()
     private var liveStartedAtEventTime = 0L
     private var reportedFirstFrame = false
+    private var reportedTouch = false
+
+    /**
+     * Il dito che sta scrivendo, per id e non per posizione nell'evento.
+     *
+     * L'indice 0 di un `MotionEvent` non è "il primo dito": quando il primo si alza,
+     * l'indice 0 passa al dito che resta. Leggere sempre l'indice 0 faceva saltare il
+     * tratto da un dito all'altro, disegnando una retta fra i due — trovato sul primo
+     * telefono vero, appoggiando due dita.
+     */
+    private var activePointerId = MotionEvent.INVALID_POINTER_ID
     private var reportedInkAccepted = false
     private var reportedInkDrawn = false
 
@@ -129,36 +140,57 @@ class InkCanvasView(context: Context) : View(context) {
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                // Un secondo contatto mentre si scrive è il palmo della mano: la
-                // sessione lo rifiuta, e qui non si apre nessun tratto.
                 if (!session.beginStroke(pen)) return true
+                activePointerId = event.getPointerId(0)
+                if (!reportedTouch) {
+                    reportedTouch = true
+                    onTouch?.invoke(event.eventTime)
+                }
                 liveSamples.clear()
                 liveStartedAtEventTime = event.eventTime
-                addSample(session, event, event.x, event.y, event.pressure, event.eventTime)
+                addSample(session, event, 0, event.getX(0), event.getY(0), event.getPressure(0), event.eventTime)
                 invalidate()
                 return true
             }
 
+            // Un secondo dito mentre si scrive è il palmo, o una mano che regge il
+            // telefono: non apre un tratto e non sposta quello in corso.
+            MotionEvent.ACTION_POINTER_DOWN -> return true
+
             MotionEvent.ACTION_MOVE -> {
+                val index = event.findPointerIndex(activePointerId)
+                if (index < 0) return true
                 // I campioni storici sono quelli che il digitizer ha raccolto fra due
                 // consegne: ignorarli vuol dire buttare via metà della risoluzione del
                 // tratto su uno schermo a 120 Hz.
-                for (index in 0 until event.historySize) {
+                for (position in 0 until event.historySize) {
                     addSample(
                         session = session,
                         event = event,
-                        x = event.getHistoricalX(index),
-                        y = event.getHistoricalY(index),
-                        pressure = event.getHistoricalPressure(index),
-                        eventTime = event.getHistoricalEventTime(index),
+                        pointerIndex = index,
+                        x = event.getHistoricalX(index, position),
+                        y = event.getHistoricalY(index, position),
+                        pressure = event.getHistoricalPressure(index, position),
+                        eventTime = event.getHistoricalEventTime(position),
                     )
                 }
-                addSample(session, event, event.x, event.y, event.pressure, event.eventTime)
+                addSample(session, event, index, event.getX(index), event.getY(index), event.getPressure(index), event.eventTime)
                 invalidate()
+                return true
+            }
+
+            MotionEvent.ACTION_POINTER_UP -> {
+                // Si è alzato il dito che scriveva mentre un altro resta sul vetro: il
+                // tratto finisce qui. Continuarlo con l'altro dito è la retta di prima.
+                if (event.getPointerId(event.actionIndex) == activePointerId) {
+                    activePointerId = MotionEvent.INVALID_POINTER_ID
+                    commit(session)
+                }
                 return true
             }
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                activePointerId = MotionEvent.INVALID_POINTER_ID
                 commit(session)
                 return true
             }
@@ -170,6 +202,7 @@ class InkCanvasView(context: Context) : View(context) {
     private fun addSample(
         session: CaptureSession,
         event: MotionEvent,
+        pointerIndex: Int,
         x: Float,
         y: Float,
         pressure: Float,
@@ -179,7 +212,7 @@ class InkCanvasView(context: Context) : View(context) {
         // che non è pressione: dichiararla assente fa calcolare lo spessore dalla
         // velocità, ed è la differenza fra una nota scritta a mano e un tubo di
         // spessore costante (invariante 6).
-        val effectivePressure = if (event.getToolType(0) == MotionEvent.TOOL_TYPE_STYLUS) {
+        val effectivePressure = if (event.getToolType(pointerIndex) == MotionEvent.TOOL_TYPE_STYLUS) {
             pressure
         } else {
             InkPoint.NO_PRESSURE

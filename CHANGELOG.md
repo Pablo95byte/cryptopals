@@ -194,6 +194,14 @@ solo cosa è cambiato nel codice.
 
 ### Corretto
 
+- **Due dita sul foglio tracciavano una retta**: il foglio seguiva l'indice 0 del
+  `MotionEvent`, che passa al dito rimasto quando il primo si alza. Ora segue il dito
+  che ha cominciato il tratto, per id; un secondo dito è ignorato.
+- **Il misuratore contava il tempo della mano**: misurava fino al primo tocco, e sul
+  primo telefono diceva 1468 ms in rosso con il foglio pronto in 360. Ora misura fino al
+  foglio pronto (tetti 100/400 ms) e, separatamente, dal dito sul vetro all'inchiostro
+  (tetto 50 ms), con l'istante del tocco preso dall'hardware (D36).
+
 - **Un tratto interrotto a metà scrittura rendeva invisibili tutte le note scritte
   dopo**, e l'assorbimento le avrebbe cancellate. Il lettore del giornale ora salta i byte
   rotti e riprende dal record valido successivo (D35). Riprodotto con un test prima della

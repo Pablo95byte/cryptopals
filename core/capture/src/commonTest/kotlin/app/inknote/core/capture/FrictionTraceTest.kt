@@ -2,6 +2,7 @@ package app.inknote.core.capture
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -16,20 +17,16 @@ class FrictionTraceTest {
         val trace = trace()
 
         assertEquals(FrictionVerdict.INCOMPLETE, trace.verdict())
-        assertEquals(FrictionVerdict.INCOMPLETE, trace.drawnVerdict())
-        assertNull(trace.timeToInkAccepted)
+        assertEquals(FrictionVerdict.INCOMPLETE, trace.touchVerdict())
+        assertNull(trace.timeToReady)
     }
 
     @Test
     fun `il tetto a caldo è più severo di quello a freddo`() {
         // Non è un capriccio: a freddo la maggior parte del tempo è creazione del
         // processo e inizializzazione del framework, che non è codice nostro.
-        assertTrue(
-            FrictionBudget.timeToInkAccepted(StartKind.WARM) <
-                FrictionBudget.timeToInkAccepted(StartKind.COLD),
-        )
-        assertEquals(100L, FrictionBudget.timeToInkAccepted(StartKind.WARM))
-        assertEquals(400L, FrictionBudget.timeToInkAccepted(StartKind.COLD))
+        assertEquals(100L, FrictionBudget.timeToReady(StartKind.WARM))
+        assertEquals(400L, FrictionBudget.timeToReady(StartKind.COLD))
     }
 
     @Test
@@ -39,7 +36,7 @@ class FrictionTraceTest {
             val trace = FrictionTrace(local, kind)
             trace.mark(CaptureMilestone.INTENT)
             local.advance(250)
-            trace.mark(CaptureMilestone.INK_ACCEPTED)
+            trace.mark(CaptureMilestone.FIRST_FRAME)
             return trace.verdict()
         }
 
@@ -48,43 +45,46 @@ class FrictionTraceTest {
     }
 
     @Test
-    fun `l'inchiostro accettato conta separatamente da quello visibile`() {
-        val trace = trace(StartKind.WARM)
+    fun `il tempo della mano non è attrito`() {
+        // Il caso reale del primo telefono: foglio pronto in 360 ms, poi l'utente ha
+        // toccato dopo più di un secondo. Il misuratore di prima diceva 1468 ms, in
+        // rosso, e contava la mano invece del telefono (D36).
+        val trace = trace(StartKind.COLD)
         trace.mark(CaptureMilestone.INTENT)
-        clock.advance(60)
+        clock.advance(360)
+        trace.mark(CaptureMilestone.FIRST_FRAME)
+        clock.advance(1_100)
+        trace.mark(CaptureMilestone.TOUCH)
+        clock.advance(8)
         trace.mark(CaptureMilestone.INK_ACCEPTED)
-        clock.advance(70)
+        clock.advance(10)
         trace.mark(CaptureMilestone.INK_DRAWN)
 
-        // L'idea è al sicuro a 60 ms; il tratto si vede a 130. Sono due promesse
-        // diverse, con due tetti diversi.
-        assertEquals(60L, trace.timeToInkAccepted)
-        assertEquals(130L, trace.timeToInkDrawn)
+        assertEquals(360L, trace.timeToReady)
+        assertEquals(18L, trace.touchToInk)
         assertEquals(FrictionVerdict.WITHIN_BUDGET, trace.verdict())
-        assertEquals(FrictionVerdict.WITHIN_BUDGET, trace.drawnVerdict())
+        assertEquals(FrictionVerdict.WITHIN_BUDGET, trace.touchVerdict())
+        assertFalse(trace.report().contains("1478"), trace.report())
     }
 
     @Test
-    fun `si può accettare inchiostro prima di averne disegnato`() {
+    fun `il tocco si misura dall'istante dell'hardware`() {
+        clock.set(1_000L)
         val trace = trace(StartKind.WARM)
-        trace.mark(CaptureMilestone.INTENT)
-        clock.advance(40)
-        // La superficie di disegno riceve i tocchi appena esiste, prima del primo
-        // fotogramma: l'idea è già al sicuro anche se sullo schermo non c'è ancora niente.
-        trace.mark(CaptureMilestone.INK_ACCEPTED)
+        // L'evento arriva con il suo istante, che è prima di quando ce lo consegnano.
+        trace.markAt(CaptureMilestone.TOUCH, atMillis = 940L)
+        trace.mark(CaptureMilestone.INK_DRAWN)
 
-        assertEquals(40L, trace.timeToInkAccepted)
-        assertNull(trace.timeToInkDrawn)
-        assertEquals(FrictionVerdict.WITHIN_BUDGET, trace.verdict())
-        assertEquals(FrictionVerdict.INCOMPLETE, trace.drawnVerdict())
+        assertEquals(60L, trace.touchToInk)
+        assertEquals(FrictionVerdict.OVER_BUDGET, trace.touchVerdict())
     }
 
     @Test
     fun `esattamente il bilancio è dentro`() {
         val trace = trace(StartKind.WARM)
         trace.mark(CaptureMilestone.INTENT)
-        clock.advance(FrictionBudget.timeToInkAccepted(StartKind.WARM))
-        trace.mark(CaptureMilestone.INK_ACCEPTED)
+        clock.advance(FrictionBudget.timeToReady(StartKind.WARM))
+        trace.mark(CaptureMilestone.FIRST_FRAME)
 
         assertEquals(FrictionVerdict.WITHIN_BUDGET, trace.verdict())
     }
@@ -93,8 +93,8 @@ class FrictionTraceTest {
     fun `un millisecondo oltre è oltre`() {
         val trace = trace(StartKind.COLD)
         trace.mark(CaptureMilestone.INTENT)
-        clock.advance(FrictionBudget.timeToInkAccepted(StartKind.COLD) + 1)
-        trace.mark(CaptureMilestone.INK_ACCEPTED)
+        clock.advance(FrictionBudget.timeToReady(StartKind.COLD) + 1)
+        trace.mark(CaptureMilestone.FIRST_FRAME)
 
         assertEquals(FrictionVerdict.OVER_BUDGET, trace.verdict())
     }
@@ -102,13 +102,13 @@ class FrictionTraceTest {
     @Test
     fun `la prima marcatura vince, perché il primo inchiostro è il primo`() {
         val trace = trace()
-        trace.mark(CaptureMilestone.INTENT)
-        clock.advance(100)
-        trace.mark(CaptureMilestone.INK_ACCEPTED)
+        trace.mark(CaptureMilestone.TOUCH)
+        clock.advance(20)
+        trace.mark(CaptureMilestone.INK_DRAWN)
         clock.advance(5_000)
-        trace.mark(CaptureMilestone.INK_ACCEPTED)
+        trace.mark(CaptureMilestone.INK_DRAWN)
 
-        assertEquals(100L, trace.timeToInkAccepted)
+        assertEquals(20L, trace.touchToInk)
     }
 
     @Test
@@ -117,9 +117,9 @@ class FrictionTraceTest {
         val trace = trace()
         // L'avvio del processo, che è successo prima che il nostro codice esistesse.
         trace.markAt(CaptureMilestone.INTENT, atMillis = 800L)
-        trace.mark(CaptureMilestone.INK_ACCEPTED)
+        trace.mark(CaptureMilestone.FIRST_FRAME)
 
-        assertEquals(200L, trace.timeToInkAccepted)
+        assertEquals(200L, trace.timeToReady)
     }
 
     @Test
@@ -128,9 +128,9 @@ class FrictionTraceTest {
         trace.markAt(CaptureMilestone.INTENT, atMillis = 500L)
         trace.markAt(CaptureMilestone.INTENT, atMillis = 100L)
         clock.set(700L)
-        trace.mark(CaptureMilestone.INK_ACCEPTED)
+        trace.mark(CaptureMilestone.FIRST_FRAME)
 
-        assertEquals(200L, trace.timeToInkAccepted)
+        assertEquals(200L, trace.timeToReady)
     }
 
     @Test
@@ -144,7 +144,7 @@ class FrictionTraceTest {
 
         assertEquals(300L, trace.span(CaptureMilestone.INTENT, CaptureMilestone.SURFACE_READY))
         assertEquals(40L, trace.span(CaptureMilestone.SURFACE_READY, CaptureMilestone.FIRST_FRAME))
-        assertNull(trace.span(CaptureMilestone.INTENT, CaptureMilestone.INK_ACCEPTED))
+        assertNull(trace.touchToInk)
     }
 
     @Test
@@ -152,7 +152,7 @@ class FrictionTraceTest {
         val trace = trace(StartKind.COLD)
         trace.mark(CaptureMilestone.INTENT)
         clock.advance(900)
-        trace.mark(CaptureMilestone.INK_ACCEPTED)
+        trace.mark(CaptureMilestone.FIRST_FRAME)
 
         val report = trace.report()
 
@@ -162,14 +162,21 @@ class FrictionTraceTest {
     }
 
     @Test
-    fun `il rapporto a caldo lo dice`() {
+    fun `il rapporto riporta la latenza del tratto quando c'è`() {
         val trace = trace(StartKind.WARM)
         trace.mark(CaptureMilestone.INTENT)
         clock.advance(50)
-        trace.mark(CaptureMilestone.INK_ACCEPTED)
+        trace.mark(CaptureMilestone.FIRST_FRAME)
+        clock.advance(700)
+        trace.mark(CaptureMilestone.TOUCH)
+        clock.advance(16)
+        trace.mark(CaptureMilestone.INK_DRAWN)
 
-        assertTrue(trace.report().contains("caldo"))
-        assertTrue(trace.report().contains("entro 100ms"))
+        val report = trace.report()
+
+        assertTrue(report.contains("caldo"), report)
+        assertTrue(report.contains("entro 100ms"), report)
+        assertTrue(report.contains("tocco→inchiostro 16ms (entro 50ms)"), report)
     }
 
     @Test

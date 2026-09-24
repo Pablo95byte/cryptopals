@@ -2,7 +2,14 @@ package app.inknote.core.capture
 
 import app.inknote.core.model.Clock
 
-/** Le tappe fra il gesto dell'utente e l'inchiostro. */
+/**
+ * Le tappe fra il gesto dell'utente e l'inchiostro.
+ *
+ * Sono di due famiglie, e non vanno sommate (D36). Da [INTENT] a [FIRST_FRAME] è il
+ * **telefono** che lavora: è il tempo che l'utente aspetta. Da [TOUCH] a [INK_DRAWN] è
+ * di nuovo il telefono, ma **dopo che l'utente ha deciso di toccare**. In mezzo c'è la
+ * mano, che ci mette quello che ci mette e non è attrito nostro.
+ */
 enum class CaptureMilestone {
     /** Il sistema ci ha consegnato l'intenzione: tocco sul widget, sul blocco, sul tasto. */
     INTENT,
@@ -10,24 +17,21 @@ enum class CaptureMilestone {
     /** Il processo è in piedi e la superficie di disegno esiste. */
     SURFACE_READY,
 
-    /** Primo fotogramma effettivamente disegnato. */
+    /**
+     * Primo fotogramma disegnato: il foglio è sullo schermo e riceve i tocchi.
+     *
+     * È la tappa che conta per la missione. Da qui un dito che tocca il vetro lascia
+     * inchiostro; prima, il tocco non arriverebbe a noi.
+     */
     FIRST_FRAME,
 
-    /**
-     * Primo campione di inchiostro **accettato e registrato**.
-     *
-     * È la tappa che conta per la missione: da qui l'idea non si perde più. Non richiede
-     * che qualcosa sia stato disegnato — la superficie di disegno esiste e riceve i
-     * tocchi già prima del primo fotogramma.
-     */
+    /** Il dito tocca il vetro: l'istante dell'hardware, non quello in cui ce lo dicono. */
+    TOUCH,
+
+    /** Primo campione di inchiostro accettato e registrato. */
     INK_ACCEPTED,
 
-    /**
-     * Primo inchiostro **visibile** sullo schermo.
-     *
-     * È la tappa che conta per la sensazione. Arriva dopo [INK_ACCEPTED] di almeno un
-     * intervallo di aggiornamento dello schermo, e quel ritardo non è nostro.
-     */
+    /** Primo inchiostro visibile sullo schermo. */
     INK_DRAWN,
 }
 
@@ -72,17 +76,18 @@ enum class StartKind {
  */
 object FrictionBudget {
 
-    /** Dal gesto al momento in cui l'idea è al sicuro. */
-    fun timeToInkAccepted(kind: StartKind): Long = when (kind) {
+    /** Dal gesto al foglio pronto a ricevere inchiostro (D32, D36). */
+    fun timeToReady(kind: StartKind): Long = when (kind) {
         StartKind.COLD -> 400
         StartKind.WARM -> 100
     }
 
-    /** Dal gesto al momento in cui l'utente vede il proprio tratto. */
-    fun timeToInkDrawn(kind: StartKind): Long = when (kind) {
-        StartKind.COLD -> 500
-        StartKind.WARM -> 150
-    }
+    /**
+     * Dal dito sul vetro all'inchiostro disegnato: se il tratto resta indietro rispetto
+     * al dito, scrivere diventa difficile. Vale uguale a freddo e a caldo, perché a quel
+     * punto il foglio c'è già (D36).
+     */
+    const val TOUCH_TO_INK_MS: Long = 50
 }
 
 enum class FrictionVerdict {
@@ -143,15 +148,15 @@ class FrictionTrace(
         return end - start
     }
 
-    /** Il numero che conta per la missione: dal gesto a idea al sicuro. */
-    val timeToInkAccepted: Long? get() = span(CaptureMilestone.INTENT, CaptureMilestone.INK_ACCEPTED)
+    /** Il numero che conta per la missione: dal gesto al foglio pronto. */
+    val timeToReady: Long? get() = span(CaptureMilestone.INTENT, CaptureMilestone.FIRST_FRAME)
 
-    /** Il numero che conta per la sensazione: dal gesto a inchiostro visibile. */
-    val timeToInkDrawn: Long? get() = span(CaptureMilestone.INTENT, CaptureMilestone.INK_DRAWN)
+    /** Il numero che conta mentre si scrive: dal dito sul vetro all'inchiostro visibile. */
+    val touchToInk: Long? get() = span(CaptureMilestone.TOUCH, CaptureMilestone.INK_DRAWN)
 
-    fun verdict(): FrictionVerdict = verdictFor(timeToInkAccepted, FrictionBudget.timeToInkAccepted(startKind))
+    fun verdict(): FrictionVerdict = verdictFor(timeToReady, FrictionBudget.timeToReady(startKind))
 
-    fun drawnVerdict(): FrictionVerdict = verdictFor(timeToInkDrawn, FrictionBudget.timeToInkDrawn(startKind))
+    fun touchVerdict(): FrictionVerdict = verdictFor(touchToInk, FrictionBudget.TOUCH_TO_INK_MS)
 
     private fun verdictFor(elapsed: Long?, budget: Long): FrictionVerdict = when {
         elapsed == null -> FrictionVerdict.INCOMPLETE
@@ -162,20 +167,24 @@ class FrictionTrace(
     /**
      * Riga da mostrare nel misuratore in modalità debug.
      *
-     * Riporta anche le tappe intermedie: senza di quelle si sa *che* è lento e non
-     * *dove*, e la cura è diversa a seconda del punto.
+     * Riporta anche la tappa intermedia: senza si sa *che* è lento e non *dove*, e la
+     * cura è diversa a seconda del punto. **Non** riporta il tempo fra il foglio pronto
+     * e il primo tocco: è quanto ci mette la mano, e mostrarlo come attrito era l'errore
+     * che D36 ha corretto.
      */
     fun report(): String {
-        val accepted = timeToInkAccepted ?: return "attrito: misura incompleta"
-        val budget = FrictionBudget.timeToInkAccepted(startKind)
+        val ready = timeToReady ?: return "attrito: misura incompleta"
+        val budget = FrictionBudget.timeToReady(startKind)
         val label = if (startKind == StartKind.COLD) "freddo" else "caldo"
-        val marker = if (verdict() == FrictionVerdict.WITHIN_BUDGET) "entro" else "OLTRE"
 
         return buildString {
-            append("attrito $label: ${accepted}ms ($marker ${budget}ms)")
-            timeToInkDrawn?.let { append(" · visibile ${it}ms") }
+            append("pronto $label: ${ready}ms (${marker(verdict())} ${budget}ms)")
+            touchToInk?.let {
+                append(" · tocco→inchiostro ${it}ms (${marker(touchVerdict())} ${FrictionBudget.TOUCH_TO_INK_MS}ms)")
+            }
             append(" · superficie ${span(CaptureMilestone.INTENT, CaptureMilestone.SURFACE_READY) ?: '?'}ms")
-            append(" · 1° fotogramma ${span(CaptureMilestone.INTENT, CaptureMilestone.FIRST_FRAME) ?: '?'}ms")
         }
     }
+
+    private fun marker(verdict: FrictionVerdict) = if (verdict == FrictionVerdict.WITHIN_BUDGET) "entro" else "OLTRE"
 }

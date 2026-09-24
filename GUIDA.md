@@ -16,8 +16,13 @@ un'apertura a freddo e una a caldo sono due fenomeni fisici diversi:
 
 | | a caldo | a freddo |
 |---|---|---|
-| **Inchiostro accettato** — l'idea non si perde più | **100 ms** | 400 ms |
-| **Inchiostro visibile** — vedi il tratto | 150 ms | 500 ms |
+| **Foglio pronto** — da qui il dito lascia inchiostro | **100 ms** | 400 ms |
+| **Tocco → inchiostro** — quanto il tratto resta dietro al dito | 50 ms | 50 ms |
+
+Il tempo che ci metti tu a toccare lo schermo non entra in nessuno dei due (D36).
+
+**Prima misura, Samsung S8:** 86 ms a caldo, 358–387 ms a freddo. Il pavimento regge;
+a freddo siamo al limite.
 
 A freddo la maggior parte del tempo è creazione del processo e inizializzazione del
 sistema: non è codice nostro e non si può saltare, ed è la ragione per cui 100 ms a
@@ -57,7 +62,7 @@ Il numero appare **in alto a sinistra** appena tracci il primo segno, verde se �
 tetto e rosso se è oltre. Dice anche da quale caso partiva:
 
 ```
-attrito freddo: 310ms (entro 400ms) · visibile 340ms · superficie 240ms · 1° fotogramma 280ms
+pronto freddo: 370ms (entro 400ms) · tocco→inchiostro 18ms (entro 50ms) · superficie 240ms
 ```
 
 **Misura a freddo, che è il caso vero:**
@@ -96,6 +101,17 @@ per cominciare.
   `1° fotogramma`) dicono **dove** si perde il tempo, e la cura è diversa a seconda del
   punto — non serve che li interpreti tu.
 
+### La prova della compilazione anticipata (5 minuti)
+
+Dice quanto potrebbe darci il profilo di riferimento, prima di scriverlo:
+
+```sh
+adb shell cmd package compile -m speed -f app.inknote.android
+```
+
+poi rimisura **a freddo tre volte** (arresto forzato + `am start -W`) e mandami i
+`TotalTime`. Per tornare allo stato normale: reinstalla l'app.
+
 ### Se il numero a freddo è alto
 
 Non ottimizzo alla cieca: prima serve la tua riga, poi si usa la leva giusta. La più
@@ -121,8 +137,10 @@ promette "al sicuro dal primo tratto" non funziona e quella è la prima cosa da 
 con un piccolo segno al centro, e toccandolo **in qualunque punto** si apre il foglio.
 
 **Il riquadro rapido, a telefono bloccato.** È la verifica più importante di questo
-giro. Scorri giù le impostazioni rapide, tocca la matita per modificarle e trascina
-"Scrivi una nota" fra i riquadri. Poi **blocca il telefono**, riaccendi lo schermo senza
+giro. Per aggiungerlo (sui Samsung): scorri giù **con due dita** dall'alto, così si apre
+il pannello intero; tocca i **tre puntini** in alto a destra → **Ordine pulsanti**;
+cerca "Scrivi una nota" nella parte alta, tienilo premuto e trascinalo fra i pulsanti in
+basso; **Fatto**. Poi **blocca il telefono**, riaccendi lo schermo senza
 sbloccare, scorri giù e tocca il riquadro: il foglio deve comparire **sopra il blocco,
 senza chiederti il codice**. Scrivi, premi OK: devi tornare alla schermata di blocco.
 
