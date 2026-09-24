@@ -1727,7 +1727,9 @@ parte dall'ultimo caricato.
 compilato al primo tentativo, dopo la correzione di Gradle di D57. Nove minuti, di cui
 **sei per salvare la cache** (1,1 GB): la cache di Gradle cambia a ogni build e veniva
 ricaricata ogni volta. Sui Mac ora si tiene solo il compilatore Kotlin/Native, che non
-cambia e quindi non si ricarica; la cache di Gradle resta ai workflow Linux.
+cambia e quindi non si ricarica; la cache di Gradle resta ai workflow Linux. **Verificato
+al giro dopo (build 6): da 9 minuti a 3**, e il salvataggio della cache da sei minuti a
+meno di un secondo.
 
 
 ### D57 — Il plugin Kotlin per Android si dichiara nella radice, e Xcode non vede l'app Android
