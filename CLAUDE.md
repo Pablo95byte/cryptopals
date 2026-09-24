@@ -1562,7 +1562,8 @@ Si decide dopo il riconoscimento normale (D2), e solo se gli studenti lo chiedon
 nel core e aspettano l'interfaccia, dopo iOS (D48).
 
 ### D53 — Il CI è Codemagic, con tre workflow
-**Data:** 2026-09-24 · **Stato:** attiva, **da provare** al primo giro
+**Data:** 2026-09-24 · **Stato:** attiva, **provata per iOS**: il 2026-09-24 la build 5
+(versione 0.1) è arrivata su TestFlight, firmata ed elaborata da Apple
 
 `codemagic.yaml` nella radice:
 
@@ -1789,8 +1790,8 @@ chiama Xcode — il plugin Android non viene nemmeno cercato.
 
 **Verificato qui:** senza SDK il build non cerca il plugin Android; con un SDK finto lo cerca
 nella radice (e qui fallisce solo perché Google è bloccato); con un SDK finto e Xcode,
-`:androidApp` resta fuori e il build passa. **Da verificare** col prossimo giro di Codemagic,
-l'unico posto con SDK e accesso a Google.
+`:androidApp` resta fuori e il build passa. **Verificato su Codemagic** lo stesso giorno: il
+Mac con l'SDK ha superato il test della facciata e ha caricato la build su TestFlight.
 
 **La lezione, per le prossime volte:** una modifica al build di Gradle va provata anche nel
 caso "SDK presente", che qui non si vede. Il modo meno costoso è lanciare `core-tests` su
@@ -1945,8 +1946,8 @@ riquadro sopra il blocco e privacy **provati sul telefono**. Archivio, tastiera,
 condivisione (D38–D40) **compilano contro Android 15** (D44) ma non sono ancora stati
 costruiti con l'SDK né provati sul telefono. L'app iOS (D48, D52) **compila**, app e widget
 insieme al core Kotlin/Native: primo giro verde di `ios-check` su Codemagic, 2026-09-24,
-dopo la correzione di Gradle (D57). Non è ancora stata provata su un iPhone: serve la
-firma e TestFlight (D53).
+dopo la correzione di Gradle (D57). **È su TestFlight** (build 5, 2026-09-24), firmata con
+il certificato di distribuzione del committente; non è ancora stata provata su un iPhone.
 
 ---
 
@@ -2030,7 +2031,8 @@ firma e TestFlight (D53).
     Android, che registra un `ContentProvider` da togliere (invariante 21).
 22. ~~Smistamento a carte e riemersione~~ — core e iOS fatti (D52). **Su Android manca
     l'interfaccia.**
-22bis. **Codemagic al primo giro** (D53): i tre workflow, con le chiavi del committente.
+22bis. ~~Codemagic al primo giro~~ (D53): iOS arriva su TestFlight. Restano da provare i
+    workflow Android.
 23. **`core:voice`** (D18), **"Condividi verso InkNote"**.
 24. **Il sito** (D50): privacy e assistenza subito, la pagina vera dopo il nome.
 25. **`core:billing`** — il Pro (D4), dopo il lancio (D43, D47).
