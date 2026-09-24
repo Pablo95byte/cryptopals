@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">InkNote</string>
+    <string name="app_name">Instink</string>
     <string name="ok">OK</string>
     <string name="capture_label">Scrivi</string>
     <string name="recovered_title">Note nel giornale</string>

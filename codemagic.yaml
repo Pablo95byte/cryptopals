@@ -1,7 +1,8 @@
 
-# Codemagic (D53): tre workflow, uno per ogni cosa che si vuole sapere o consegnare.
+# Codemagic (D53): quattro workflow, uno per ogni cosa che si vuole sapere o consegnare.
 #
 #   core-tests       Ogni push: i test del core e le migrazioni. Linux, pochi minuti.
+#   ios-check        Ogni push che tocca iOS o il core: compila l'app iOS senza firma (D56).
 #   ios-testflight   A mano, o a ogni tag "ios-*": l'app iOS firmata su TestFlight.
 #   android-internal A mano, o a ogni tag "android-*": l'AAB sul canale di test interno del Play Store.
 #
@@ -38,6 +39,56 @@ workflows:
     artifacts:
       - "**/build/reports/tests/**"
 
+  # Compila l'app iOS senza firmarla (D56): nessun certificato, nessun profilo. Serve a
+  # trovare gli errori di Swift senza un Mac, e alla fine stampa solo quelli, in un blocco
+  # da copiare.
+  ios-check:
+    name: iOS — compila (senza firma)
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      java: 21
+      xcode: latest
+    triggering:
+      events: [push]
+      cancel_previous_builds: true
+    when:
+      changeset:
+        includes:
+          - "iosApp/**"
+          - "shared/**"
+          - "core/**"
+          - "codemagic.yaml"
+    cache: *gradle_cache
+    scripts:
+      - name: Il progetto Xcode
+        script: |
+          brew install xcodegen
+          cd iosApp && xcodegen generate
+      - name: Compila per iPhone, senza firma
+        script: |
+          LOG="$CM_BUILD_DIR/xcodebuild.log"
+          # La fase di build del progetto chiama Gradle, che compila il core in InkNoteKit:
+          # anche gli errori di Kotlin finiscono in questo registro.
+          if xcodebuild build \
+              -project iosApp/InkNote.xcodeproj \
+              -scheme InkNote \
+              -configuration Debug \
+              -destination 'generic/platform=iOS' \
+              CODE_SIGNING_ALLOWED=NO > "$LOG" 2>&1; then
+            echo "Compila. Avvisi, se ce ne sono:"
+            grep -E ": warning:" "$LOG" | sort -u | head -40 || true
+          else
+            echo "================ ERRORI: copia da qui ================"
+            grep -E ": error:|^error:|^e: |BUILD FAILED|Command .* failed" "$LOG" | sort -u | head -80
+            echo "======================================================="
+            echo "Le ultime righe del registro:"
+            tail -40 "$LOG"
+            exit 1
+          fi
+    artifacts:
+      - $CM_BUILD_DIR/xcodebuild.log
+
   ios-testflight:
     name: iOS — TestFlight
     instance_type: mac_mini_m2
@@ -55,11 +106,9 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: app.inknote.ios
-      # L'Apple ID numerico dell'app (App Store Connect → l'app → Informazioni sull'app).
-      # Facoltativo: Codemagic non accetta valori vuoti, quindi finché la scheda non esiste
-      # la riga resta commentata e il numero della build è il contatore di Codemagic.
-      # vars:
-      #   APP_STORE_APPLE_ID: 1234567890
+      vars:
+        # L'Apple ID numerico di Instink (App Store Connect → Informazioni sull'app).
+        APP_STORE_APPLE_ID: "6815617566"
     triggering:
       events: [tag]
       tag_patterns:

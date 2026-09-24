@@ -30,13 +30,16 @@ targets:
     info:
       path: InkNote/Info.plist
       properties:
-        CFBundleDisplayName: InkNote
+        CFBundleDisplayName: Instink
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleLocalizations: [en, it]
         UILaunchScreen:
           UIColorName: Paper
         UIApplicationSupportsIndirectInputEvents: true
+        # Solo la cifratura di sistema (HTTPS, protezione dei file): esente. Senza questa
+        # riga App Store Connect chiede la conformità all'esportazione a ogni build.
+        ITSAppUsesNonExemptEncryption: false
         # La fotocamera del foglio (D38): chiesta al primo scatto, non all'apertura.
         NSCameraUsageDescription: "To add a photo of a whiteboard, a receipt or a page to your note."
         CFBundleURLTypes:
@@ -81,7 +84,7 @@ targets:
     info:
       path: InkNoteWidgets/Info.plist
       properties:
-        CFBundleDisplayName: InkNote
+        CFBundleDisplayName: Instink
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleLocalizations: [en, it]

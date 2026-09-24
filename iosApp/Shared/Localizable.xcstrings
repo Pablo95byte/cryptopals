@@ -112,12 +112,12 @@
         }
       }
     },
-    "From a note written in InkNote.": {
+    "From a note written in Instink.": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Da una nota scritta con InkNote."
+            "value": "Da una nota scritta con Instink."
           }
         }
       }

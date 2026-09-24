@@ -147,6 +147,16 @@ se Xcode si lamenta, mandami gli errori così come li vedi (anche uno screenshot
 E in parallelo, se riesci: **trova le 12 persone per il test chiuso Android**. I 14 giorni
 del Play Store corrono mentre io scrivo iOS, e alla fine usciamo su tutti e due insieme.
 
+## 0, senza Mac. La prima compilazione su Codemagic (D56)
+
+Se non vuoi passare da Xcode: su codemagic.io, dopo aver aggiunto il repository,
+**Start new build → branch `claude/notes-homescreen-app-drbsfv` → workflow
+"iOS — compila (senza firma)"**. Da lì in poi parte da solo a ogni mio push che tocca iOS.
+
+Non serve nessun certificato. Se fallisce, apri il passo **"Compila per iPhone, senza
+firma"** e copiami il blocco fra le due righe `ERRORI: copia da qui`. Il primo giro
+dura una ventina di minuti; i successivi meno.
+
 ## 0bis. iOS, la seconda tappa: cosa provare (D52)
 
 Si compila insieme alla prima: stesso `git pull`, stesso `xcodegen generate`. Poi, sul
@@ -297,10 +307,9 @@ Nessuna blocca il codice, ma prima o poi servono. In ordine di quanto pesano:
    mockup, artboard `DueVarianti`. Io consiglio il segno.
 2. **La direzione visiva.** Carta calda (quella attuale) o la direzione B, "gesso su
    lavagna". Va scelta prima di rifinire l'interfaccia.
-3. **Il nome commerciale.** `InkNote` è solo l'identificativo tecnico. La mia proposta è
-   **Quicknib** ("veloce" + "pennino"), poi Inkflash; criteri e verifiche in D54. Quando
-   hai scelto: crea la scheda in App Store Connect con quel nome (se è libero, resta tuo),
-   e compra subito il dominio `.app`.
+3. ~~Il nome commerciale~~ — **Instink** (D55). Restano le verifiche: la scheda in App
+   Store Connect, una ricerca marchi su EUIPO in classe 9, e il dominio `instink.app`
+   dal registrar.
 4. **Cosa sta nel Pro.** "Widget multipli" non vale più niente da quando il widget è
    bianco. La proposta: il Pro poggia su esportazione automatica verso Notion e i file,
    ricerca nel testo, punte e temi — col foglio di condivisione sempre gratuito.

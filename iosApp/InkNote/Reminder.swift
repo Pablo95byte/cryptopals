@@ -19,7 +19,7 @@ struct ReminderSuggestion: Identifiable {
         // Il titolo è la prima riga del testo: la nota stessa, non un nome inventato.
         let text = note.typedText ?? note.recognizedText ?? ""
         let firstLine = text.split(whereSeparator: \.isNewline).first.map(String.init) ?? ""
-        title = firstLine.isEmpty ? "InkNote" : String(firstLine.prefix(80))
+        title = firstLine.isEmpty ? "Instink" : String(firstLine.prefix(80))
     }
 
     var label: String {
@@ -48,7 +48,7 @@ struct ReminderEditor: UIViewControllerRepresentable {
         event.startDate = suggestion.date
         event.endDate = suggestion.date.addingTimeInterval(suggestion.hasTime ? 30 * 60 : 60 * 60)
         event.isAllDay = !suggestion.hasTime
-        event.notes = String(localized: "From a note written in InkNote.")
+        event.notes = String(localized: "From a note written in Instink.")
         // L'avviso all'ora scritta: è la ragione per cui la data è stata annotata.
         event.addAlarm(EKAlarm(relativeOffset: 0))
 
