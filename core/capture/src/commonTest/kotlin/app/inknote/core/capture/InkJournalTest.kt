@@ -53,7 +53,7 @@ class InkJournalTest {
 
         val result = journal.read()
 
-        assertEquals(listOf("salvo"), result.records.map { it.stroke.id.value })
+        assertEquals(listOf("salvo"), result.records.map { it.stroke!!.id.value })
         assertTrue(result.hadTornTail, "la coda troncata deve essere segnalata")
         assertTrue(result.discardedBytes > 0)
     }
@@ -66,7 +66,7 @@ class InkJournalTest {
 
         val result = journal.read()
 
-        assertEquals(listOf("primo"), result.records.map { it.stroke.id.value })
+        assertEquals(listOf("primo"), result.records.map { it.stroke!!.id.value })
         assertTrue(result.hadTornTail)
     }
 
@@ -111,7 +111,7 @@ class InkJournalTest {
 
         val result = journal.read()
 
-        assertEquals(listOf("a", "c", "d"), result.records.map { it.stroke.id.value })
+        assertEquals(listOf("a", "c", "d"), result.records.map { it.stroke!!.id.value })
         assertTrue(result.hadTornTail, "il tratto rotto va comunque segnalato")
     }
 
@@ -125,7 +125,7 @@ class InkJournalTest {
 
         val result = InkJournal(InMemoryInkJournalSink(bytes)).read()
 
-        assertEquals(listOf("a", "c"), result.records.map { it.stroke.id.value })
+        assertEquals(listOf("a", "c"), result.records.map { it.stroke!!.id.value })
         assertTrue(result.hadTornTail)
     }
 
@@ -139,7 +139,7 @@ class InkJournalTest {
 
         journal.discard(recovery)
 
-        assertEquals(listOf("arrivato-dopo"), journal.read().records.map { it.stroke.id.value })
+        assertEquals(listOf("arrivato-dopo"), journal.read().records.map { it.stroke!!.id.value })
     }
 
     @Test
@@ -184,4 +184,140 @@ class InkJournalTest {
         updatedAt = strokes.maxOf { it.createdAt },
         revision = strokes.size + 1L,
     )
+}
+
+/** Testo e foto nel giornale (D38): al sicuro da quando esistono, come i tratti. */
+class JournalClipsTest {
+
+    private val sink = InMemoryInkJournalSink()
+    private val journal = InkJournal(sink)
+    private val clock = FakeClock(now = 1_000L)
+
+    private fun session() = CaptureSession(canvas = CANVAS, journal = journal, clock = clock, noteId = app.inknote.core.model.NoteId("n1"))
+
+    @Test
+    fun `il testo digitato sopravvive alla morte del processo`() {
+        val session = session()
+        session.commitText("comprare il latte")
+
+        val recovered = InkJournal(InMemoryInkJournalSink(sink.readAll())).recover().notes.single()
+
+        assertEquals("comprare il latte", recovered.typedText)
+    }
+
+    @Test
+    fun `un testo corretto si recupera nella sua ultima versione`() {
+        val session = session()
+        session.commitText("latte")
+        clock.advance(500)
+        session.commitText("latte e pane")
+
+        val recovered = journal.recover().notes.single()
+
+        assertEquals("latte e pane", recovered.typedText)
+        assertEquals(session.note().textClips, recovered.textClips)
+    }
+
+    @Test
+    fun `lo stesso testo due volte non scrive niente di nuovo`() {
+        val session = session()
+        session.commitText("uguale")
+        val size = sink.readAll().size
+
+        session.commitText("uguale")
+
+        assertEquals(size, sink.readAll().size)
+    }
+
+    @Test
+    fun `svuotare il campo cancella il testo`() {
+        val session = session()
+        session.commitText("da togliere")
+        clock.advance(100)
+        session.commitText("")
+
+        assertEquals(null, journal.recover().notes.single().typedText)
+        assertTrue(session.isEmpty)
+    }
+
+    @Test
+    fun `una foto sopravvive alla morte del processo`() {
+        val session = session()
+        session.addPhoto("photos/p1.jpg")
+
+        val recovered = journal.recover().notes.single()
+
+        assertEquals(listOf("photos/p1.jpg"), recovered.photoClips.map { it.path })
+        assertFalse(session.isEmpty)
+    }
+
+    @Test
+    fun `una foto non scattata non resta nella nota, nemmeno dopo la morte del processo`() {
+        val session = session()
+        val pending = session.addPhoto("photos/p1.jpg")
+
+        // Il processo muore con la fotocamera aperta; il foglio rinasce con lo stesso id.
+        val reborn = session()
+        reborn.discardPhoto(pending)
+
+        val recovered = journal.recover().notes.single()
+        assertFalse(recovered.hasPhoto)
+        assertTrue(recovered.photoClips.single().isDeleted)
+    }
+
+    @Test
+    fun `tratti, testo e foto della stessa nota tornano insieme`() {
+        val session = session()
+        session.beginStroke(BIRO)
+        repeat(5) { session.addSample(it * 4f, 10f, 0.5f, it * 12) }
+        session.endStroke()
+        session.commitText("appunto")
+        session.addPhoto("photos/p1.jpg")
+
+        val recovered = journal.recover().notes.single()
+
+        assertEquals(session.note(), recovered)
+    }
+
+    @Test
+    fun `un giornale scritto dalla versione 1 si legge ancora`() {
+        // I telefoni che hanno già l'app hanno giornali in formato 1, senza il byte di
+        // tipo: aggiornare l'app non deve renderli illeggibili.
+        val v1 = JournalCodecV1.encode("vecchia", stroke("s1", createdAt = 2_000L))
+
+        val result = InkJournal(InMemoryInkJournalSink(v1)).read()
+
+        assertEquals("s1", result.records.single().stroke!!.id.value)
+        assertFalse(result.hadTornTail)
+    }
+}
+
+/** Scrive un record nel formato 1, com'era prima di D38, per provare che si legge ancora. */
+private object JournalCodecV1 {
+    fun encode(noteId: String, stroke: app.inknote.core.model.Stroke): ByteArray {
+        val body = ArrayList<Byte>()
+        fun int(v: Int) { for (shift in listOf(24, 16, 8, 0)) body += (v ushr shift).toByte() }
+        fun long(v: Long) { int((v ushr 32).toInt()); int(v.toInt()) }
+        fun bytes(b: ByteArray) { int(b.size); body.addAll(b.toList()) }
+        fun string(s: String) = bytes(s.encodeToByteArray())
+        string(noteId)
+        long(1_000L)
+        int(CANVAS.width.toRawBits())
+        int(CANVAS.height.toRawBits())
+        string(stroke.id.value)
+        int(stroke.pen.color)
+        string(stroke.pen.kind.name)
+        int(stroke.pen.baseWidth.toRawBits())
+        long(stroke.createdAt)
+        bytes(app.inknote.core.model.StrokePointCodec.encode(stroke.points))
+
+        val payload = body.toByteArray()
+        val out = ArrayList<Byte>()
+        out += 1.toByte()
+        for (v in listOf(payload.size, JournalCodec.checksum(payload))) {
+            for (shift in listOf(24, 16, 8, 0)) out += (v ushr shift).toByte()
+        }
+        out.addAll(payload.toList())
+        return out.toByteArray()
+    }
 }

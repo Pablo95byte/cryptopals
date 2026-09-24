@@ -155,6 +155,32 @@ class SchemaMigrationTest {
     }
 
     @Test
+    fun `dopo la migrazione si possono aggiungere testo e foto alla nota vecchia`() {
+        createVersion1Schema()
+        insertVersion1Note()
+        InkNoteStore.schema.migrate(driver, 1L, InkNoteStore.schema.version)
+        val store = InkNoteStore.open(driver)
+
+        store.save(
+            store.note(NoteId("vecchia"))!!
+                .withTextClip(
+                    app.inknote.core.model.TextClip(app.inknote.core.model.TextClipId("t1"), 9_000L, "portare le chiavi"),
+                    now = 9_000L,
+                )
+                .withPhotoClip(
+                    app.inknote.core.model.PhotoClip(app.inknote.core.model.PhotoClipId("p1"), 9_100L, "photos/p1.jpg"),
+                    now = 9_100L,
+                ),
+        )
+
+        val reread = store.note(NoteId("vecchia"))!!
+        assertTrue(reread.hasInk)
+        assertTrue(reread.hasText)
+        assertTrue(reread.hasPhoto)
+        assertEquals(listOf("vecchia"), store.search("chiavi").map { it.id.value })
+    }
+
+    @Test
     fun `una nota migrata non è cercabile finché non si reindicizza`() {
         createVersion1Schema()
         insertVersion1Note()

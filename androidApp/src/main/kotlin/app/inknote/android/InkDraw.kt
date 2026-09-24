@@ -12,7 +12,6 @@ import app.inknote.core.model.Stroke
 /** Colori della direzione visiva (D16). */
 object InkPalette {
     const val PAPER: Int = 0xFFFBF8F1.toInt()
-    const val RULE: Int = 0xFFEDE5D3.toInt()
     const val INK: Int = 0xFF1F2430.toInt()
     const val MUTED: Int = 0xFF8B8374.toInt()
 }
@@ -48,8 +47,4 @@ object InkDraw {
         if (pen.kind == PenKind.HIGHLIGHTER) alpha = 96
     }
 
-    fun rulePaint(): Paint = Paint().apply {
-        color = InkPalette.RULE
-        strokeWidth = 1f
-    }
 }

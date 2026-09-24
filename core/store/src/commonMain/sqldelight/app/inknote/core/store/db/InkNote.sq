@@ -83,6 +83,32 @@ CREATE TABLE note_export (
 
 CREATE INDEX note_export_target ON note_export(target);
 
+-- Il testo digitato e le foto (D38). Righe proprie e immutabili, con tombstone, come
+-- tratti e registrazioni: sono unità di sincronizzazione. Correggere un testo vuol dire
+-- cancellarne uno e aggiungerne un altro, mai riscriverlo.
+CREATE TABLE text_clip (
+    id TEXT NOT NULL PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    written_at INTEGER NOT NULL,
+    text TEXT NOT NULL,
+    text_normalized TEXT,
+    deleted_at INTEGER
+);
+
+CREATE INDEX text_clip_note_id ON text_clip(note_id);
+
+-- La foto non sta qui dentro ma su disco, per la stessa ragione dell'audio. Il percorso
+-- è relativo: la radice la decide la piattaforma (D38).
+CREATE TABLE photo_clip (
+    id TEXT NOT NULL PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    taken_at INTEGER NOT NULL,
+    path TEXT NOT NULL,
+    deleted_at INTEGER
+);
+
+CREATE INDEX photo_clip_note_id ON photo_clip(note_id);
+
 selectNote:
 SELECT * FROM note WHERE id = ?;
 
@@ -104,6 +130,11 @@ SELECT note.id AS id,
             FROM voice_clip
             WHERE voice_clip.note_id = note.id AND voice_clip.deleted_at IS NULL),
            ''
+       ) || ' ' || coalesce(
+           (SELECT group_concat(text_clip.text_normalized, ' ')
+            FROM text_clip
+            WHERE text_clip.note_id = note.id AND text_clip.deleted_at IS NULL),
+           ''
        ) AS haystack
 FROM note
 WHERE note.deleted_at IS NULL AND (
@@ -113,6 +144,12 @@ WHERE note.deleted_at IS NULL AND (
         WHERE voice_clip.note_id = note.id
           AND voice_clip.deleted_at IS NULL
           AND voice_clip.transcript_normalized LIKE '%' || :token || '%'
+    )
+    OR EXISTS (
+        SELECT 1 FROM text_clip
+        WHERE text_clip.note_id = note.id
+          AND text_clip.deleted_at IS NULL
+          AND text_clip.text_normalized LIKE '%' || :token || '%'
     )
 )
 ORDER BY note.updated_at DESC
@@ -212,6 +249,23 @@ DELETE FROM voice_clip WHERE note_id IN (
     SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
 );
 
+purgeTextClipsOfDeletedNotes:
+DELETE FROM text_clip WHERE note_id IN (
+    SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
+);
+
+purgePhotoClipsOfDeletedNotes:
+DELETE FROM photo_clip WHERE note_id IN (
+    SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
+);
+
+-- Le foto da cancellare dal disco quando la nota viene eliminata davvero. Si leggono
+-- **prima** di purgare le righe: dopo non si saprebbe più quali file erano.
+selectPhotoPathsOfPurgeableNotes:
+SELECT path FROM photo_clip WHERE note_id IN (
+    SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
+);
+
 purgeDeletedNotes:
 DELETE FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before;
 
@@ -295,6 +349,8 @@ WHERE note.deleted_at IS NULL
   AND (
       EXISTS (SELECT 1 FROM stroke WHERE stroke.note_id = note.id AND stroke.deleted_at IS NULL)
       OR EXISTS (SELECT 1 FROM voice_clip WHERE voice_clip.note_id = note.id AND voice_clip.deleted_at IS NULL)
+      OR EXISTS (SELECT 1 FROM text_clip WHERE text_clip.note_id = note.id AND text_clip.deleted_at IS NULL)
+      OR EXISTS (SELECT 1 FROM photo_clip WHERE photo_clip.note_id = note.id AND photo_clip.deleted_at IS NULL)
   )
   -- `>=` e non `=`: un invio registrato a una revisione pari o superiore a quella della
   -- nota descrive una destinazione già aggiornata. Con l'uguaglianza secca, una nota
@@ -318,3 +374,28 @@ SELECT * FROM voice_clip
 WHERE deleted_at IS NULL AND transcript IS NULL
 ORDER BY recorded_at ASC
 LIMIT :limit;
+
+selectTextClips:
+SELECT * FROM text_clip WHERE note_id = ? ORDER BY written_at ASC, id ASC;
+
+insertTextClipIfAbsent:
+INSERT OR IGNORE INTO text_clip(id, note_id, written_at, text, text_normalized, deleted_at)
+VALUES (:id, :noteId, :writtenAt, :text, :textNormalized, :deletedAt);
+
+-- Il testo è immutabile: si aggiorna solo il tombstone, che si mette e non si toglie.
+updateTextClipDeletedAt:
+UPDATE text_clip SET deleted_at = coalesce(deleted_at, :deletedAt) WHERE id = :id;
+
+-- Per la reindicizzazione (D27): l'unico campo derivato del testo.
+updateTextClipNormalized:
+UPDATE text_clip SET text_normalized = :textNormalized WHERE id = :id;
+
+selectPhotoClips:
+SELECT * FROM photo_clip WHERE note_id = ? ORDER BY taken_at ASC, id ASC;
+
+insertPhotoClipIfAbsent:
+INSERT OR IGNORE INTO photo_clip(id, note_id, taken_at, path, deleted_at)
+VALUES (:id, :noteId, :takenAt, :path, :deletedAt);
+
+updatePhotoClipDeletedAt:
+UPDATE photo_clip SET deleted_at = coalesce(deleted_at, :deletedAt) WHERE id = :id;

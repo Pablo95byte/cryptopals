@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">InkNote</string>
+    <string name="ok">OK</string>
+    <string name="capture_label">Scrivi</string>
+    <string name="recovered_title">Note nel giornale</string>
+    <string name="clear_journal">Svuota il giornale</string>
+    <string name="journal_failed">Memoria piena: questa nota non si sta salvando</string>
+    <string name="widget_description">Un foglio bianco: toccalo e scrivi</string>
+    <string name="tile_label">Scrivi una nota</string>
+    <string name="keyboard">Tastiera</string>
+    <string name="camera">Foto</string>
+    <string name="text_hint">Scrivi qui…</string>
+    <string name="no_camera">Nessuna app fotocamera trovata</string>
+    <string name="archive_title">Note</string>
+    <string name="search_hint">Cerca</string>
+    <string name="archive_empty">Ancora nessuna nota.\nTocca + o usa il widget per scriverne una.</string>
+    <string name="search_empty">Nessun risultato.</string>
+    <string name="new_note">Nuova nota</string>
+    <string name="handwritten_note">Nota scritta a mano</string>
+    <string name="photo_note">Foto</string>
+    <string name="share">Manda a…</string>
+    <string name="share_title">Manda la nota a</string>
+    <string name="share_nothing">Questa nota è vuota</string>
+    <string name="delete">Elimina</string>
+    <string name="delete_confirm">Eliminare questa nota?</string>
+    <string name="cancel">Annulla</string>
+    <string name="torn_tail_notice">L\'ultimo tratto prima della chiusura dell\'app non si è potuto salvare.</string>
+    <string name="shortcut_new_note">Nuova nota</string>
+</resources>

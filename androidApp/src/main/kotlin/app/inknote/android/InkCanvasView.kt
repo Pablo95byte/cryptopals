@@ -25,8 +25,20 @@ import app.inknote.core.model.StrokeId
  */
 class InkCanvasView(context: Context) : View(context) {
 
-    /** La punta in uso. Nella prova di velocità è una sola. */
+    /** La punta del pennino: sottile, perché il pennino è sottile e ha la pressione. */
     var pen: Pen = Pen(color = InkPalette.INK, kind = PenKind.BALLPOINT, baseWidth = 3.2f)
+
+    /**
+     * La punta del dito: più grossa, un pennarello più che una biro (D42).
+     *
+     * Il dito è largo, il telefono è stretto, e col dito si scrive grande. Un tratto da
+     * biro su lettere alte un centimetro e mezzo sembra un filo, e nelle parti veloci del
+     * corsivo sparisce. Il primo telefono vero l'ha detto chiaramente.
+     */
+    var fingerPen: Pen = Pen(color = InkPalette.INK, kind = PenKind.BALLPOINT, baseWidth = 4.8f)
+
+    /** La punta del tratto in corso, scelta al tocco secondo lo strumento. */
+    private var strokePen: Pen = pen
 
     /**
      * Scattano una volta sola: sono le tappe della misura (D19, D32).
@@ -67,15 +79,14 @@ class InkCanvasView(context: Context) : View(context) {
     private var reportedInkAccepted = false
     private var reportedInkDrawn = false
 
-    private val rule = InkDraw.rulePaint()
 
     /**
      * Il pennello del tratto in corso, creato una volta sola: `onDraw` gira a ogni
      * fotogramma mentre si scrive, e allocare lì fa lavorare il garbage collector
      * proprio mentre il dito si muove.
      */
-    private var livePaint: Paint = InkDraw.paint(pen)
-    private var livePaintPen: Pen = pen
+    private var livePaint: Paint = InkDraw.paint(strokePen)
+    private var livePaintPen: Pen = strokePen
 
     /** Unità logiche per pixel: i tratti sono salvati in dp, non in pixel (D10). */
     private val scale: Float get() = resources.displayMetrics.density
@@ -94,8 +105,10 @@ class InkCanvasView(context: Context) : View(context) {
     }
 
     override fun onDraw(canvas: Canvas) {
+        // Niente righe (D42): righe fitte chiedono una scrittura piccola, che col dito non
+        // esiste. Il foglio bianco lascia scrivere grande, e l'archivio rimpicciolisce da
+        // solo, perché inquadra l'inchiostro e non il foglio.
         canvas.drawColor(InkPalette.PAPER)
-        drawRules(canvas)
 
         for (painted in committed) canvas.drawPath(painted.path, painted.paint)
 
@@ -107,13 +120,13 @@ class InkCanvasView(context: Context) : View(context) {
         if (liveSamples.isNotEmpty()) {
             val live = Stroke(
                 id = LIVE_STROKE_ID,
-                pen = pen,
+                pen = strokePen,
                 points = ArrayList(liveSamples),
                 createdAt = 0L,
             )
-            if (livePaintPen != pen) {
-                livePaint = InkDraw.paint(pen)
-                livePaintPen = pen
+            if (livePaintPen != strokePen) {
+                livePaint = InkDraw.paint(strokePen)
+                livePaintPen = strokePen
             }
             canvas.drawPath(StrokeGeometry.outline(live, RenderQuality.SCREEN).toPath(scale), livePaint)
         }
@@ -126,21 +139,13 @@ class InkCanvasView(context: Context) : View(context) {
         }
     }
 
-    private fun drawRules(canvas: Canvas) {
-        val spacing = 36f * scale
-        var y = spacing * 2.6f
-        while (y < height) {
-            canvas.drawLine(0f, y, width.toFloat(), y, rule)
-            y += spacing
-        }
-    }
-
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val session = session ?: return false
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                if (!session.beginStroke(pen)) return true
+                strokePen = if (event.getToolType(0) == MotionEvent.TOOL_TYPE_STYLUS) pen else fingerPen
+                if (!session.beginStroke(strokePen)) return true
                 activePointerId = event.getPointerId(0)
                 if (!reportedTouch) {
                     reportedTouch = true

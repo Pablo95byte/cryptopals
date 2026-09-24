@@ -92,6 +92,9 @@ posto solo invece che sparsi fra le decisioni.
 | Salvataggio | **Il giornale sta in area protetta dal dispositivo**: scrive anche prima del primo sblocco dopo un riavvio (D24) | nel codice |
 | Ritorno | **OK non salva, è solo un'uscita** (D5): nessun gesto è obbligatorio per non perdere la nota | nel codice |
 | Primo avvio | **Nessun account e nessun onboarding** (D12): all'apertura non c'è niente da configurare | deciso |
+| Sblocco + ricerca dell'ingresso | **"Scrivi" nell'elenco delle app**: nel dock, o sul tasto laterale dei Samsung (D39) | nel codice |
+| Scrittura | **Foglio senza righe e tratto da pennarello col dito**: si scrive grande, l'archivio rimpicciolisce (D42) | nel codice, da provare |
+| Mani occupate | **Tastiera e foto dal foglio**, a un tocco, anche a telefono bloccato (D38) | nel codice |
 | Mani occupate | **Cattura a voce** (D18): l'unica strada senza sblocco su iPhone | modello fatto, cattura da scrivere |
 | Tutti | **I tetti: foglio pronto in 100 ms a caldo, 400 a freddo; tratto dietro al dito di al massimo 50 ms** (D19, D32, D36). Non sono funzionalità: impediscono alle altre di degradarsi | **tutti verdi** sul Samsung S8: 86 ms a caldo, 358–387 a freddo, tratto 13–14 ms a caldo e 30 a freddo |
 | Tutti | **Restare piccoli**: un processo leggero resta nella cache del sistema, e la seconda apertura della giornata è calda (D32) | nel codice, zero dipendenze |
@@ -1087,22 +1090,188 @@ profilo all'opera: installando col cavo il profilo non viene applicato.
 **Il caso che conta di più è il primo avvio dopo l'installazione** (1313 ms sul S8): è la
 prima impressione di ogni utente nuovo, ed è esattamente quello che il profilo cura.
 
+### D38 — Tastiera e fotocamera sul foglio, come pezzi della stessa nota
+**Data:** 2026-09-24 · **Stato:** attiva, chiesta dal committente · **Precisa D1 e D21**
+
+Il foglio porta due icone piccole e tenui, in basso a sinistra: **tastiera** e
+**fotocamera**. Il testo digitato e le foto diventano pezzi della nota — `TextClip` e
+`PhotoClip`, accanto a tratti e registrazioni — e non note di un altro tipo.
+
+**Perché, rispetto a D1.** D1 dice che l'identità è l'inchiostro, e resta vero: il foglio
+si apre pronto per la mano, e chi scrive a mano non tocca niente. Ma "nessuno sforzo"
+vuol dire anche non costringere: in piedi sul tram si digita meglio che col dito, e una
+lavagna o uno scontrino si fotografano, non si ricopiano. Il committente l'ha chiesto,
+ed è coerente con la missione.
+
+**Perché non contraddice D21.** D21 toglie dall'apertura le **decisioni**: punta, colore,
+carta. Due icone che si possono ignorare senza pensarci non sono una decisione: chi vuole
+scrivere a mano comincia a scrivere, e le icone non gli costano niente. Stanno fuori dal
+percorso del dito e sono a basso contrasto.
+
+**Perché pezzi immutabili e non un campo di testo.** Un campo modificabile sarebbe il
+primo punto del modello dove due dispositivi possono non essere d'accordo, e uno dei due
+perderebbe ciò che ha scritto. Correggere un testo vuol dire marcare il vecchio come
+cancellato e aggiungerne uno nuovo (D8). L'utente vede un campo che si modifica; sotto
+è un'unione di insiemi, come tutto il resto.
+
+**Il giornale li protegge da subito.** Il testo va nel giornale dopo una breve pausa
+nella digitazione e quando il foglio perde il fuoco; la foto **prima** di aprire la
+fotocamera, perché mentre è aperta il sistema può uccidere il nostro processo. Se lo
+scatto non arriva, se ne scrive il tombstone. Il formato del giornale passa alla
+versione 2, con un byte di tipo; la versione 1 si legge ancora.
+
+**La foto a telefono bloccato** usa la fotocamera in modalità sicura: si apre sopra il
+blocco senza chiedere il codice e senza dare accesso alla galleria. Nasce nell'area
+protetta dal dispositivo, come il giornale, e passa in quella protetta dalle credenziali
+quando la nota entra in archivio. Per questo il modello conosce solo percorsi relativi.
+
+**La fotocamera sospende D34.** Mentre la fotocamera aperta da noi copre il foglio,
+il foglio non si chiude: è coperto, non abbandonato.
+
+**Cosa resta fuori.** Lo scanner di documenti (ritaglio e raddrizzamento automatico) è un
+miglioramento naturale della foto, ma su Android è una libreria di Google Play Services:
+si valuta quando si scrive l'OCR, che la usa comunque.
+
+### D39 — L'archivio su Android: View di piattaforma, e l'icona apre l'archivio
+**Data:** 2026-09-24 · **Stato:** attiva · **Precisa D6, D20 e D23**
+
+L'icona dell'app apre l'**archivio**: elenco delle note con anteprima, ricerca, nota
+aperta con "Manda a…" ed "Elimina". Il foglio si apre dal widget, dal riquadro rapido,
+dalla scorciatoia che compare tenendo premuta l'icona, dal pulsante + dell'archivio, e da
+una seconda voce nell'elenco delle app, **"Scrivi"**.
+
+**Perché l'icona apre l'archivio.** È la richiesta iniziale: "se apro l'app le ho tutte".
+E D30 ha diviso i ruoli: dalla home si aggiunge, dall'app si ritrova. Chi apre l'app vuole
+rileggere; chi vuole scrivere ha già quattro ingressi più rapidi dell'icona.
+
+**Perché la voce "Scrivi".** È il modo di mettere il foglio nel dock accanto al telefono e
+ai messaggi, e soprattutto di assegnarlo al **tasto laterale**: sui Samsung, doppia
+pressione del tasto laterale → apri un'app → Scrivi. Zero codice, e a telefono in tasca
+è l'ingresso più rapido che esista. Costa una voce in più nell'elenco delle app.
+
+**Perché View di piattaforma e non Compose, che D6 prevedeva per l'archivio.** Compose
+porta con sé librerie che si inizializzano con un `ContentProvider` (emoji2, il ciclo di
+vita del processo). Nello stesso processo della cattura, quel costo lo pagherebbe **anche il
+foglio**, a ogni avvio a freddo (invariante 21). Un archivio di elenco, ricerca e dettaglio
+con le View di sistema è poco codice in più e zero millisecondi sul percorso che conta. Si
+riconsidera se l'archivio diventa complesso, mettendolo in un processo suo.
+
+**La prima dipendenza esterna** (precisa D23): il driver SQLite di SQLDelight, che porta
+`androidx.sqlite`. È ammessa perché rispetta la regola che conta davvero — niente sul
+percorso di cattura, niente `ContentProvider` — e scrivere un driver nostro sarebbe stato
+codice di infrastruttura senza valore per l'utente.
+
+**L'assorbimento del giornale** avviene quando si apre l'archivio, su un thread suo: prima
+si salva, poi si svuota (D22), poi le foto passano nell'area delle credenziali, poi si
+ricalcola l'indice vecchio (D27) e si eliminano le note cestinate da più di trenta giorni,
+con le loro foto.
+
+**Condividere registra l'invio solo a destinazione scelta** (invariante 18): il foglio di
+condivisione avvisa quando l'utente sceglie un'app, e solo allora l'invio va in archivio.
+Aprire il foglio e chiuderlo non è mandare.
+
+### D40 — I file passano da un nostro `ContentProvider`, in un processo a parte
+**Data:** 2026-09-24 · **Stato:** attiva
+
+La fotocamera ha bisogno di un indirizzo dove scrivere la foto, e l'app di destinazione di
+un indirizzo da cui leggerla. Li dà `FilesProvider`, nostro, nel processo `:files`.
+
+**Perché non `FileProvider` di AndroidX, e perché un processo a parte.** Ogni
+`ContentProvider` del processo principale viene creato **all'avvio del processo, prima del
+foglio** (invariante 21). In un processo suo nasce solo quando un'altra app chiede un
+file: la cattura non lo vede mai. Scriverlo costa sessanta righe.
+
+**Cosa permette.** Leggere foto e immagini esportate; scrivere **solo** una foto nuova
+nell'area del dispositivo. Non è esportato: ci si arriva solo con un permesso concesso da
+noi per un singolo indirizzo. I percorsi con `..` sono rifiutati due volte, prima come
+testo e poi dopo averli risolti sul disco.
+
+### D41 — L'inglese è la lingua di base dell'app
+**Data:** 2026-09-24 · **Stato:** attiva
+
+I testi dell'interfaccia stanno in inglese in `values/`, e in italiano in `values-it/`.
+
+**Perché.** La lingua di base è quella che vede chiunque non abbia una traduzione. Per
+un'app che punta a tutto il mondo, quella lingua è l'inglese; l'italiano è la prima
+traduzione, non il punto di partenza.
+
+**Debito dichiarato:** le etichette in fondo ai file esportati (`NoteExport`: "Scritta a
+mano", "Il riconoscimento non era completo…") sono in italiano **nel core**. Vanno passate
+da fuori come la data, prima del lancio.
+
+### D42 — Il corsivo col dito: foglio senza righe e tratto da pennarello
+**Data:** 2026-09-24 · **Stato:** attiva, **da provare** sul telefono
+
+Il committente, sul primo telefono vero: col dito il corsivo è difficile, perché il dito è
+grosso, il telefono è stretto e il tratto è fine. È vero, ed è un limite fisico: il dito
+non diventerà mai una penna. Ma due cose lo peggioravano, e si potevano togliere.
+
+1. **Le righe.** Una riga ogni 36 dp chiede lettere alte cinque millimetri, che col dito
+   non esistono. Tolte: il foglio è bianco, come il widget. Scrivere grande non costa
+   niente, perché l'archivio inquadra l'inchiostro e non il foglio, e rimpicciolisce da
+   solo.
+2. **Lo spessore.** Col dito la punta è più grossa (4,8 invece di 3,2): un pennarello, non
+   una biro. Su lettere di un centimetro e mezzo, un tratto da biro sembra un filo e nelle
+   parti veloci del corsivo sparisce. Col pennino resta sottile, perché lì c'è la
+   pressione.
+
+**La risposta strutturale, non ancora fatta:** la **fascia di scrittura ingrandita**, come
+nelle app per tablet. Si scrive grande in una fascia in basso, e la parola va a posto
+rimpicciolita sulla riga sopra. È la soluzione nota al problema del dito, ma cambia il
+foglio e aggiunge una modalità: si decide dopo aver provato i due punti sopra.
+
+### D43 — Il piano per il lancio: Android prima, gratis all'inizio, iOS subito dopo
+**Data:** 2026-09-24 · **Stato:** proposta, **da confermare col committente**
+
+**Il criterio.** Un'app di cattura vince con due numeri: quanti la usano ancora dopo
+trenta giorni, e quanti ne parlano. Nessuno dei due si misura prima del lancio. Quindi:
+arrivare presto a utenti veri, misurare, poi far pagare.
+
+1. **Android, canale di test interno del Play Store** appena l'archivio è provato sul
+   telefono. È anche l'unico modo di vedere il profilo di avvio all'opera (D37).
+2. **Test chiuso con 20–50 persone vere**, non amici che dicono "bella". Il Play Store lo
+   richiede comunque per i profili sviluppatore nuovi, prima della pubblicazione.
+3. **Gratis al lancio, tutto incluso.** Il Pro (D4) arriva quando sapremo cosa la gente usa
+   davvero. Un paywall prima di avere utenti ottimizza un numero che ancora non esiste.
+4. **iOS subito dopo**, sul core già provato. Serve un Mac.
+5. **Nel frattempo, in quest'ordine:** voce (D18), riconoscimento della scrittura (D2), la
+   "condivisione verso InkNote" dalle altre app, poi il Pro.
+
+### D44 — L'app Android si compila per controllo anche dove l'SDK non c'è
+**Data:** 2026-09-24 · **Stato:** attiva
+
+`tools/android-check/check.sh` compila i sorgenti Kotlin di `:androidApp` contro il
+framework vero di Android 15 — il jar `android-all` che Robolectric pubblica su Maven
+Central — con un `R` generato dalle risorse e due interfacce finte al posto di
+`androidx.sqlite`.
+
+**Perché.** In questo ambiente il dominio di Google è bloccato, e fino a D43 tutto il
+codice Android arrivava al committente senza essere mai stato compilato: ogni errore di
+battitura costava un giro col telefono. Così gli errori di API, di tipi e di import si
+trovano qui. Il primo uso ha compilato al primo colpo l'archivio, la condivisione, la
+fotocamera e il provider dei file, e ha trovato due avvisi, corretti.
+
+**Cosa non controlla, e va detto:** risorse e manifest (serve `aapt2`), R8, lint, e il
+comportamento. Il primo build vero resta sulla macchina del committente.
+
 ---
 
 ## 5. Struttura del repository
 
 ```
 core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
-  model/         Note, Stroke, VoiceClip, InkPoint, Pen, CanvasSize, mergeNotes,
+  model/         Note, Stroke, VoiceClip, TextClip, PhotoClip, InkPoint, Pen, CanvasSize, mergeNotes,
                  SearchText e NoteSearch (ricerca), NoteExport (uscita verso altre app)
   ink/           StrokeBuilder, CatmullRom, WidthProfile, StrokeSimplifier, InkConfig
   geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline,
                  Bounds, NoteFraming (inquadrare una nota in un riquadro, dentro l'app)
   capture/       CaptureSession, InkJournal, FrictionTrace — non vede l'archivio
   store/         NoteStore, JournalIngest, schema SQLDelight e schema versionato
-androidApp/      La prova di velocità di D19, installabile. Zero dipendenze
-                 esterne: Activity di piattaforma, una View di disegno, il widget
-                 della home e il riquadro delle impostazioni rapide (D33).
+androidApp/      L'app Android: il foglio (cattura, D20), l'archivio (D39), il widget
+                 e il riquadro rapido (D33), il provider dei file (D40). View di
+                 piattaforma; una sola dipendenza esterna, il driver SQLite.
+tools/
+  android-check/ Compilazione di controllo di :androidApp senza SDK (D44)
 design/
   mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato:
                  home iOS, cattura nuda, cattura con strumenti, Android da
@@ -1182,9 +1351,12 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
     decisione, e nel momento della cattura non si chiedono decisioni. (D31)
 20. **Sul thread dell'interfaccia della cattura non si tocca il disco.** Né per
     scrivere il giornale né per trovarne la cartella. (D35)
-21. **Nessuna libreria che registri un `ContentProvider`** in `:androidApp`. Il sistema
-    lo esegue a ogni avvio del processo, prima della cattura. Prima di aggiungere una
-    dipendenza si guarda il suo manifest. (D32, D33)
+21. **Nessun `ContentProvider` nel processo principale**, né nostro né di una libreria. Il
+    sistema lo esegue a ogni avvio del processo, prima della cattura. Prima di aggiungere
+    una dipendenza si guarda il suo manifest; un provider nostro va in un processo suo.
+    (D32, D33, D40)
+22. **Testo e foto sono pezzi immutabili della nota**, come i tratti: correggere è
+    cancellare e aggiungere. (D38)
 
 ---
 
@@ -1205,16 +1377,20 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
   sviluppato: qui l'APK non si compila e la misura di D19 non si può prendere. Va
   fatta sulla macchina del committente.
 
+- **`tools/android-check/check.sh`** compila `:androidApp` contro Android 15 anche senza
+  SDK (D44). Va eseguito ogni volta che si tocca il codice Android. Maven Central limita
+  le richieste: se lo script dice "download limitato", aspetta da solo.
 - **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
   coincidano. Va eseguito quando si toccano i file `.sq`.
 - **[`GUIDA.md`](GUIDA.md)** dice cosa tocca al committente, in ordine: la misura di D19
   col suo protocollo, le verifiche da fare col telefono in mano, le decisioni aperte e
   le cose da non fare ancora.
 
-Stato attuale: **233 test, tutti verdi.** L'app Android **compila e si installa** (Samsung
+Stato attuale: **tutti i test verdi** (`./gradlew jvmTest`). L'app Android **compila e si installa** (Samsung
 Galaxy S8, 2026-09-24, nessuna modifica al codice). Misure in D36: tutte verdi. Widget,
-riquadro sopra il blocco e privacy **provati sul telefono**. La build di rilascio con R8
-(D37) non è ancora stata compilata.
+riquadro sopra il blocco e privacy **provati sul telefono**. Archivio, tastiera, foto e
+condivisione (D38–D40) **compilano contro Android 15** (D44) ma non sono ancora stati
+costruiti con l'SDK né provati sul telefono.
 
 ---
 
@@ -1272,25 +1448,36 @@ riquadro sopra il blocco e privacy **provati sul telefono**. La build di rilasci
    livello gratuito. Ora ha una ragione d'essere più solida: il Pro poggia
    sull'esportazione automatica, non più sui widget multipli.
 
-### Dopo la misura
+### Fatto dopo la misura
 
 12. ~~Profilo di riferimento per l'avvio a freddo~~ — scritto a mano, con R8 (D37). Si
-    vede all'opera solo installando dal Play Store: va provato col canale di test
-    interno.
-13. **Il foglio di condivisione** su entrambe le piattaforme: è il 90% di D31, e su
-    Android è anche l'unica strada per Keep.
-14. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
-   all'avvio, così il giornale si svuota e le note vivono nel database.
-15. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
-    di blocco, Controllo e tasto Azione. **Serve un Mac con Xcode.**
-16. **`core:ocr`** — Vision e ML Kit dietro un'unica interfaccia.
-17. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
+    vede all'opera solo installando dal Play Store.
+13. ~~Archivio su Android~~ — elenco, ricerca, nota aperta, eliminazione, assorbimento
+    del giornale all'apertura (D39). **Scritto, non ancora provato sul telefono.**
+14. ~~Foglio di condivisione~~ — testo più immagine dell'inchiostro più foto, invio
+    registrato solo a destinazione scelta (D31, D39).
+15. ~~Tastiera e fotocamera sul foglio~~ — pezzi immutabili della nota, nel giornale da
+    subito, fotocamera sicura a telefono bloccato (D38).
+16. ~~Corsivo col dito, primo passo~~ — foglio senza righe, tratto da pennarello (D42).
+
+### Prossimi, in ordine (D43)
+
+17. **Provare tutto sul telefono**, poi il **canale di test interno** del Play Store.
+18. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
     allora se il giornale debba coprire anche l'audio.
+19. **`core:ocr`** — riconoscimento della scrittura (D2). Su Android è ML Kit, che
+    registra un `ContentProvider`: va tolto dal manifest e inizializzato a mano
+    (invariante 21).
+20. **"Condividi verso InkNote"** — da qualunque app, testo, link e foto diventano una
+    nota senza aprire niente.
+21. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
+    di blocco, Controllo e tasto Azione. **Serve un Mac con Xcode.**
+22. **`core:billing`** — il Pro (D4), quando sapremo cosa la gente usa (D43).
 
 ### Prima di pubblicare
 
-18. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
-    privacy. Contano più del codice per la scoperta, e il paywall va collegato.
+23. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
+    privacy, etichette dell'esportazione tradotte (D41), firma di rilascio vera.
 
 ## 10. Questioni ancora aperte
 
@@ -1308,6 +1495,9 @@ riquadro sopra il blocco e privacy **provati sul telefono**. La build di rilasci
   permette più (D26) e al primo sync la cancellazione vincerebbe comunque. Probabile
   soluzione: copiare la nota sotto un id nuovo, accettando di perdere lo storico.
 - **Se il giornale debba coprire anche l'audio** (D25 lo lascia fuori per ora).
+- **Il piano di lancio (D43)**: gratis all'inizio, Android prima. Da confermare.
+- **La fascia di scrittura ingrandita** per il corsivo col dito (D42): dopo aver provato
+  foglio senza righe e tratto più spesso.
 - **Il foglio del widget: nudo o con un segno tenue?** Un rettangolo bianco vuoto può
   sembrare rotto. Proposta: un segno a basso contrasto (D30, artboard `DueVarianti`).
   Il widget Android oggi porta il segno; il foglio nudo è una vista da togliere (D33).

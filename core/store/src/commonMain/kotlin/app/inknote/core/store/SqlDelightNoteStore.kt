@@ -15,6 +15,12 @@ import app.inknote.core.model.StrokeId
 import app.inknote.core.model.StrokePointCodec
 import app.inknote.core.model.VoiceClip
 import app.inknote.core.model.VoiceClipId
+import app.inknote.core.model.PhotoClip
+import app.inknote.core.model.PhotoClipId
+import app.inknote.core.model.TextClip
+import app.inknote.core.model.TextClipId
+import app.inknote.core.model.orderPhotoClips
+import app.inknote.core.model.orderTextClips
 import app.inknote.core.model.orderExports
 import app.inknote.core.model.orderStrokes
 import app.inknote.core.model.orderVoiceClips
@@ -24,6 +30,8 @@ import app.inknote.core.store.db.Stroke as StrokeRow
 import app.inknote.core.store.db.Note_export as ExportRow
 import app.inknote.core.store.db.SearchCandidates as SearchCandidate
 import app.inknote.core.store.db.Voice_clip as VoiceClipRow
+import app.inknote.core.store.db.Text_clip as TextClipRow
+import app.inknote.core.store.db.Photo_clip as PhotoClipRow
 
 /**
  * Apre l'archivio su un driver fornito dalla piattaforma.
@@ -175,6 +183,31 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
                     id = clip.id.value,
                 )
             }
+            for (clip in note.textClips) {
+                val normalized = SearchText.normalize(clip.text)
+                queries.insertTextClipIfAbsent(
+                    id = clip.id.value,
+                    noteId = note.id.value,
+                    writtenAt = clip.writtenAt,
+                    text = clip.text,
+                    textNormalized = normalized,
+                    deletedAt = clip.deletedAt,
+                )
+                queries.updateTextClipDeletedAt(deletedAt = clip.deletedAt, id = clip.id.value)
+                // Il salvataggio è anche la reindicizzazione (D27): l'indice del testo si
+                // riscrive con la normalizzazione corrente, come quello dell'OCR.
+                queries.updateTextClipNormalized(textNormalized = normalized, id = clip.id.value)
+            }
+            for (clip in note.photoClips) {
+                queries.insertPhotoClipIfAbsent(
+                    id = clip.id.value,
+                    noteId = note.id.value,
+                    takenAt = clip.takenAt,
+                    path = clip.path,
+                    deletedAt = clip.deletedAt,
+                )
+                queries.updatePhotoClipDeletedAt(deletedAt = clip.deletedAt, id = clip.id.value)
+            }
             for (record in note.exports) {
                 queries.insertExportIfAbsent(
                     noteId = note.id.value,
@@ -203,15 +236,20 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
         queries.setWidgetImagePath(path = path, id = id.value)
     }
 
-    override fun purgeDeleted(before: Long) {
-        database.transaction {
+    override fun purgeDeleted(before: Long): List<String> = database.transactionWithResult {
+        // I percorsi prima delle righe: dopo non si saprebbe più quali file cancellare.
+        val photoPaths = queries.selectPhotoPathsOfPurgeableNotes(before).executeAsList()
+        run {
             // I figli prima della nota: la cascata sulle chiavi esterne non è
             // garantita, vedi il commento nello schema.
             queries.purgeStrokesOfDeletedNotes(before)
             queries.purgeVoiceClipsOfDeletedNotes(before)
+            queries.purgeTextClipsOfDeletedNotes(before)
+            queries.purgePhotoClipsOfDeletedNotes(before)
             queries.purgeExportsOfDeletedNotes(before)
             queries.purgeDeletedNotes(before)
         }
+        photoPaths
     }
 
     private fun strokesOf(noteId: String): List<Stroke> =
@@ -229,12 +267,28 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
         strokes = strokesOf(id),
         voiceClips = voiceClipsOf(id),
         exports = exportsOf(id),
+        textClips = orderTextClips(queries.selectTextClips(id).executeAsList().map { it.toTextClip() }),
+        photoClips = orderPhotoClips(queries.selectPhotoClips(id).executeAsList().map { it.toPhotoClip() }),
         createdAt = created_at,
         updatedAt = updated_at,
         revision = revision,
         deletedAt = deleted_at,
         recognizedText = recognized_text,
         recognizedFromRevision = recognized_from_revision,
+    )
+
+    private fun TextClipRow.toTextClip() = TextClip(
+        id = TextClipId(id),
+        writtenAt = written_at,
+        text = text,
+        deletedAt = deleted_at,
+    )
+
+    private fun PhotoClipRow.toPhotoClip() = PhotoClip(
+        id = PhotoClipId(id),
+        takenAt = taken_at,
+        path = path,
+        deletedAt = deleted_at,
     )
 
     private fun ExportRow.toExportRecord() = ExportRecord(

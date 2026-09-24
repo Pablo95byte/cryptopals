@@ -1,10 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    La lingua di base è l'inglese (D41): è quella che vede chiunque non abbia una
+    traduzione. L'italiano sta in values-it.
+-->
 <resources>
     <string name="app_name">InkNote</string>
+    <string name="capture_label">Write</string>
     <string name="ok">OK</string>
-    <string name="recovered_title">Note nel giornale</string>
-    <string name="clear_journal">Svuota il giornale</string>
-    <string name="journal_failed">Memoria piena: questa nota non si sta salvando</string>
-    <string name="widget_description">Un foglio bianco: toccalo e scrivi</string>
-    <string name="tile_label">Scrivi una nota</string>
+    <string name="recovered_title">Notes in the journal</string>
+    <string name="clear_journal">Clear the journal</string>
+    <string name="journal_failed">Storage full: this note is not being saved</string>
+    <string name="widget_description">A blank sheet: tap it and write</string>
+    <string name="tile_label">Write a note</string>
+    <string name="keyboard">Type</string>
+    <string name="camera">Photo</string>
+    <string name="text_hint">Type here…</string>
+    <string name="no_camera">No camera app found</string>
+    <string name="archive_title">Notes</string>
+    <string name="search_hint">Search</string>
+    <string name="archive_empty">No notes yet.\nTap + or use the widget to write one.</string>
+    <string name="search_empty">Nothing found.</string>
+    <string name="new_note">New note</string>
+    <string name="handwritten_note">Handwritten note</string>
+    <string name="photo_note">Photo</string>
+    <string name="share">Send to…</string>
+    <string name="share_title">Send note to</string>
+    <string name="share_nothing">This note is empty</string>
+    <string name="delete">Delete</string>
+    <string name="delete_confirm">Delete this note?</string>
+    <string name="cancel">Cancel</string>
+    <string name="torn_tail_notice">The last stroke before the app closed could not be saved.</string>
+    <string name="shortcut_new_note">New note</string>
 </resources>

@@ -18,6 +18,8 @@ package app.inknote.core.model
  * - **Le registrazioni vocali si uniscono allo stesso modo** (D25). Anche l'audio è
  *   immutabile; l'unico campo che può comparire dopo è la trascrizione, e fra "c'è" e
  *   "non c'è ancora" vince "c'è".
+ * - **Testi digitati e foto si uniscono per id** (D38): sono immutabili come i tratti,
+ *   e l'unico campo che cambia è il tombstone.
  * - **La cancellazione di un tratto vince** sulla sua esistenza, con il tombstone
  *   più vecchio a fare da riferimento. Senza questo un tratto cancellato su un
  *   dispositivo riapparirebbe al sync successivo.
@@ -63,6 +65,13 @@ fun mergeNotes(local: Note, remote: Note): Note {
         }
     }
 
+    val mergedTexts = unionById(local.textClips, remote.textClips, { it.id }) { a, b ->
+        a.copy(deletedAt = minOfNullable(a.deletedAt, b.deletedAt), writtenAt = minOf(a.writtenAt, b.writtenAt))
+    }
+    val mergedPhotos = unionById(local.photoClips, remote.photoClips, { it.id }) { a, b ->
+        a.copy(deletedAt = minOfNullable(a.deletedAt, b.deletedAt), takenAt = minOf(a.takenAt, b.takenAt))
+    }
+
     val newest = if (compareVersions(local, remote) >= 0) local else remote
     val oldest = if (newest === local) remote else local
 
@@ -72,6 +81,8 @@ fun mergeNotes(local: Note, remote: Note): Note {
         strokes = orderStrokes(mergedStrokes.values.toList()),
         voiceClips = orderVoiceClips(mergedClips.values.toList()),
         exports = orderExports(mergedExports.values.toList()),
+        textClips = orderTextClips(mergedTexts),
+        photoClips = orderPhotoClips(mergedPhotos),
         createdAt = minOf(local.createdAt, remote.createdAt),
         updatedAt = maxOf(local.updatedAt, remote.updatedAt),
         revision = maxOf(local.revision, remote.revision),
@@ -84,6 +95,21 @@ fun mergeNotes(local: Note, remote: Note): Note {
             oldest.recognizedFromRevision
         },
     )
+}
+
+/**
+ * Unione per id: gli elementi presenti da una parte sola passano, quelli presenti da
+ * entrambe si fondono con [combine], che deve essere simmetrica perché il merge resti
+ * indipendente dall'ordine degli operandi (invariante 4).
+ */
+private fun <T, K> unionById(a: List<T>, b: List<T>, key: (T) -> K, combine: (T, T) -> T): List<T> {
+    val merged = LinkedHashMap<K, T>(a.size + b.size)
+    for (item in a) merged[key(item)] = item
+    for (item in b) {
+        val existing = merged[key(item)]
+        merged[key(item)] = if (existing == null) item else combine(existing, item)
+    }
+    return merged.values.toList()
 }
 
 private fun mergeStrokes(a: Stroke, b: Stroke): Stroke {

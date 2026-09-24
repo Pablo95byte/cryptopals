@@ -66,7 +66,7 @@ quindi non ho né SDK Android né modo di compilare un APK.
 ```sh
 git clone <questo repository>
 cd cryptopals
-./gradlew jvmTest              # 233 test, devono essere tutti verdi
+./gradlew jvmTest              # 261 test, devono essere tutti verdi
 ./gradlew :androidApp:installDebug
 ```
 
@@ -138,6 +138,27 @@ subito dopo la tua misura.
 
 ---
 
+## 1bis. Il giro di prova dell'app intera (D38–D42)
+
+Dopo `git pull`, reinstalla (`./gradlew :androidApp:installDebug`). **È la prima volta
+che questo codice viene compilato**: se il build si lamenta, mandami l'errore così com'è.
+
+1. **L'icona apre l'archivio.** Le note scritte finora devono comparire nell'elenco.
+   Nell'elenco delle app c'è anche **"Scrivi"**, che apre il foglio.
+2. **Il foglio**: niente righe, e col dito il tratto è più spesso. **Prova il corsivo**
+   scrivendo grande: com'è adesso?
+3. **Tastiera**: tocca l'icona in basso a sinistra, scrivi, premi OK. La nota compare
+   nell'archivio col testo, e la ricerca la trova.
+4. **Foto**: tocca la fotocamera, scatta, conferma. Una miniatura compare sul foglio.
+   Poi la stessa prova **a telefono bloccato** dal riquadro rapido: la fotocamera deve
+   aprirsi senza chiederti il codice.
+5. **Manda a…**: apri una nota dall'archivio e mandala a Keep, o a una mail a te stesso.
+   Deve arrivare il testo con l'immagine dell'inchiostro e le foto.
+6. **Elimina**: la nota sparisce dall'elenco.
+7. **Tasto laterale** (facoltativo): Impostazioni → Funzioni avanzate → Tasto laterale →
+   Doppia pressione → Apri app → **Scrivi**. Poi, a telefono in tasca: doppio clic,
+   scrivi.
+
 ## 2. Le altre due verifiche, mentre hai il telefono in mano
 
 **Il tratto.** Scrivi una riga col dito e guarda se lo spessore vive: più sottile nei
@@ -172,7 +193,7 @@ dimmelo subito: è una falla, non un dettaglio.
 
 C'è **un** rischio noto, dichiarato. I moduli condivisi non hanno un target Android —
 di proposito, altrimenti il codice non si compilerebbe più dove l'SDK non c'è, e
-perderei i 233 test che girano su qualunque macchina. L'app chiede quindi la loro
+perderei i 261 test che girano su qualunque macchina. L'app chiede quindi la loro
 variante `jvm` con un attributo Gradle, e **quella riga non l'ha mai provata nessuno con
 l'SDK presente**.
 
@@ -222,7 +243,7 @@ Ti risparmia soldi e tempo:
 Il **core condiviso è scritto e verificato**: modello dati pronto per il sync, motore
 d'inchiostro, geometria, archivio SQLite con quattro migrazioni provate, giornale che
 mette l'inchiostro al sicuro dal primo tratto, ricerca che ignora accenti e ordine delle
-parole, uscita verso altre app. **233 test, tutti verdi, su qualunque macchina.**
+parole, uscita verso altre app. **261 test, tutti verdi, su qualunque macchina.**
 
 L'**app Android è scritta ma non l'ha compilata nessuno**: è la prova di velocità, e il
 primo build è il tuo. L'**app iOS non è ancora scritta**, per scelta: aspetta la misura.

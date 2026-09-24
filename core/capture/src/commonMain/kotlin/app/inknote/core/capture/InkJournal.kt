@@ -1,7 +1,10 @@
 package app.inknote.core.capture
 
 import app.inknote.core.model.Note
+import app.inknote.core.model.NoteId
+import app.inknote.core.model.orderPhotoClips
 import app.inknote.core.model.orderStrokes
+import app.inknote.core.model.orderTextClips
 
 /**
  * Il giornale di scrittura dell'inchiostro.
@@ -46,25 +49,45 @@ class InkJournal(private val sink: InkJournalSink) {
         val result = read()
         val notes = result.records
             .groupBy { it.noteId }
-            .map { (noteId, records) ->
-                val strokes = orderStrokes(records.map { it.stroke })
-                val first = records.first()
-                Note(
-                    id = noteId,
-                    canvas = first.canvas,
-                    strokes = strokes,
-                    createdAt = first.noteCreatedAt,
-                    updatedAt = strokes.maxOfOrNull { it.createdAt } ?: first.noteCreatedAt,
-                    // Una revisione per tratto, come se la nota fosse stata
-                    // costruita tratto per tratto: così il merge con la copia in
-                    // archivio non la considera più vecchia di quello che è.
-                    revision = strokes.size + 1L,
-                )
-            }
+            .map { (noteId, records) -> rebuild(noteId, records) }
         return JournalRecovery(
             notes = notes,
             hadTornTail = result.hadTornTail,
             consumedBytes = result.consumedBytes,
+        )
+    }
+
+    private fun rebuild(noteId: NoteId, records: List<JournalRecord>): Note {
+        val first = records.first()
+        val strokes = orderStrokes(records.mapNotNull { it.stroke })
+        // Un testo corretto arriva due volte, la versione vecchia col tombstone e poi di
+        // nuovo: si tiene una copia per id, e il tombstone vince (D8, D38).
+        val texts = records.mapNotNull { (it.item as? JournalItem.Text)?.clip }
+            .groupBy { it.id }
+            .map { (_, copies) -> copies.firstOrNull { it.isDeleted } ?: copies.first() }
+        val photos = records.mapNotNull { (it.item as? JournalItem.Photo)?.clip }
+            .groupBy { it.id }
+            .map { (_, copies) -> copies.firstOrNull { it.isDeleted } ?: copies.first() }
+
+        val parts = strokes.size + texts.size + photos.size
+        val latest = listOfNotNull(
+            strokes.maxOfOrNull { it.createdAt },
+            texts.maxOfOrNull { it.deletedAt ?: it.writtenAt },
+            photos.maxOfOrNull { it.deletedAt ?: it.takenAt },
+        ).maxOrNull()
+
+        return Note(
+            id = noteId,
+            canvas = first.canvas,
+            strokes = strokes,
+            textClips = orderTextClips(texts),
+            photoClips = orderPhotoClips(photos),
+            createdAt = first.noteCreatedAt,
+            updatedAt = latest ?: first.noteCreatedAt,
+            // Una revisione per pezzo, come se la nota fosse stata costruita pezzo per
+            // pezzo: così il merge con la copia in archivio non la considera più
+            // vecchia di quello che è.
+            revision = parts + 1L,
         )
     }
 

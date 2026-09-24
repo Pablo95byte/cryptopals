@@ -34,6 +34,8 @@ data class CanvasSize(val width: Float, val height: Float) {
  *   unione, come i tratti, invece che sovrascriversi (D8, D25).
  * @param exports dove questa nota è già stata mandata, per non duplicarla al secondo
  *   invio (D31).
+ * @param textClips il testo digitato con la tastiera, e [photoClips] le foto (D38).
+ *   Liste di pezzi immutabili per la stessa ragione di [voiceClips].
  * @param recognizedText esito dell'OCR **sull'inchiostro**, `null` se non ancora
  *   calcolato. La trascrizione del parlato sta su ciascun [VoiceClip].
  * @param recognizedFromRevision revisione su cui l'OCR è stato calcolato: se è
@@ -45,6 +47,8 @@ data class Note(
     val strokes: List<Stroke>,
     val voiceClips: List<VoiceClip> = emptyList(),
     val exports: List<ExportRecord> = emptyList(),
+    val textClips: List<TextClip> = emptyList(),
+    val photoClips: List<PhotoClip> = emptyList(),
     val createdAt: Long,
     val updatedAt: Long,
     val revision: Long = 1L,
@@ -64,8 +68,19 @@ data class Note(
 
     val hasVoice: Boolean get() = visibleVoiceClips.isNotEmpty()
 
-    /** Una nota è vuota solo se non ha né inchiostro né voce. */
-    val isEmpty: Boolean get() = !hasInk && !hasVoice
+    val visibleTextClips: List<TextClip> get() = textClips.filter { !it.isDeleted && it.text.isNotBlank() }
+
+    val visiblePhotoClips: List<PhotoClip> get() = photoClips.filter { !it.isDeleted }
+
+    val hasText: Boolean get() = visibleTextClips.isNotEmpty()
+
+    val hasPhoto: Boolean get() = visiblePhotoClips.isNotEmpty()
+
+    /** Il testo digitato, nell'ordine in cui è stato scritto. */
+    val typedText: String? get() = visibleTextClips.joinToString("\n") { it.text.trim() }.ifEmpty { null }
+
+    /** Una nota è vuota solo se non ha niente: né inchiostro, né voce, né testo, né foto. */
+    val isEmpty: Boolean get() = !hasInk && !hasVoice && !hasText && !hasPhoto
 
     /**
      * `true` se l'inchiostro va (ri)riconosciuto.
@@ -107,14 +122,45 @@ data class Note(
         get() = visibleVoiceClips.filter { it.needsTranscription }
 
     /**
-     * Tutto il testo con cui questa nota si può ritrovare: l'OCR dell'inchiostro più
-     * le trascrizioni del parlato.
+     * Tutto il testo con cui questa nota si può ritrovare: il testo digitato, l'OCR
+     * dell'inchiostro e le trascrizioni del parlato.
      */
     val searchableText: String
         get() = buildList {
+            typedText?.let(::add)
             recognizedText?.let(::add)
             for (clip in visibleVoiceClips) clip.transcript?.let(::add)
         }.joinToString(" ")
+
+    /** Aggiunge un pezzo di testo digitato. Uno vuoto non cambia la nota. */
+    fun withTextClip(clip: TextClip, now: Long): Note {
+        if (clip.text.isBlank()) return this
+        return copy(textClips = orderTextClips(textClips + clip), updatedAt = now, revision = revision + 1)
+    }
+
+    /** Marca un testo come cancellato. Correggere un testo è questo più un [withTextClip]. */
+    fun withTextClipDeleted(clipId: TextClipId, now: Long): Note {
+        val index = textClips.indexOfFirst { it.id == clipId }
+        if (index < 0 || textClips[index].isDeleted) return this
+        return copy(
+            textClips = textClips.toMutableList().also { it[index] = it[index].copy(deletedAt = now) },
+            updatedAt = now,
+            revision = revision + 1,
+        )
+    }
+
+    fun withPhotoClip(clip: PhotoClip, now: Long): Note =
+        copy(photoClips = orderPhotoClips(photoClips + clip), updatedAt = now, revision = revision + 1)
+
+    fun withPhotoClipDeleted(clipId: PhotoClipId, now: Long): Note {
+        val index = photoClips.indexOfFirst { it.id == clipId }
+        if (index < 0 || photoClips[index].isDeleted) return this
+        return copy(
+            photoClips = photoClips.toMutableList().also { it[index] = it[index].copy(deletedAt = now) },
+            updatedAt = now,
+            revision = revision + 1,
+        )
+    }
 
     /** Aggiunge una registrazione producendo una nuova versione della nota. */
     fun withVoiceClip(clip: VoiceClip, now: Long): Note = copy(

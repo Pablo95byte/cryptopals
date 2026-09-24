@@ -106,6 +106,9 @@ interface NoteStore {
      * tombstone non possono crescere per sempre, e va chiamato con una finestra
      * abbondante: un tombstone eliminato prima che tutti i dispositivi l'abbiano
      * visto fa riapparire la nota al sync successivo.
+     *
+     * @return i percorsi relativi delle foto delle note eliminate: i file stanno su
+     *   disco e non nel database, e toccherà alla piattaforma cancellarli (D38).
      */
-    fun purgeDeleted(before: Long)
+    fun purgeDeleted(before: Long): List<String>
 }

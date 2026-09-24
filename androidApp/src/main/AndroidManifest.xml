@@ -3,7 +3,9 @@
 
     <application
         android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.InkNote">
 
@@ -22,6 +24,11 @@
             android:configChanges   ruotare il telefono non ricrea il foglio.
                                     Ricrearlo spezzerebbe la nota in due, e toglierebbe
                                     dallo schermo l'inchiostro appena scritto.
+            android:windowSoftInputMode  con la tastiera aperta (D38) il foglio si
+                                    restringe invece di finirci sotto, e OK resta visibile.
+
+            Non è più l'attività dell'icona: l'icona apre l'archivio (D39). Al foglio si
+            arriva dal widget, dal riquadro rapido, dalla scorciatoia e da "Scrivi".
         -->
         <activity
             android:name=".CaptureActivity"
@@ -32,12 +39,64 @@
             android:launchMode="singleTop"
             android:showWhenLocked="true"
             android:theme="@style/Theme.InkNote.Capture"
-            android:turnScreenOn="true">
+            android:turnScreenOn="true"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!--
+            "Scrivi": una seconda voce nell'elenco delle app, che apre direttamente il
+            foglio (D39). Serve a chi la vuole nel dock, e a chi assegna un'app al tasto
+            laterale: sui Samsung, doppia pressione del tasto laterale → Scrivi.
+        -->
+        <activity-alias
+            android:name=".WriteAlias"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/capture_label"
+            android:targetActivity=".CaptureActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity-alias>
+
+        <!-- L'archivio: si apre toccando l'icona dell'app (D39). -->
+        <activity
+            android:name=".ArchiveActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
+
+        <activity
+            android:name=".NoteActivity"
+            android:exported="false" />
+
+        <!-- La ricevuta del foglio di condivisione: registra l'invio (D31). -->
+        <receiver
+            android:name=".ShareResultReceiver"
+            android:exported="false" />
+
+        <!--
+            I file delle note per la fotocamera e per le app di destinazione (D40).
+
+            In un processo suo, ":files": un ContentProvider del processo principale
+            verrebbe creato a ogni avvio, prima del foglio (invariante 21). Così nasce solo
+            quando un'altra app chiede un file. Non esportato: ci si arriva solo con un
+            permesso concesso da noi, indirizzo per indirizzo.
+        -->
+        <provider
+            android:name=".FilesProvider"
+            android:authorities="app.inknote.android.files"
+            android:directBootAware="true"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            android:process=":files" />
 
         <activity
             android:name=".RecoveredNotesActivity"

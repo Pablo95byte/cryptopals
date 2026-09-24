@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Tenendo premuta l'icona dell'app: "Nuova nota" apre il foglio (D39). È un ingresso in
+    più per chi tiene l'icona nel dock, e non costa niente a nessuno.
+-->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="new_note"
+        android:shortcutLongLabel="@string/shortcut_new_note"
+        android:shortcutShortLabel="@string/shortcut_new_note">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="app.inknote.android.CaptureActivity"
+            android:targetPackage="app.inknote.android" />
+    </shortcut>
+</shortcuts>

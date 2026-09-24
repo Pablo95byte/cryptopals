@@ -13,6 +13,7 @@ package app.inknote.core.model
  *   non è ancora arrivato. L'interfaccia deve dirlo prima di mandare, non dopo.
  * @param hasInkImage `true` se c'è inchiostro da allegare come immagine. È l'originale:
  *   il testo può sbagliare una parola, l'immagine no.
+ * @param photoPaths le foto da allegare, come percorsi relativi (D38).
  */
 data class ExportContent(
     val text: String?,
@@ -20,6 +21,7 @@ data class ExportContent(
     val fileBaseName: String,
     val isComplete: Boolean,
     val hasInkImage: Boolean,
+    val photoPaths: List<String> = emptyList(),
 )
 
 /**
@@ -52,6 +54,9 @@ object NoteExport {
 
         val transcripts = note.visibleVoiceClips.mapNotNull { it.transcript }
         val pieces = buildList {
+            // Il testo digitato prima: è l'unico che non passa da un riconoscimento, e
+            // quindi l'unico sicuramente giusto.
+            note.typedText?.let(::add)
             note.recognizedText?.let(::add)
             addAll(transcripts)
         }
@@ -66,6 +71,7 @@ object NoteExport {
             fileBaseName = fileBaseName(note, text),
             isComplete = isComplete,
             hasInkImage = note.hasInk,
+            photoPaths = note.visiblePhotoClips.map { it.path },
         )
     }
 
@@ -76,6 +82,7 @@ object NoteExport {
         isComplete: Boolean,
     ): String? {
         val content = buildList {
+            note.typedText?.let(::add)
             note.recognizedText?.let(::add)
             // Le parti dettate si citano: chi rilegge fra sei mesi deve sapere che quel
             // pezzo viene da una registrazione e non da ciò che ha scritto.
@@ -103,10 +110,18 @@ object NoteExport {
         }.joinToString("\n\n")
     }
 
-    private fun originLabel(note: Note): String = when {
-        note.hasInk && note.hasVoice -> "Scritta a mano e dettata"
-        note.hasVoice -> "Dettata"
-        else -> "Scritta a mano"
+    private fun originLabel(note: Note): String {
+        val parts = buildList {
+            if (note.hasInk) add("scritta a mano")
+            if (note.hasText) add("digitata")
+            if (note.hasVoice) add("dettata")
+            if (note.hasPhoto) add("con foto")
+        }
+        return when (parts.size) {
+            0 -> "Nota"
+            1 -> parts.single()
+            else -> parts.dropLast(1).joinToString(", ") + " e " + parts.last()
+        }.replaceFirstChar { it.uppercase() }
     }
 
     /**

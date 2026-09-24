@@ -1,0 +1,25 @@
+-- Migrazione 4 → 5: testo digitato e foto (decisione D38).
+--
+-- Solo tabelle nuove, nessuna colonna toccata: le note già salvate non cambiano, e una
+-- nota scritta prima di questa versione semplicemente non ha né testi né foto.
+
+CREATE TABLE text_clip (
+    id TEXT NOT NULL PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    written_at INTEGER NOT NULL,
+    text TEXT NOT NULL,
+    text_normalized TEXT,
+    deleted_at INTEGER
+);
+
+CREATE INDEX text_clip_note_id ON text_clip(note_id);
+
+CREATE TABLE photo_clip (
+    id TEXT NOT NULL PRIMARY KEY,
+    note_id TEXT NOT NULL REFERENCES note(id) ON DELETE CASCADE,
+    taken_at INTEGER NOT NULL,
+    path TEXT NOT NULL,
+    deleted_at INTEGER
+);
+
+CREATE INDEX photo_clip_note_id ON photo_clip(note_id);

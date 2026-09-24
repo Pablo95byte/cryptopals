@@ -7,6 +7,10 @@ import app.inknote.core.model.PenKind
 import app.inknote.core.model.Stroke
 import app.inknote.core.model.StrokeId
 import app.inknote.core.model.StrokePointCodec
+import app.inknote.core.model.PhotoClip
+import app.inknote.core.model.PhotoClipId
+import app.inknote.core.model.TextClip
+import app.inknote.core.model.TextClipId
 
 /**
  * Un tratto e il contesto minimo per ricostruire la nota che lo contiene.
@@ -21,8 +25,28 @@ data class JournalRecord(
     val noteId: NoteId,
     val noteCreatedAt: Long,
     val canvas: CanvasSize,
-    val stroke: Stroke,
-)
+    val item: JournalItem,
+) {
+    constructor(noteId: NoteId, noteCreatedAt: Long, canvas: CanvasSize, stroke: Stroke) :
+        this(noteId, noteCreatedAt, canvas, JournalItem.Ink(stroke))
+
+    /** Il tratto, se questo record ne porta uno. */
+    val stroke: Stroke? get() = (item as? JournalItem.Ink)?.stroke
+}
+
+/**
+ * Cosa può finire nel giornale: un tratto, un testo digitato, una foto (D38).
+ *
+ * Testo e foto passano dal giornale per la stessa ragione dei tratti: sono al sicuro
+ * da quando esistono, non da quando l'utente conferma (D5, D20). Un testo corretto
+ * arriva due volte — la versione vecchia col tombstone e quella nuova — e il recupero
+ * le fonde per id.
+ */
+sealed interface JournalItem {
+    data class Ink(val stroke: Stroke) : JournalItem
+    data class Text(val clip: TextClip) : JournalItem
+    data class Photo(val clip: PhotoClip) : JournalItem
+}
 
 /**
  * Formato su disco del giornale.
@@ -39,7 +63,16 @@ data class JournalRecord(
  */
 internal object JournalCodec {
 
-    const val VERSION: Int = 1
+    /**
+     * La versione più alta che questo codice sa leggere. La 1 portava solo tratti; la 2
+     * aggiunge un byte di tipo davanti al contenuto (D38). Si scrive sempre la più alta,
+     * e si continuano a leggere tutte le precedenti.
+     */
+    const val VERSION: Int = 2
+
+    private const val KIND_INK = 1
+    private const val KIND_TEXT = 2
+    private const val KIND_PHOTO = 3
     private const val HEADER_BYTES = 9 // versione (1) + lunghezza (4) + checksum (4)
 
     fun encode(record: JournalRecord): ByteArray {
@@ -48,12 +81,26 @@ internal object JournalCodec {
         payload.putLong(record.noteCreatedAt)
         payload.putFloat(record.canvas.width)
         payload.putFloat(record.canvas.height)
-        payload.putString(record.stroke.id.value)
-        payload.putInt(record.stroke.pen.color)
-        payload.putString(record.stroke.pen.kind.name)
-        payload.putFloat(record.stroke.pen.baseWidth)
-        payload.putLong(record.stroke.createdAt)
-        payload.putBytes(StrokePointCodec.encode(record.stroke.points))
+        when (val item = record.item) {
+            is JournalItem.Ink -> {
+                payload.putByte(KIND_INK)
+                payload.putStroke(item.stroke)
+            }
+            is JournalItem.Text -> {
+                payload.putByte(KIND_TEXT)
+                payload.putString(item.clip.id.value)
+                payload.putLong(item.clip.writtenAt)
+                payload.putString(item.clip.text)
+                payload.putLong(item.clip.deletedAt ?: NO_TIME)
+            }
+            is JournalItem.Photo -> {
+                payload.putByte(KIND_PHOTO)
+                payload.putString(item.clip.id.value)
+                payload.putLong(item.clip.takenAt)
+                payload.putString(item.clip.path)
+                payload.putLong(item.clip.deletedAt ?: NO_TIME)
+            }
+        }
         val body = payload.toByteArray()
 
         val out = ByteWriter()
@@ -120,9 +167,9 @@ internal object JournalCodec {
         if (checksum(body) != expectedChecksum) return Frame.Damaged
 
         if (version > VERSION) return Frame.Future
-        if (version != VERSION) return Frame.Damaged
+        if (version < 1) return Frame.Damaged
 
-        val record = runCatching { decodeBody(body) }.getOrNull() ?: return Frame.Damaged
+        val record = runCatching { decodeBody(body, version) }.getOrNull() ?: return Frame.Damaged
         return Frame.Record(record, size = HEADER_BYTES + length)
     }
 
@@ -132,40 +179,72 @@ internal object JournalCodec {
         data object Damaged : Frame
     }
 
-    private fun decodeBody(body: ByteArray): JournalRecord {
+    private fun decodeBody(body: ByteArray, version: Int): JournalRecord {
         val reader = ByteReader(body, 0)
-        val noteId = reader.string()
+        val noteId = NoteId(reader.string())
         val noteCreatedAt = reader.long()
-        val canvasWidth = reader.float()
-        val canvasHeight = reader.float()
-        val strokeId = reader.string()
-        val penColor = reader.int()
-        val penKindName = reader.string()
-        val penBaseWidth = reader.float()
-        val strokeCreatedAt = reader.long()
-        val points = reader.bytes()
+        val canvas = CanvasSize(reader.float(), reader.float())
 
-        return JournalRecord(
-            noteId = NoteId(noteId),
-            noteCreatedAt = noteCreatedAt,
-            canvas = CanvasSize(canvasWidth, canvasHeight),
-            stroke = Stroke(
-                id = StrokeId(strokeId),
-                pen = Pen(
-                    color = penColor,
-                    // Come nell'archivio: una punta sconosciuta viene da una versione
-                    // più nuova dell'app, e il tratto va recuperato comunque.
-                    kind = PenKind.entries.firstOrNull { it.name == penKindName } ?: PenKind.BALLPOINT,
-                    baseWidth = penBaseWidth,
+        // La versione 1 non aveva il byte di tipo: portava solo tratti.
+        val kind = if (version == 1) KIND_INK else reader.byte()
+        val item = when (kind) {
+            KIND_INK -> JournalItem.Ink(reader.stroke())
+            KIND_TEXT -> JournalItem.Text(
+                TextClip(
+                    id = TextClipId(reader.string()),
+                    writtenAt = reader.long(),
+                    text = reader.string(),
+                    deletedAt = reader.long().takeIf { it != NO_TIME },
                 ),
-                points = StrokePointCodec.decode(points),
-                createdAt = strokeCreatedAt,
+            )
+            KIND_PHOTO -> JournalItem.Photo(
+                PhotoClip(
+                    id = PhotoClipId(reader.string()),
+                    takenAt = reader.long(),
+                    path = reader.string(),
+                    deletedAt = reader.long().takeIf { it != NO_TIME },
+                ),
+            )
+            else -> error("tipo di record sconosciuto: $kind")
+        }
+        return JournalRecord(noteId, noteCreatedAt, canvas, item)
+    }
+
+    private fun ByteWriter.putStroke(stroke: Stroke) {
+        putString(stroke.id.value)
+        putInt(stroke.pen.color)
+        putString(stroke.pen.kind.name)
+        putFloat(stroke.pen.baseWidth)
+        putLong(stroke.createdAt)
+        putBytes(StrokePointCodec.encode(stroke.points))
+    }
+
+    private fun ByteReader.stroke(): Stroke {
+        val strokeId = string()
+        val penColor = int()
+        val penKindName = string()
+        val penBaseWidth = float()
+        val strokeCreatedAt = long()
+        val points = bytes()
+        return Stroke(
+            id = StrokeId(strokeId),
+            pen = Pen(
+                color = penColor,
+                // Come nell'archivio: una punta sconosciuta viene da una versione più
+                // nuova dell'app, e il tratto va recuperato comunque.
+                kind = PenKind.entries.firstOrNull { it.name == penKindName } ?: PenKind.BALLPOINT,
+                baseWidth = penBaseWidth,
             ),
+            points = StrokePointCodec.decode(points),
+            createdAt = strokeCreatedAt,
         )
     }
 
+    /** "Nessun istante": un tombstone assente. Nessun istante vero vale Long.MIN_VALUE. */
+    private const val NO_TIME = Long.MIN_VALUE
+
     /** FNV-1a a 32 bit: serve a scoprire una scrittura interrotta, non a firmare nulla. */
-    private fun checksum(bytes: ByteArray): Int {
+    internal fun checksum(bytes: ByteArray): Int {
         var hash = -0x7EE3623B // 2166136261
         for (byte in bytes) {
             hash = hash xor (byte.toInt() and 0xFF)
@@ -254,6 +333,11 @@ private class ByteReader(private val source: ByteArray, private var offset: Int)
     fun long(): Long = (int().toLong() and 0xFFFFFFFFL shl 32) or (int().toLong() and 0xFFFFFFFFL)
 
     fun float(): Float = Float.fromBits(int())
+
+    fun byte(): Int {
+        require(offset < source.size) { "record troncato" }
+        return source[offset++].toInt() and 0xFF
+    }
 
     fun bytes(): ByteArray {
         val length = int()

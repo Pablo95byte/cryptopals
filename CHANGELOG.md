@@ -12,6 +12,19 @@ solo cosa è cambiato nel codice.
 
 ### Aggiunto
 
+- **Archivio su Android** (`ArchiveActivity`, `NoteActivity`): l'icona dell'app apre
+  l'elenco delle note con anteprima e ricerca; la nota aperta si manda ad altre app o si
+  elimina. Il giornale entra in archivio all'apertura (D39).
+- **Foglio di condivisione**: testo, immagine dell'inchiostro e foto; l'invio si registra
+  solo quando l'utente sceglie una destinazione (D31, D39).
+- **Tastiera e fotocamera sul foglio**: `TextClip` e `PhotoClip` nel modello, nel merge,
+  nella ricerca, nell'esportazione e nell'archivio (migrazione 4 → 5); giornale in
+  formato 2 con il tipo del record, il formato 1 si legge ancora (D38).
+- **"Scrivi"** nell'elenco delle app, **scorciatoia "Nuova nota"** tenendo premuta
+  l'icona, **icona dell'app** (D39).
+- **`FilesProvider`** in un processo suo, per fotocamera e condivisione (D40).
+- **Inglese come lingua di base**, italiano come traduzione (D41).
+
 - **R8 nella build di rilascio** e un **profilo di riferimento** scritto a mano
   (`baseline-prof.txt`), per l'avvio a freddo. Nessuna libreria aggiunta (D37).
 
@@ -57,7 +70,7 @@ solo cosa è cambiato nel codice.
     (decisione D11);
   - `Bounds`: rettangolo dell'inchiostro, spessore della penna compreso, per il
     ritaglio nei widget piccoli.
-- **233 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
+- **261 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
   Coprono fra l'altro l'idempotenza e la commutatività del merge, la tenuta della
   geometria su campioni duplicati o coincidenti, e il comportamento dello spessore
   in assenza di pressione, e il giro di andata e ritorno completo di una nota
@@ -306,6 +319,9 @@ solo cosa è cambiato nel codice.
 - Integrazione continua su GitHub Actions: i test del core a ogni push.
 
 ### Modificato
+
+- **Il foglio non ha più righe, e col dito il tratto è più spesso** (D42).
+- `NoteStore.purgeDeleted` restituisce i percorsi delle foto da cancellare dal disco.
 
 - `InkJournal.recover()` restituisce `JournalRecovery` (note, `hadTornTail`,
   `consumedBytes`) al posto di una lista di `RecoveredNote`.

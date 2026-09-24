@@ -50,12 +50,13 @@ kotlin {
 }
 
 /**
- * Nessuna dipendenza esterna: né AndroidX, né Material, né librerie di iniezione.
+ * Una dipendenza esterna sola, e fuori dal percorso di cattura.
  *
- * Non è minimalismo per sport. Questa app è la prova di velocità di D19: ogni
- * libreria sul percorso di avvio è tempo che l'utente aspetta prima di poter
- * scrivere, e un risultato misurato con mezzo framework addosso non dice niente sul
- * pavimento raggiungibile. Le `Activity` sono quelle di piattaforma.
+ * Fino a D39 non ce n'era nessuna: questa app era la prova di velocità di D19, e ogni
+ * libreria sul percorso di avvio è tempo che l'utente aspetta prima di poter scrivere.
+ * La regola che resta, ed è quella che conta: **niente sul percorso di cattura, e
+ * niente che registri un `ContentProvider`** (invariante 21). Il driver SQLite lo usa
+ * solo l'archivio, e la cattura non carica nemmeno una sua classe.
  *
  * I moduli del core sono Kotlin Multiplatform **senza target Android**, perché
  * aggiungerlo richiederebbe il plugin Android anche su di loro, e allora il core non
@@ -63,11 +64,12 @@ kotlin {
  * variante `jvm`: è puro Kotlin, senza API specifiche della JVM, e il bytecode è 11.
  */
 dependencies {
-    for (path in listOf(":core:model", ":core:ink", ":core:geometry", ":core:capture")) {
+    for (path in listOf(":core:model", ":core:ink", ":core:geometry", ":core:capture", ":core:store")) {
         val dependency = project(path)
         dependency.attributes {
             attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
         }
         implementation(dependency)
     }
+    implementation(libs.sqldelight.android.driver)
 }
