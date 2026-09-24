@@ -34,6 +34,8 @@ data class CanvasSize(val width: Float, val height: Float) {
  *   unione, come i tratti, invece che sovrascriversi (D8, D25).
  * @param exports dove questa nota è già stata mandata, per non duplicarla al secondo
  *   invio (D31).
+ * @param sortedAt quando la nota è stata smistata — tenuta, o mandata fuori — nello
+ *   smistamento a carte (D52). `null` finché aspetta di essere smistata.
  * @param textClips il testo digitato con la tastiera, e [photoClips] le foto (D38).
  *   Liste di pezzi immutabili per la stessa ragione di [voiceClips].
  * @param recognizedText esito dell'OCR **sull'inchiostro**, `null` se non ancora
@@ -55,6 +57,7 @@ data class Note(
     val deletedAt: Long? = null,
     val recognizedText: String? = null,
     val recognizedFromRevision: Long? = null,
+    val sortedAt: Long? = null,
 ) {
     val isDeleted: Boolean get() = deletedAt != null
 
@@ -90,6 +93,15 @@ data class Note(
      * per sempre senza mai avere niente da leggere.
      */
     val needsRecognition: Boolean get() = hasInk && recognizedFromRevision != revision
+
+    /** `true` se la nota non aspetta più lo smistamento: tenuta, o già mandata fuori (D52). */
+    val isSorted: Boolean get() = sortedAt != null || exports.isNotEmpty()
+
+    /**
+     * Segna la nota come smistata. Come un invio, **non** fa salire la revisione:
+     * smistare una nota non la modifica (D31, D52).
+     */
+    fun withSorted(now: Long): Note = if (sortedAt != null) this else copy(sortedAt = now)
 
     /** `true` se la nota è già stata mandata a questa destinazione. */
     fun wasSentTo(target: ExportTarget): Boolean = exports.any { it.target == target }

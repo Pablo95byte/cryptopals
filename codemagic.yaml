@@ -1,1 +1,134 @@
 
+# Codemagic (D53): tre workflow, uno per ogni cosa che si vuole sapere o consegnare.
+#
+#   core-tests       Ogni push: i test del core e le migrazioni. Linux, pochi minuti.
+#   ios-testflight   A mano, o a ogni tag "ios-*": l'app iOS firmata su TestFlight.
+#   android-internal A mano, o a ogni tag "android-*": l'AAB sul canale di test interno del Play Store.
+#
+# Perché iOS e Android si avviano a mano o con un tag e non a ogni push: ogni build su Mac
+# costa minuti, e ogni build su TestFlight arriva ai tester come un aggiornamento. Si
+# consegna quando c'è qualcosa da provare, non a ogni virgola.
+#
+# Cosa va impostato su codemagic.io prima del primo giro è in GUIDA.md, §0ter.
+
+definitions:
+  cache: &gradle_cache
+    cache_paths:
+      - $HOME/.gradle/caches
+      - $HOME/.gradle/wrapper
+      # Il compilatore Kotlin/Native e le sue librerie: quasi un gigabyte, scaricato una volta.
+      - $HOME/.konan
+
+workflows:
+  core-tests:
+    name: Core — test e migrazioni
+    instance_type: linux_x2
+    max_build_duration: 30
+    environment:
+      java: 21
+    triggering:
+      events: [push, pull_request]
+      cancel_previous_builds: true
+    cache: *gradle_cache
+    scripts:
+      - name: Test del core (tutti i moduli, sulla JVM)
+        script: ./gradlew jvmTest --no-daemon
+      - name: Schema e migrazioni coincidono
+        script: ./gradlew verifySqlDelightMigration --no-daemon
+    artifacts:
+      - "**/build/reports/tests/**"
+
+  ios-testflight:
+    name: iOS — TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      # La chiave API di App Store Connect, aggiunta in Team settings → Integrations
+      # con questo nome.
+      app_store_connect: InkNote ASC
+    environment:
+      java: 21
+      xcode: latest
+      # Firma dichiarativa: certificato di distribuzione e profili stanno in Team settings →
+      # Code signing identities (GUIDA §0ter). Codemagic prende anche i profili delle
+      # estensioni, cioè gli id che cominciano con questo: il widget.
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: app.inknote.ios
+      vars:
+        # L'Apple ID numerico dell'app: App Store Connect → l'app → Informazioni sull'app.
+        APP_STORE_APPLE_ID: ""
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "ios-*"
+    cache: *gradle_cache
+    scripts:
+      - name: XcodeGen
+        script: brew install xcodegen
+      - name: Numero della build
+        script: |
+          # Uno più dell'ultima build su TestFlight: App Store Connect rifiuta i doppioni,
+          # e le build caricate a mano da Xcode contano anche loro.
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null | tail -1)
+          case "$LATEST" in ''|*[!0-9]*) LATEST=0 ;; esac
+          AFTER_LATEST=$(( LATEST + 1 ))
+          COUNTER=${BUILD_NUMBER:-1}
+          NEXT=$(( AFTER_LATEST > COUNTER ? AFTER_LATEST : COUNTER ))
+          echo "Build $NEXT"
+          cd iosApp
+          sed -i '' "s/CURRENT_PROJECT_VERSION: \"[0-9]*\"/CURRENT_PROJECT_VERSION: \"$NEXT\"/" project.yml
+      - name: Il progetto Xcode
+        script: cd iosApp && xcodegen generate
+      - name: Firma
+        script: xcode-project use-profiles --project iosApp/InkNote.xcodeproj
+      - name: Test della facciata per Swift
+        script: ./gradlew :shared:jvmTest --no-daemon
+      - name: Archivio firmato
+        script: |
+          # La fase di build del progetto chiama Gradle, che compila il core in InkNoteKit.
+          xcode-project build-ipa \
+            --project iosApp/InkNote.xcodeproj \
+            --scheme InkNote
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+
+  android-internal:
+    name: Android — test interno del Play Store
+    instance_type: linux_x2
+    max_build_duration: 45
+    environment:
+      java: 21
+      # La chiave di caricamento, aggiunta in Team settings → Code signing identities →
+      # Android keystores con questo nome. Codemagic la passa a Gradle (D53).
+      android_signing:
+        - inknote_upload_key
+      groups:
+        # GCLOUD_SERVICE_ACCOUNT_CREDENTIALS: l'account di servizio del Play Console.
+        - google_play
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "android-*"
+    cache: *gradle_cache
+    scripts:
+      - name: Test del core
+        script: ./gradlew jvmTest --no-daemon
+      - name: Il bundle di rilascio (R8 e profilo di avvio, D37)
+        script: ./gradlew :androidApp:bundleRelease --no-daemon
+    artifacts:
+      - androidApp/build/outputs/bundle/release/*.aab
+      - androidApp/build/outputs/mapping/release/mapping.txt
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        # Il primo caricamento di un'app nuova va fatto a mano dal Play Console: l'API non
+        # può creare l'app. Da lì in poi pensa a tutto questo passo.
+        submit_as_draft: true

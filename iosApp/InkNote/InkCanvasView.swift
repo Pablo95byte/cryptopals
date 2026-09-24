@@ -15,7 +15,9 @@ final class InkCanvasView: UIView {
     var onFirstFrame: (() -> Void)?
     var onFirstInk: ((_ touchTimestamp: TimeInterval) -> Void)?
 
-    private var committed: [(path: CGPath, color: UIColor)] = []
+    /// I tratti chiusi, col loro colore **salvato**: quello da mostrare si decide al disegno,
+    /// perché di notte cambia (D52).
+    private var committed: [(path: CGPath, argb: Int32, alpha: Float)] = []
     private var activeTouch: UITouch?
     private var firstTouchTimestamp: TimeInterval?
     private var reportedFrame = false
@@ -24,7 +26,7 @@ final class InkCanvasView: UIView {
     init(sheet: InkSheet) {
         self.sheet = sheet
         super.init(frame: .zero)
-        backgroundColor = UIColor(Brand.paper)
+        backgroundColor = Brand.sheetPaper
         isMultipleTouchEnabled = true
         contentMode = .redraw
     }
@@ -84,7 +86,7 @@ final class InkCanvasView: UIView {
     private func finishStroke() {
         activeTouch = nil
         if sheet.end(), let shape = sheet.committedShapes.last {
-            committed.append((Self.path(of: shape), Self.color(of: shape)))
+            committed.append((Self.path(of: shape), shape.color, shape.alpha))
         }
         setNeedsDisplay()
     }
@@ -93,18 +95,19 @@ final class InkCanvasView: UIView {
 
     override func draw(_ rect: CGRect) {
         guard let context = UIGraphicsGetCurrentContext() else { return }
-        context.setFillColor(UIColor(Brand.paper).cgColor)
+        let dark = traitCollection.userInterfaceStyle == .dark
+        context.setFillColor(Brand.sheetPaper.resolvedColor(with: traitCollection).cgColor)
         context.fill(bounds)
 
-        for (path, color) in committed {
+        for (path, argb, alpha) in committed {
             context.addPath(path)
-            context.setFillColor(color.cgColor)
+            context.setFillColor(Self.color(argb: argb, alpha: alpha, dark: dark).cgColor)
             context.fillPath()
         }
 
         if let live = sheet.liveShape() {
             context.addPath(Self.path(of: live))
-            context.setFillColor(Self.color(of: live).cgColor)
+            context.setFillColor(Self.color(argb: live.color, alpha: live.alpha, dark: dark).cgColor)
             context.fillPath()
             if !reportedInk, let touched = firstTouchTimestamp {
                 reportedInk = true
@@ -130,14 +133,32 @@ final class InkCanvasView: UIView {
         return path
     }
 
+    /// L'inchiostro della casa, lo stesso valore di `InkSheet.INK`.
+    static let houseInk = Int32(bitPattern: 0xFF1F_2430)
+
+    /// Il colore di un tratto su carta chiara: l'archivio, le anteprime, le immagini mandate fuori.
     static func color(of shape: InkShape) -> UIColor {
-        let argb = UInt32(bitPattern: shape.color)
+        color(argb: shape.color, alpha: shape.alpha, dark: false)
+    }
+
+    /// Il colore da mostrare. Di notte l'inchiostro della casa diventa chiaro sul foglio
+    /// scuro (D52); gli altri colori restano i loro.
+    static func color(argb: Int32, alpha: Float, dark: Bool) -> UIColor {
+        if dark && argb == Self.houseInk {
+            return Brand.sheetInk.resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark)).withAlphaComponent(CGFloat(alpha))
+        }
+        let value = UInt32(bitPattern: argb)
         return UIColor(
-            red: CGFloat((argb >> 16) & 0xFF) / 255,
-            green: CGFloat((argb >> 8) & 0xFF) / 255,
-            blue: CGFloat(argb & 0xFF) / 255,
-            alpha: CGFloat(shape.alpha)
+            red: CGFloat((value >> 16) & 0xFF) / 255,
+            green: CGFloat((value >> 8) & 0xFF) / 255,
+            blue: CGFloat(value & 0xFF) / 255,
+            alpha: CGFloat(alpha)
         )
+    }
+
+    override func traitCollectionDidChange(_ previous: UITraitCollection?) {
+        super.traitCollectionDidChange(previous)
+        if previous?.userInterfaceStyle != traitCollection.userInterfaceStyle { setNeedsDisplay() }
     }
 
     /// L'istante dei tocchi è in secondi dall'accensione: la calligrafia vuole millisecondi.

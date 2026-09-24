@@ -27,6 +27,39 @@ struct NoteItem: Identifiable {
     let note: Note
     let date: Date
     let caption: String?
+
+    init(archive: InkArchive, note: Note) {
+        id = archive.idOf(note: note)
+        self.note = note
+        date = Date(timeIntervalSince1970: TimeInterval(note.updatedAt) / 1000)
+        caption = note.typedText ?? note.recognizedText
+    }
+}
+
+/// La nota di oggi tornata a galla (D52).
+struct ResurfacedItem {
+    let item: NoteItem
+    let daysAgo: Int
+    let isAnniversary: Bool
+
+    /// "Un anno fa oggi" tocca più di "365 giorni fa".
+    var title: String {
+        switch (isAnniversary, daysAgo) {
+        case (true, 365): return String(localized: "A year ago today")
+        case (true, 90): return String(localized: "Three months ago today")
+        case (true, 30): return String(localized: "A month ago today")
+        case (true, 7): return String(localized: "A week ago today")
+        default: return String(localized: "\(daysAgo) days ago")
+        }
+    }
+}
+
+enum Now {
+    static var millis: Int64 { Int64(Date().timeIntervalSince1970 * 1000) }
+
+    /// Lo scarto del fuso adesso: "oggi" e "domani alle 9" sono fatti locali, e il core
+    /// non conosce i fusi (invariante 5).
+    static var utcOffsetMillis: Int64 { Int64(TimeZone.current.secondsFromGMT()) * 1000 }
 }
 
 /// Lo stato dell'archivio: le note, la ricerca, e l'assorbimento del giornale.
@@ -35,12 +68,23 @@ final class ArchiveModel: ObservableObject {
     @Published private(set) var loaded = false
     @Published var lostStroke = false
     @Published var query = "" { didSet { reload() } }
+    /// Quante note aspettano lo smistamento (D52).
+    @Published private(set) var toSortCount = 0
+    @Published private(set) var resurfaced: ResurfacedItem?
+
+    /// La riemersione si toglie per oggi, non per sempre: domani ne arriva un'altra.
+    /// È una comodità di chi guarda, quindi sta nelle preferenze e non in archivio.
+    private static let dismissedDayKey = "resurface.dismissedDay"
 
     /// Il giornale entra in archivio, poi l'elenco si rilegge (D22). Da chiamare quando
     /// l'app torna davanti e quando il foglio si chiude.
     func refresh() {
-        ArchiveBackend.shared.run({ archive in
-            archive.ingest(journalSink: FileJournalSink.shared)
+        let now = Now.millis
+        ArchiveBackend.shared.run({ archive -> Bool in
+            let torn = archive.ingest(journalSink: FileJournalSink.shared)
+            // Le note cestinate da più di trenta giorni, con le loro foto (D39).
+            PhotoFiles.delete(archive.purge(nowMillis: now))
+            return torn
         }, then: { [weak self] torn in
             if torn { self?.lostStroke = true }
             self?.reload()
@@ -49,28 +93,44 @@ final class ArchiveModel: ObservableObject {
 
     func reload() {
         let term = query
-        ArchiveBackend.shared.run({ archive -> [NoteItem] in
-            let notes = term.trimmingCharacters(in: .whitespaces).isEmpty
-                ? archive.recent(limit: 500)
-                : archive.search(term: term, limit: 200)
-            return notes.map { note in
-                NoteItem(
-                    id: archive.idOf(note: note),
-                    note: note,
-                    date: Date(timeIntervalSince1970: TimeInterval(note.updatedAt) / 1000),
-                    caption: note.typedText ?? note.recognizedText
+        let now = Now.millis
+        let offset = Now.utcOffsetMillis
+        let today = Int(Resurface.shared.dayOf(millis: now, utcOffsetMillis: offset))
+        let dismissed = UserDefaults.standard.object(forKey: Self.dismissedDayKey) as? Int
+        ArchiveBackend.shared.run({ archive -> ([NoteItem], Int, ResurfacedItem?) in
+            let searching = !term.trimmingCharacters(in: .whitespaces).isEmpty
+            let notes = searching ? archive.search(term: term, limit: 200) : archive.recent(limit: 500)
+            let items = notes.map { NoteItem(archive: archive, note: $0) }
+            let count = Int(archive.toSortCount())
+            var resurfaced: ResurfacedItem?
+            if !searching, dismissed != today, let pick = archive.resurfaced(nowMillis: now, utcOffsetMillis: offset) {
+                resurfaced = ResurfacedItem(
+                    item: NoteItem(archive: archive, note: pick.note),
+                    daysAgo: Int(pick.daysAgo),
+                    isAnniversary: pick.isAnniversary
                 )
             }
-        }, then: { [weak self] items in
-            self?.notes = items
+            return (items, count, resurfaced)
+        }, then: { [weak self] result in
+            self?.notes = result.0
+            self?.toSortCount = result.1
+            self?.resurfaced = result.2
             self?.loaded = true
         })
+    }
+
+    func dismissResurfaced() {
+        let today = Int(Resurface.shared.dayOf(millis: Now.millis, utcOffsetMillis: Now.utcOffsetMillis))
+        UserDefaults.standard.set(today, forKey: Self.dismissedDayKey)
+        resurfaced = nil
     }
 
     /// Un tombstone, non una cancellazione (D8, D26).
     func delete(_ item: NoteItem) {
         notes.removeAll { $0.id == item.id }
-        let now = Int64(Date().timeIntervalSince1970 * 1000)
-        ArchiveBackend.shared.run({ archive in archive.delete(id: item.id, nowMillis: now) })
+        let now = Now.millis
+        ArchiveBackend.shared.run({ archive in archive.delete(id: item.id, nowMillis: now) }, then: { [weak self] _ in
+            self?.reload()
+        })
     }
 }

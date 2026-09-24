@@ -12,6 +12,27 @@ solo cosa è cambiato nel codice.
 
 ### Aggiunto
 
+- **Smistamento a carte** (D52): `Note.sortedAt` con migrazione 5 → 6, la coda
+  `notesToSort` nell'archivio, e su iOS la schermata a carte — destra manda, sinistra
+  tieni, giù butta — con gli stessi tre gesti come pulsanti.
+- **Riemersione** (D52): `Resurface.pick`, una nota vecchia al giorno in cima
+  all'archivio, prima gli anniversari; su iOS si toglie per oggi.
+- **Date riconosciute** (D52): `DateHints.find` in italiano e inglese; su iOS la nota aperta
+  propone "Ricordamelo" con l'editor di eventi del sistema, senza permessi sul calendario.
+- **Foglio di notte** (D52) su Android e iOS: col tema scuro il foglio si scurisce e
+  l'inchiostro diventa chiaro, senza cambiare i tratti salvati.
+- **Vibrazione su "Fatto"** (D52) su Android e iOS.
+- **App iOS, seconda tappa**: tastiera e fotocamera sul foglio, nota aperta con foto,
+  "Manda a…" con testo, immagine dell'inchiostro e foto, eliminazione, pulizia del
+  cestino dopo trenta giorni, traduzione italiana. Il foglio si presenta sopra qualunque
+  schermata aperta. Non ancora compilata.
+- **`codemagic.yaml`** (D53): test del core a ogni push, TestFlight con un tag `ios-*`,
+  canale interno del Play Store con un tag `android-*`.
+- **Firma di rilascio Android** dalle variabili di Codemagic o da `keystore.properties`;
+  `versionCode` dal numero della build del CI (D53).
+- Nella facciata per Swift: `toSort`, `toSortCount`, `keep`, `resurfaced`, `dateHint`,
+  `photoPaths`, `purge`, con 4 test.
+
 - **App iOS, prima tappa** (`iosApp/`, D48): progetto XcodeGen, archivio in SwiftUI,
   foglio in UIKit con Apple Pencil e campioni intermedi, giornale con `fsync`, widget per
   home e schermata di blocco, pulsante del Centro di Controllo (iOS 18), azione per il

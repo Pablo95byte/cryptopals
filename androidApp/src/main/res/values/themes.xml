@@ -21,8 +21,8 @@
     <!--
         Il tema della cattura. windowAnimationStyle nullo non è estetica: ogni
         animazione di apertura è tempo che l'utente aspetta prima di poter scrivere
-        (D19, D32). Il foglio è carta, chiaro anche di notte: le barre restano scure su
-        chiaro.
+        (D19, D32). Di giorno il foglio è carta chiara, con icone scure sulle barre; di
+        notte si scurisce (D52, values-night).
     -->
     <style name="Theme.InkNote.Capture" parent="Theme.InkNote">
         <item name="android:windowIsTranslucent">true</item>

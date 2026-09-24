@@ -89,6 +89,8 @@ fun mergeNotes(local: Note, remote: Note): Note {
         // La cancellazione vince, e vale il tombstone più vecchio.
         deletedAt = minOfNullable(local.deletedAt, remote.deletedAt),
         recognizedText = newest.recognizedText ?: oldest.recognizedText,
+        // Smistata su un dispositivo vuol dire smistata: vale il primo istante.
+        sortedAt = minOfNullable(local.sortedAt, remote.sortedAt),
         recognizedFromRevision = if (newest.recognizedText != null) {
             newest.recognizedFromRevision
         } else {

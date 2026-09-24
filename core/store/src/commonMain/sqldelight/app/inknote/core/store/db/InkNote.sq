@@ -33,7 +33,10 @@ CREATE TABLE note (
     recognized_text_normalized TEXT,
     -- Versione della normalizzazione con cui l'indice è stato calcolato. Se è diversa
     -- da SearchText.VERSION la nota va reindicizzata.
-    search_version INTEGER NOT NULL DEFAULT 0
+    search_version INTEGER NOT NULL DEFAULT 0,
+    -- Quando la nota è stata smistata nello smistamento a carte (D52): tenuta. Quelle
+    -- mandate fuori sono smistate per via della loro riga in note_export.
+    sorted_at INTEGER
 );
 
 CREATE INDEX note_updated_at ON note(updated_at DESC);
@@ -192,11 +195,11 @@ insertNoteIfAbsent:
 INSERT OR IGNORE INTO note(
     id, canvas_width, canvas_height, created_at, updated_at, revision,
     deleted_at, recognized_text, recognized_from_revision,
-    recognized_text_normalized, search_version
+    recognized_text_normalized, search_version, sorted_at
 ) VALUES (
     :id, :canvasWidth, :canvasHeight, :createdAt, :updatedAt, :revision,
     :deletedAt, :recognizedText, :recognizedFromRevision,
-    :recognizedTextNormalized, :searchVersion
+    :recognizedTextNormalized, :searchVersion, :sortedAt
 );
 
 -- created_at non compare: l'istante di creazione di una nota non cambia.
@@ -219,7 +222,13 @@ UPDATE note SET
     recognized_text = :recognizedText,
     recognized_from_revision = :recognizedFromRevision,
     recognized_text_normalized = :recognizedTextNormalized,
-    search_version = :searchVersion
+    search_version = :searchVersion,
+    -- Smistata resta smistata, e vale il primo istante: come il tombstone (D26, D52).
+    sorted_at = CASE
+        WHEN sorted_at IS NULL THEN :sortedAt
+        WHEN :sortedAt IS NULL THEN sorted_at
+        ELSE min(sorted_at, :sortedAt)
+    END
 WHERE id = :id;
 
 markNoteDeleted:
@@ -399,3 +408,38 @@ VALUES (:id, :noteId, :takenAt, :path, :deletedAt);
 
 updatePhotoClipDeletedAt:
 UPDATE photo_clip SET deleted_at = coalesce(deleted_at, :deletedAt) WHERE id = :id;
+
+-- La coda dello smistamento a carte (D52): note vive, con qualcosa dentro, mai tenute né
+-- mandate fuori. Le più vecchie per prime: si smista nell'ordine in cui si è scritto.
+selectNotesToSort:
+SELECT note.* FROM note
+WHERE note.deleted_at IS NULL
+  AND note.sorted_at IS NULL
+  AND NOT EXISTS (SELECT 1 FROM note_export WHERE note_export.note_id = note.id)
+  AND (
+      EXISTS (SELECT 1 FROM stroke WHERE stroke.note_id = note.id AND stroke.deleted_at IS NULL)
+      OR EXISTS (SELECT 1 FROM voice_clip WHERE voice_clip.note_id = note.id AND voice_clip.deleted_at IS NULL)
+      OR EXISTS (SELECT 1 FROM text_clip WHERE text_clip.note_id = note.id AND text_clip.deleted_at IS NULL)
+      OR EXISTS (SELECT 1 FROM photo_clip WHERE photo_clip.note_id = note.id AND photo_clip.deleted_at IS NULL)
+  )
+ORDER BY note.created_at ASC, note.id ASC
+LIMIT :limit;
+
+countNotesToSort:
+SELECT count(*) FROM note
+WHERE note.deleted_at IS NULL
+  AND note.sorted_at IS NULL
+  AND NOT EXISTS (SELECT 1 FROM note_export WHERE note_export.note_id = note.id)
+  AND (
+      EXISTS (SELECT 1 FROM stroke WHERE stroke.note_id = note.id AND stroke.deleted_at IS NULL)
+      OR EXISTS (SELECT 1 FROM voice_clip WHERE voice_clip.note_id = note.id AND voice_clip.deleted_at IS NULL)
+      OR EXISTS (SELECT 1 FROM text_clip WHERE text_clip.note_id = note.id AND text_clip.deleted_at IS NULL)
+      OR EXISTS (SELECT 1 FROM photo_clip WHERE photo_clip.note_id = note.id AND photo_clip.deleted_at IS NULL)
+  );
+
+-- Le candidate alla riemersione (D52): note vive scritte prima di un certo istante.
+selectNotesCreatedBefore:
+SELECT * FROM note
+WHERE deleted_at IS NULL AND created_at < :before
+ORDER BY created_at DESC
+LIMIT :limit;

@@ -9,6 +9,9 @@ options:
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
+  # Inglese di base, italiano prima traduzione (D41). I testi stanno nei cataloghi
+  # .xcstrings: Localizable in Shared/ (app e widget), InfoPlist nell'app.
+  developmentLanguage: en
 settings:
   base:
     MARKETING_VERSION: "0.1"
@@ -30,9 +33,12 @@ targets:
         CFBundleDisplayName: InkNote
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleLocalizations: [en, it]
         UILaunchScreen:
           UIColorName: Paper
         UIApplicationSupportsIndirectInputEvents: true
+        # La fotocamera del foglio (D38): chiesta al primo scatto, non all'apertura.
+        NSCameraUsageDescription: "To add a photo of a whiteboard, a receipt or a page to your note."
         CFBundleURLTypes:
           - CFBundleURLName: app.inknote.capture
             CFBundleURLSchemes: [inknote]
@@ -63,6 +69,9 @@ targets:
           ./gradlew :shared:embedAndSignAppleFrameworkForXcode
     dependencies:
       - target: InkNoteWidgets
+    # Uno schema condiviso: senza, xcodebuild sul CI non trova niente da costruire (D53).
+    scheme:
+      gatherCoverageData: false
   InkNoteWidgets:
     type: app-extension
     platform: iOS
@@ -75,6 +84,7 @@ targets:
         CFBundleDisplayName: InkNote
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleLocalizations: [en, it]
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:

@@ -8,6 +8,7 @@ struct ArchiveScreen: View {
     @EnvironmentObject private var router: Router
     @StateObject private var model = ArchiveModel()
     @Environment(\.scenePhase) private var scenePhase
+    @State private var sorting = false
 
     var body: some View {
         NavigationStack {
@@ -18,9 +19,15 @@ struct ArchiveScreen: View {
                     if model.loaded && model.notes.isEmpty {
                         EmptyState(searching: !model.query.isEmpty)
                     } else {
+                        if let resurfaced = model.resurfaced {
+                            ResurfacedCard(resurfaced: resurfaced) { model.dismissResurfaced() }
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 12)
+                        }
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 158), spacing: 12)], spacing: 12) {
                             ForEach(model.notes) { item in
-                                NoteCard(item: item)
+                                NavigationLink(value: item.id) { NoteCard(item: item) }
+                                    .buttonStyle(.plain)
                                     .contextMenu {
                                         Button(role: .destructive) { model.delete(item) } label: {
                                             Label("Delete", systemImage: "trash")
@@ -48,6 +55,25 @@ struct ArchiveScreen: View {
             }
             .navigationTitle("Notes")
             .searchable(text: $model.query, prompt: "Search")
+            .navigationDestination(for: String.self) { id in
+                NoteScreen(noteId: id) { model.reload() }
+            }
+            .toolbar {
+                // Lo smistamento compare solo quando c'è qualcosa da smistare: un pulsante
+                // con uno zero sarebbe un compito, e non ne vogliamo dare (D51).
+                if model.toSortCount > 0 {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button { sorting = true } label: {
+                            Label("Sort \(model.toSortCount)", systemImage: "rectangle.stack")
+                                .labelStyle(.titleAndIcon)
+                                .font(.subheadline.weight(.semibold))
+                        }
+                    }
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $sorting) {
+            TriageScreen { model.reload() }
         }
         .onAppear { model.refresh() }
         .onChange(of: scenePhase) { _, phase in if phase == .active { model.refresh() } }
@@ -99,13 +125,67 @@ private struct NoteCard: View {
     }
 }
 
+/// La riemersione (D51, D52): una nota vecchia al giorno, in cima, senza notifiche. Si
+/// toglie per oggi con la crocetta; domani ne arriva un'altra.
+private struct ResurfacedCard: View {
+    let resurfaced: ResurfacedItem
+    let onDismiss: () -> Void
+
+    var body: some View {
+        NavigationLink(value: resurfaced.item.id) {
+            HStack(spacing: 14) {
+                Group {
+                    if resurfaced.item.note.hasInk {
+                        InkThumbnail(note: resurfaced.item.note, padding: 6)
+                    } else {
+                        Text(resurfaced.item.caption ?? "")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(Brand.ink)
+                            .lineLimit(4)
+                            .padding(6)
+                    }
+                }
+                .frame(width: 72, height: 72)
+                .background(Brand.paper)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(resurfaced.title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Brand.ink)
+                    Text("You wrote this. Still a good idea?")
+                        .font(.footnote)
+                        .foregroundStyle(Brand.inkMuted)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(12)
+            .padding(.trailing, 30)
+            .background(Brand.card)
+            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Brand.outline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .overlay(alignment: .topTrailing) {
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Brand.inkMuted)
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel("Not today")
+        }
+    }
+}
+
 /// L'inchiostro di una nota, inquadrato: si inquadra l'inchiostro, non il foglio.
 struct InkThumbnail: View {
     let note: Note
+    var padding: Float = 12
 
     var body: some View {
         Canvas { context, size in
-            let shapes = InkPreview.shared.shapes(note: note, width: Float(size.width), height: Float(size.height), padding: 12)
+            let shapes = InkPreview.shared.shapes(note: note, width: Float(size.width), height: Float(size.height), padding: padding)
             for shape in shapes {
                 context.fill(Path(InkCanvasView.path(of: shape)), with: .color(Color(uiColor: InkCanvasView.color(of: shape))))
             }
@@ -122,7 +202,7 @@ private struct EmptyState: View {
                 .stroke(Color.secondary.opacity(0.6), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
                 .frame(width: 72, height: 72)
                 .padding(.bottom, 6)
-            Text(searching ? "Nothing found." : "Nothing here yet")
+            Text(searching ? LocalizedStringKey("Nothing found.") : LocalizedStringKey("Nothing here yet"))
                 .font(.title3.weight(.semibold))
             if !searching {
                 Text("Tap Write, or add the widget to your Home Screen: an idea takes a second.")

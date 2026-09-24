@@ -14,6 +14,10 @@ object InkPalette {
     const val PAPER: Int = 0xFFFBF8F1.toInt()
     const val INK: Int = 0xFF1F2430.toInt()
     const val MUTED: Int = 0xFF8B8374.toInt()
+
+    /** Il foglio di notte (D52): gli stessi valori di `sheet_paper` e `sheet_ink` in values-night. */
+    const val NIGHT_PAPER: Int = 0xFF1B1A17.toInt()
+    const val NIGHT_INK: Int = 0xFFECE5D6.toInt()
 }
 
 /**
@@ -39,9 +43,13 @@ object InkDraw {
         return path
     }
 
-    fun paint(pen: Pen): Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    /**
+     * @param night il foglio di notte (D52): l'inchiostro della casa diventa chiaro, gli altri
+     *   colori restano i loro. Cambia solo il disegno, mai il tratto salvato (D7).
+     */
+    fun paint(pen: Pen, night: Boolean = false): Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = pen.color
+        color = if (night && pen.color == InkPalette.INK) InkPalette.NIGHT_INK else pen.color
         // L'evidenziatore è semitrasparente e va disegnato sotto: l'ordine lo decide
         // già `orderStrokes` nel core, qui serve solo l'alfa.
         if (pen.kind == PenKind.HIGHLIGHTER) alpha = 96

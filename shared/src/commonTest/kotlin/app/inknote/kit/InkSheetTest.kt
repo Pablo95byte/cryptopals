@@ -18,6 +18,9 @@ class InkSheetTest {
     private val sheet = InkSheet(390f, 844f, sink, Clock { now })
 
     private fun scribble(pencil: Boolean = false, force: Float = -1f) {
+        // Un istante diverso per ogni tratto: a parità di istante l'ordine lo decide l'id,
+        // che è casuale, e il test passerebbe o cadrebbe a seconda della fortuna.
+        now += 1_000L
         assertTrue(sheet.begin(pencil = pencil, timestampMs = 0L))
         repeat(8) { sheet.add(x = 20f + it * 6f, y = 40f + it * 2f, force = force, timestampMs = it * 12L) }
         sheet.end()
@@ -117,5 +120,69 @@ class InkArchiveTest {
         val note = InkJournal(sink).recover().notes.single()
 
         assertTrue(InkPreview.shapes(note, 160f, 120f, 12f).isEmpty())
+    }
+}
+
+class InkArchiveSortingTest {
+
+    private val driver = app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver(
+        app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver.IN_MEMORY,
+    ).also { app.inknote.core.store.InkNoteStore.schema.create(it) }
+    private val archive = InkArchive(app.inknote.core.store.InkNoteStore.open(driver))
+
+    private fun capture(text: String, at: Long): String {
+        val sink = InMemoryInkJournalSink()
+        val sheet = InkSheet(390f, 844f, sink, Clock { at })
+        sheet.commitText(text)
+        archive.ingest(sink)
+        return sheet.noteId
+    }
+
+    @Test
+    fun `tenere una nota la toglie dalla coda`() {
+        val id = capture("idea", 1_000L)
+        assertEquals(1L, archive.toSortCount())
+
+        archive.keep(id, 2_000L)
+
+        assertEquals(0L, archive.toSortCount())
+    }
+
+    @Test
+    fun `la data scritta nella nota diventa un suggerimento`() {
+        val id = capture("dentista domani alle 10", 1_000L)
+        val note = archive.note(id)!!
+
+        val hint = archive.dateHint(note, nowMillis = 1_000L, utcOffsetMillis = 0L)
+
+        assertNotNull(hint)
+        assertEquals(86_400_000L + 10 * 3_600_000L, hint.atMillis)
+    }
+
+    @Test
+    fun `una nota di una settimana fa riemerge`() {
+        val day = 86_400_000L
+        val id = capture("idea vecchia", 1_000L)
+
+        val resurfaced = archive.resurfaced(nowMillis = 1_000L + 7 * day, utcOffsetMillis = 0L)
+
+        assertEquals(id, resurfaced?.note?.id?.value)
+    }
+
+    @Test
+    fun `la pulizia del cestino restituisce le foto da cancellare dal disco`() {
+        val day = 86_400_000L
+        val sink = InMemoryInkJournalSink()
+        val sheet = InkSheet(390f, 844f, sink, Clock { 1_000L })
+        sheet.addPhoto("photos/lavagna.jpg")
+        archive.ingest(sink)
+        val note = archive.note(sheet.noteId)!!
+        assertEquals(listOf("photos/lavagna.jpg"), archive.photoPaths(note))
+
+        archive.delete(sheet.noteId, nowMillis = 2_000L)
+
+        assertEquals(emptyList(), archive.purge(nowMillis = 2_000L + 29 * day), "non prima di trenta giorni")
+        assertEquals(listOf("photos/lavagna.jpg"), archive.purge(nowMillis = 2_000L + 31 * day))
+        assertNull(archive.note(sheet.noteId))
     }
 }

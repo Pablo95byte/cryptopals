@@ -6,13 +6,21 @@
       che cambiano col tema scuro;
     - la **carta** (paper, card, on_paper_*): i fogli e i bigliettini, che restano chiari
       anche di notte. L'inchiostro è scuro, e un foglio scuro lo renderebbe invisibile:
-      di notte le note diventano bigliettini chiari su una scrivania scura.
+      di notte le note diventano bigliettini chiari su una scrivania scura;
+    - il **foglio** (sheet_*): la superficie di scrittura. È l'unica eccezione: di notte si
+      scurisce e l'inchiostro diventa chiaro (D52), perché chi scrive a letto al buio non
+      deve essere accecato. È solo un modo di mostrare: i tratti salvati non cambiano (D7).
 -->
 <resources>
     <color name="paper">#FBF8F1</color>
     <color name="card">#FFFDF8</color>
     <color name="on_paper">#1F2430</color>
     <color name="on_paper_muted">#8B8374</color>
+
+    <color name="sheet_paper">#FBF8F1</color>
+    <color name="sheet_card">#FFFDF8</color>
+    <color name="sheet_ink">#1F2430</color>
+    <color name="sheet_muted">#8B8374</color>
 
     <color name="desk">#F3EFE7</color>
     <color name="text_primary">#1F2430</color>

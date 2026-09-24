@@ -7,6 +7,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -16,6 +17,7 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -115,9 +117,9 @@ class CaptureActivity : Activity() {
         super.onCreate(savedInstanceState)
         @Suppress("DEPRECATION") // la sostituta esiste solo da Android 14; questa funziona ovunque
         overridePendingTransition(0, 0)
-        // Il foglio arriva sotto le barre di sistema: è carta fino al bordo. Barre con
-        // icone scure, perché la carta è chiara anche di notte.
-        Ui.edgeToEdge(this, lightBars = true)
+        // Il foglio arriva sotto le barre di sistema: è carta fino al bordo. Icone scure
+        // sulla carta chiara, chiare sul foglio di notte (D52).
+        Ui.edgeToEdge(this)
 
         journalSink = AndroidInkJournalSink.open(this)
         failuresAtOpen = AndroidInkJournalSink.failures.get()
@@ -222,8 +224,8 @@ class CaptureActivity : Activity() {
         textField = EditText(this).apply {
             setHint(R.string.text_hint)
             textSize = 18f
-            setTextColor(getColor(R.color.on_paper))
-            setHintTextColor(getColor(R.color.on_paper_muted))
+            setTextColor(getColor(R.color.sheet_ink))
+            setHintTextColor(getColor(R.color.sheet_muted))
             background = null
             setPadding(dp(4), dp(4), dp(4), dp(4))
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or
@@ -242,14 +244,17 @@ class CaptureActivity : Activity() {
                 }
             })
         }
-        val hide = Ui.iconButton(this, R.drawable.ic_close, getString(R.string.cancel), getColor(R.color.on_paper_muted)) {
+        val hide = Ui.iconButton(this, R.drawable.ic_close, getString(R.string.cancel), getColor(R.color.sheet_muted)) {
             closeKeyboard()
         }
         textCard = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.TOP
             setPadding(dp(14), dp(10), dp(4), dp(10))
-            Ui.card(this, context)
+            // La scheda segue il foglio, anche di notte (D52): non è un bigliettino dell'archivio.
+            val radius = dp(Ui.RADIUS_CARD.toInt()).toFloat()
+            background = Ui.rounded(getColor(R.color.sheet_card), radius, getColor(R.color.outline), dp(1).coerceAtLeast(1))
+            Ui.clipRounded(this, radius)
             visibility = View.GONE
             addView(textField, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             addView(hide)
@@ -281,7 +286,7 @@ class CaptureActivity : Activity() {
         // scrivere a mano scrive e basta.
         // Direttamente sulla carta: niente contenitore e niente ombra. Una pillola con
         // l'ombra dietro faceva sembrare le icone un adesivo appiccicato sul foglio (D46).
-        val muted = getColor(R.color.on_paper_muted)
+        val muted = getColor(R.color.sheet_muted)
         val tools = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             addView(Ui.iconButton(this@CaptureActivity, R.drawable.ic_keyboard, getString(R.string.keyboard), muted) { openKeyboard() })
@@ -291,13 +296,18 @@ class CaptureActivity : Activity() {
         // L'uscita (D5, D21). Non salva: è già tutto nel giornale.
         val done = Ui.pill(this, getString(R.string.done), R.drawable.ic_check, primary = true, font = controlsFont) {
             commitTextNow()
+            // Un tocco breve: la nota è al sicuro, senza bisogno di guardare (D52). Segue
+            // l'impostazione di sistema delle vibrazioni al tocco, e non chiede permessi.
+            window.decorView.performHapticFeedback(
+                if (Build.VERSION.SDK_INT >= 30) HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.VIRTUAL_KEY,
+            )
             finish()
         }.apply {
-            // Colori fissi: il foglio è carta anche di notte, e il pulsante resta inchiostro.
-            background = Ui.pressable(context, Ui.rounded(getColor(R.color.on_paper), dp(28).toFloat()), dp(28).toFloat())
+            // I colori del foglio: inchiostro su carta di giorno, carta su inchiostro di notte.
+            background = Ui.pressable(context, Ui.rounded(getColor(R.color.sheet_ink), dp(28).toFloat()), dp(28).toFloat())
             elevation = 0f
-            setTextColor(getColor(R.color.paper))
-            compoundDrawablesRelative[0]?.setTint(getColor(R.color.paper))
+            setTextColor(getColor(R.color.sheet_paper))
+            compoundDrawablesRelative[0]?.setTint(getColor(R.color.sheet_paper))
         }
 
         column.addView(Ui.row(this, tools, Ui.spacer(this), done))
@@ -313,7 +323,7 @@ class CaptureActivity : Activity() {
         val view = TextView(this).apply {
             textSize = 11f
             typeface = controlsFont
-            setTextColor(getColor(R.color.on_paper_muted))
+            setTextColor(getColor(R.color.sheet_muted))
             text = "attrito: in misura…"
             setPadding(dp(12), dp(6), dp(12), dp(6))
             background = Ui.rounded(0xE6FFFDF8.toInt(), dp(14).toFloat())
