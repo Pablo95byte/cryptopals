@@ -143,8 +143,13 @@ struct NoteScreen: View {
                         .foregroundStyle(Brand.ink)
                         .textSelection(.enabled)
                 } else if voice.transcript == nil {
-                    // Non un errore: la trascrizione arriva da sola, sul dispositivo.
-                    Text("Transcript on its way")
+                    // Non un errore: la trascrizione arriva da sola, sul dispositivo. Se qui
+                    // non può arrivare, lo si dice, e si dice come sbloccarla.
+                    // LocalizedStringKey esplicita: un ternario di stringhe sarebbe una String,
+                    // e SwiftUI non la tradurrebbe.
+                    Text(Recognition.canTranscribe
+                         ? LocalizedStringKey("Transcript on its way")
+                         : LocalizedStringKey("Not transcribed yet: allow Speech Recognition for Instink in Settings, and download your dictation language. The recording is safe."))
                         .font(.callout)
                         .foregroundStyle(Brand.inkMuted)
                 }

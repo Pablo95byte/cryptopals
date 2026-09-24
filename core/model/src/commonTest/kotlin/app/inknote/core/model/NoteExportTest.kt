@@ -152,4 +152,29 @@ class NoteExportTest {
         assertTrue(content.markdown!!.contains("Scritta a mano"))
         assertFalse(content.markdown.contains("Scritta a mano ·"), "nessun separatore appeso nel vuoto")
     }
+
+    @Test
+    fun `la firma chiude il testo nudo e il markdown, se chi chiama la passa`() {
+        val content = NoteExport.prepare(
+            note(recognized = "chiamare Luca", recognizedFromRevision = 2L),
+            dateLabel = "13 settembre 2026",
+            signature = "Scritta con Instink · instink.app",
+        )!!
+
+        assertEquals("chiamare Luca\n\nScritta con Instink · instink.app", content.text)
+        assertTrue(content.markdown!!.endsWith("13 settembre 2026 · Scritta con Instink · instink.app"))
+        // Il nome del file viene dalla nota, non dalla firma.
+        assertTrue(content.fileBaseName.startsWith("chiamare-luca"))
+    }
+
+    @Test
+    fun `una nota di solo inchiostro non letto manda almeno la firma`() {
+        val content = NoteExport.prepare(
+            note(recognized = null, withInk = true),
+            signature = "Written with Instink · instink.app",
+        )!!
+
+        assertEquals("Written with Instink · instink.app", content.text)
+        assertNull(content.markdown)
+    }
 }

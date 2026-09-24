@@ -47,9 +47,13 @@ object NoteExport {
 
     /**
      * @param dateLabel data già formattata dalla piattaforma, per la riga finale.
+     * @param signature la riga "Scritta con Instink" nella lingua dell'utente (D68), o
+     *   `null` per non metterla. È l'unica decorazione del testo nudo, di proposito: chi
+     *   riceve la nota scopre da dove viene. Arriva da fuori come la data, perché la
+     *   lingua è della piattaforma (D41); e chi ha Pro la toglie (D67).
      * @return `null` se non c'è niente da mandare: nota vuota o cestinata.
      */
-    fun prepare(note: Note, dateLabel: String? = null): ExportContent? {
+    fun prepare(note: Note, dateLabel: String? = null, signature: String? = null): ExportContent? {
         if (note.isDeleted || note.isEmpty) return null
 
         val transcripts = note.visibleVoiceClips.mapNotNull { it.transcript }
@@ -60,15 +64,18 @@ object NoteExport {
             note.recognizedText?.let(::add)
             addAll(transcripts)
         }
-        val text = pieces.joinToString("\n\n").ifEmpty { null }
+        val content = pieces.joinToString("\n\n").ifEmpty { null }
+        // Anche una nota di solo inchiostro non ancora letto porta la firma: l'immagine va
+        // da sola, e la firma è l'unico testo che dice da dove arriva.
+        val text = listOfNotNull(content, signature).joinToString("\n\n").ifEmpty { null }
 
         val pendingTranscription = note.visibleVoiceClips.any { it.needsTranscription }
         val isComplete = !note.needsRecognition && !pendingTranscription
 
         return ExportContent(
             text = text,
-            markdown = markdown(note, transcripts, dateLabel, isComplete),
-            fileBaseName = fileBaseName(note, text),
+            markdown = markdown(note, transcripts, dateLabel, isComplete, signature),
+            fileBaseName = fileBaseName(note, content),
             isComplete = isComplete,
             hasInkImage = note.hasInk,
             photoPaths = note.visiblePhotoClips.map { it.path },
@@ -80,6 +87,7 @@ object NoteExport {
         transcripts: List<String>,
         dateLabel: String?,
         isComplete: Boolean,
+        signature: String?,
     ): String? {
         val content = buildList {
             note.typedText?.let(::add)
@@ -96,6 +104,7 @@ object NoteExport {
         val footer = buildList {
             add(originLabel(note))
             dateLabel?.let(::add)
+            signature?.let(::add)
         }.joinToString(" · ")
 
         return buildList {

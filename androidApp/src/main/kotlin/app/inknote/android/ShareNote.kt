@@ -30,7 +30,8 @@ object ShareNote {
         val app = activity.applicationContext
         Thread({
             val dateLabel = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(note.createdAt))
-            val content = NoteExport.prepare(note, dateLabel)
+            // La firma è l'anello di crescita (D68): chi riceve la nota scopre da dove viene.
+            val content = NoteExport.prepare(note, dateLabel, app.getString(R.string.share_signature))
             if (content == null) {
                 activity.runOnUiThread { Toast.makeText(app, R.string.share_nothing, Toast.LENGTH_SHORT).show() }
                 return@Thread

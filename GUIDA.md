@@ -2,9 +2,9 @@
 
 Questo file dice cosa tocca a te, in ordine. Tutto il resto lo faccio io.
 
-Se leggi solo una cosa: **accetta l'accordo per le app a pagamento e iscriviti allo Small
-Business Program** (§0octies, Apple ci mette giorni), **metti in rete il sito** (§0quater),
-e manda una build nuova su TestFlight per vedere l'icona nuova (§0septies).
+Se leggi solo una cosa: **metti in rete il sito** (§0quater), poi **comincia il test chiuso
+del Play Store** (§0nonies: i 14 giorni sono il collo di bottiglia), e manda una build nuova
+su TestFlight per riprovare il microfono (§0quinquies).
 
 ---
 
@@ -282,7 +282,8 @@ solo a ogni push; se è rosso, copiami il blocco "ERRORI").
    "pane" la nota si trova. Prova anche corsivo e stampatello: dimmi quale legge male.
 2. **Una data scritta a mano.** "Dentista domani alle 10", a mano. Aprendo la nota compare
    "Ricordamelo".
-3. **Il microfono.** Sul foglio, terza icona in basso. La prima volta chiede microfono e
+3. **Il microfono** (corretto dopo la prima prova: la registrazione non partiva). Sul
+   foglio, terza icona in basso. La prima volta chiede microfono e
    riconoscimento vocale. Parla qualche secondo, tocca la pillola rossa: sul foglio compare
    la forma d'onda con la durata. Fatto. Nell'app, la nota ha il tasto ▶ e, dopo qualche
    secondo, il testo. Se il testo non arriva mai: Impostazioni → Generali → Tastiera →
@@ -337,30 +338,84 @@ Tutto è già nel repository, e si rigenera con tre comandi (sono in
 Manda una build nuova su TestFlight e guarda l'icona sulla tua home, di giorno e col tema
 scuro. Se non ti convince, dimmi cosa: si cambia in un punto solo e si rigenera tutto.
 
-## 0octies. Per guadagnare: cosa fare adesso in App Store Connect (D67)
+## 0octies. Per guadagnare dopo: cosa fare adesso, e cosa no (D68)
 
-Tre cose da fare **subito**, perché Apple ci mette giorni a elaborarle, e senza la prima
-**nessun acquisto in app può esistere**:
+Si lancia **gratis**; Pro arriva dopo, quando fedeltà, voto e il primo pezzo di Pro ci
+sono (D68, `lancio/MERCATO.md`). Adesso servono solo due cose, e nessuna è urgente:
 
-1. **Accordo per le app a pagamento.** App Store Connect → **Business** (Accordi, tasse e
-   banche) → *Paid Apps* → accetta, poi **conto bancario** e **moduli fiscali** (da persona
-   fisica in Italia è il W-8BEN, e dice agli Stati Uniti che paghi le tasse qui). Finché lo
-   stato non è "Attivo" non si possono vendere né provare gli acquisti su TestFlight.
-2. **Small Business Program.** developer.apple.com → Programma per le piccole imprese →
-   iscriviti. La commissione di Apple scende **dal 30% al 15%**: sui conti di D67 vale il
-   doppio del guadagno netto a parità di vendite. È gratis e si fa una volta.
-3. **I testi dello store**, da `lancio/STORE.md`, in inglese e in italiano: nome,
-   sottotitolo, parole chiave, testo promozionale, descrizione. Il **nome dello store**
-   diventa "Instink: Handwritten Notes" — sotto l'icona resta "Instink". Si cambia alla
-   prossima versione inviata per la revisione.
+1. **Small Business Program** (developer.apple.com → Programma per le piccole imprese):
+   quando Pro esisterà, Apple prenderà il 15% invece del 30%. Gratis, una volta sola:
+   tanto vale farlo adesso.
+2. **I testi dello store**, da `lancio/STORE.md`: nome "Instink: Handwritten Notes"
+   (sotto l'icona resta "Instink"), sottotitolo, parole chiave, testo promozionale,
+   descrizione. **Il blocco "Instink Pro" non va messo**: è per dopo.
 
-**Non creare ancora i prodotti in app**: prima dimmi se il piano di D67 ti convince
-(prezzi, cosa è gratis e cosa è Pro). Poi ti scrivo esattamente quali creare, con quali
-id, e scrivo l'abbonamento nell'app.
+**Non ancora:** l'accordo per le app a pagamento (Business → Paid Apps) serve solo quando
+Pro arriva; si può fare prima, ma non serve. E **non creare prodotti in app**: te li dico
+io, con id e prezzi, quando accendiamo Pro.
 
-**Su Google Play**, quando arriva Android: anche lì la commissione è il 15% sul primo
-milione di ricavi l'anno, ma va richiesta nel Play Console (la voce riguarda la "service
-fee" e il gruppo di account). Se non la trovi, chiedimelo quando ci arriviamo.
+## 0nonies. Il Play Store: quando e come (D68)
+
+**Quando: questa settimana, subito dopo il sito** (il Play Console chiede l'URL della
+privacy). La ragione è una sola: Google vuole **14 giorni di test chiuso con almeno 12
+persone** prima di pubblicare, e quei 14 giorni non si accorciano. Cominciandoli adesso,
+Android è pronto quando è pronto iOS.
+
+**0. Prima, la prova sul telefono.** L'archivio, la foto, lo smistamento e la riemersione
+su Android compilano, ma nessuno li ha ancora costruiti con l'SDK. Da Android Studio:
+`./gradlew :androidApp:installDebug` sul tuo S8, e il giro di §1bis. Se qualcosa non
+compila, mandami l'errore.
+
+**1. La chiave di caricamento** (una volta sola, e **non perderla**: tienine una copia fuori
+dal computer):
+
+```
+keytool -genkeypair -v -keystore instink-upload.keystore -alias upload \
+  -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Poi, nella radice del repository, un file `keystore.properties` (è già escluso da git):
+
+```
+storeFile=/percorso/di/instink-upload.keystore
+storePassword=…
+keyAlias=upload
+keyPassword=…
+```
+
+**2. Il primo bundle:** `./gradlew :androidApp:bundleRelease`. Il file è in
+`androidApp/build/outputs/bundle/release/androidApp-release.aab`.
+
+**3. Play Console → Crea app.** Nome "Instink: Handwritten Notes", lingua predefinita
+inglese (Stati Uniti), app, **gratuita**. Poi, nel pannello a sinistra:
+
+- **Test → Test interno → Crea release** → carica l'`.aab`. Accetta la firma delle app di
+  Google Play (Google custodisce la chiave vera, tu tieni quella di caricamento).
+- **Scheda dello store**: i testi Play di `lancio/STORE.md` (inglese, poi aggiungi
+  l'italiano), l'icona `design/brand/store/play-store-512.png`, la grafica
+  `play-feature-graphic-1024x500.png`, e **almeno due screenshot** dal telefono (foglio con
+  una parola scritta, e l'archivio).
+- **Contenuti dell'app**:
+  - norme sulla privacy: `https://instink.app/privacy.html`;
+  - annunci: **no**;
+  - accesso all'app: tutto accessibile, nessun login;
+  - classificazione dei contenuti: il questionario, risposte "no" dappertutto;
+  - pubblico di destinazione: **13 anni e oltre** (non è un'app per bambini, e così non
+    entrano le regole delle app per famiglie);
+  - **sicurezza dei dati: "Nessun dato raccolto" e "nessun dato condiviso"**. È vero: note,
+    foto e disegni restano sul telefono; il backup va sull'account Google dell'utente, e
+    Google non lo conta come raccolta nostra.
+- **Test → Test chiuso → Crea traccia** → aggiungi i tester (un elenco di email, o un
+  Gruppo Google) → carica lo stesso `.aab` → invia per la revisione. Manda il **link di
+  adesione** ai tester: devono accettare, **installare dal Play Store** e restare iscritti
+  per 14 giorni di fila. Prendine 15–20, non 12: qualcuno si dimentica sempre.
+
+**4. Dopo 14 giorni:** Dashboard → **Richiedi l'accesso alla produzione**. Google fa
+qualche domanda sul test (quanti tester, cosa hai cambiato): rispondi con le note dei
+tester. Poi si pubblica.
+
+**Dopo il primo caricamento a mano**, i successivi li fa Codemagic (`android-internal`,
+§0ter, punto 5).
 
 ## 1bis. Il giro di prova dell'app intera (D38–D42)
 
@@ -472,7 +527,7 @@ Ti risparmia soldi e tempo:
   in `lancio/STORE.md` (§0octies). Quella del Play Store aspetta Android.
 - **Non aprire l'account RevenueCat.** Su iOS gli acquisti si fanno con StoreKit, senza
   intermediari: così la scheda resta "Nessun dato raccolto" (D67). E **non creare ancora i
-  prodotti in app** finché il piano di D67 non è confermato.
+  prodotti in app**: Pro arriva dopo il lancio (D68).
 - ~~Non comprare domini prima di aver scelto il nome~~: il nome è Instink, e `instink.app`
   va comprato adesso (§0quater).
 

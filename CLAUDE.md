@@ -1967,6 +1967,15 @@ possono contenere "iPhone". Ora dice "senza sbloccare". Regola per il futuro: **
 delle azioni (titoli, descrizioni, frasi) niente nomi di prodotti Apple**; il controllo lo
 fa solo App Store Connect al caricamento, non `ios-check`.
 
+**Seconda prova su iPhone: il microfono non registrava.** La sessione audio chiedeva il
+modo `.spokenAudio`, che è un modo di **riproduzione**: con la categoria `.record` iOS lo
+rifiuta, il registratore non partiva, e il foglio non diceva niente — un tocco senza
+risposta. Ora il modo è `.default`, e se la registrazione non parte il foglio lo dice con
+un avviso. Nella stessa passata la trascrizione non promette più per sempre: un errore sul
+file è un esito (la registrazione resta, la coda si svuota), e se il telefono non sa
+trascrivere la nota aperta dice cosa fare (permesso, lingua della dettatura). Regola per
+il futuro: **un comando che fallisce lo dice**; il silenzio sembra un'app rotta.
+
 **I permessi si chiedono al primo tocco sul microfono**, non all'apertura: microfono e
 riconoscimento vocale insieme, una volta sola. Senza il secondo, l'audio si registra e non
 si trascrive.
@@ -2048,7 +2057,8 @@ immagini per gli store **non hanno il canale alfa**: Apple rifiuta la build, Goo
 sparisce, e la carta chiara è ciò che dice "foglio bianco" (D30) prima ancora del nome.
 
 ### D67 — Si guadagna da subito: Pro al lancio, abbonamento o acquisto a vita, la ricerca come ragione
-**Data:** 2026-09-24 · **Stato:** proposta, **da confermare col committente** ·
+**Data:** 2026-09-24 · **Stato:** **il punto 1 è SUPERATO da D68** (si lancia gratis), i
+prezzi sono aggiornati da D68; il resto è attivo ·
 **Rivede D4, D43 (punto 3) e D47** · **Precisa D54 (punto 5)**
 
 Il committente: *"l'obiettivo finale è monetizzare, quindi ogni scelta deve essere presa
@@ -2124,6 +2134,63 @@ di caratteri controllati da uno script, sono in [`lancio/STORE.md`](lancio/STORE
 30 giorni, e se i promemoria stanno in Pro. Il codice è una settimana: StoreKit, il
 paywall, il limite nella ricerca, la riga in fondo alle note mandate fuori.
 
+
+### D68 — Gratis adesso, Pro quando porta cose nuove, e ciò che hai resta tuo
+**Data:** 2026-09-24 · **Stato:** attiva, decisa col committente · **Supera il punto 1 di
+D67** (Pro dal lancio) **e ne aggiorna i prezzi** · la ricerca è in
+[`lancio/MERCATO.md`](lancio/MERCATO.md)
+
+Il committente: *"non serve che renda ora, ma che in futuro lo sia; se serve, farla
+gratis e poi aggiungere."* La ricerca di mercato dice che ha ragione, per una ragione
+precisa: il concorrente vero della cattura è **gratis e già installato** (Nota rapida di
+Note, Keep). Un paywall al lancio rende cinque volte di più per download (10,7% contro
+2,1% a 35 giorni), ma un'app di cattura che non si prova non si scarica, e il freemium è
+la scelta giusta proprio quando **gli utenti gratuiti portano il passaparola**.
+
+**1. Si lancia gratis, il prima possibile.** Adesso contano fedeltà, recensioni e
+ricerca nello store. Niente StoreKit al lancio: è anche una revisione di Apple in meno.
+
+**2. "Ciò che hai, resta tuo."** È la regola che permette di far pagare dopo senza le
+recensioni arrabbiate di chi si vede togliere qualcosa:
+
+- **Pro contiene solo cose nuove**, che al lancio non esistono: invio automatico a Notion e
+  a una cartella, iPad e Mac sincronizzati, punte e colori, il backup nostro.
+- **I limiti del gratuito valgono per chi arriva dopo.** La ricerca limitata agli ultimi 30
+  giorni (D67) vale solo per chi installa dopo l'arrivo di Pro; chi c'era prima tiene la
+  ricerca illimitata. Senza server: StoreKit dà sul telefono la data della prima
+  installazione (`AppTransaction.originalPurchaseDate`).
+- **Chi c'era dal principio è un fondatore**, con uno sconto sul Pro a vita.
+
+**3. Pro si accende quando tre cose sono vere insieme**, non a una data: un utente su quattro
+scrive ancora dopo 7 giorni (D47) e uno su cinque dopo 30; voto medio da 4,5 con almeno
+50 valutazioni; il primo pezzo di Pro pronto. Presumibilmente due o tre mesi dopo il lancio.
+
+**4. I prezzi, aggiornati coi dati** (D67 diceva annuale con 7 giorni di prova e a vita):
+annuale 14,99 € con **14 giorni** di prova, perché le prove lunghe convertono di più
+(42,5% contro 25,5%); a vita 34,99 €, 24,99 € per i fondatori; e **un mensile da 1,99 €**,
+piccolo sotto gli altri due, perché nella produttività il 77% degli abbonamenti è mensile
+e il primo rinnovo annuale è il più basso di tutte le categorie (23%). D67 lo escludeva
+per non aggiungere una scelta; i dati dicono che toglierlo lascia soldi sul tavolo.
+
+**5. Da adesso, gratis, le due leve che fanno crescere l'incasso futuro:**
+
+- **La firma** "Scritta con Instink · instink.app" in fondo al testo di ogni nota mandata
+  fuori (`NoteExport.prepare(signature = …)`). Arriva da fuori, nella lingua dell'utente
+  (D41). Con Pro si potrà togliere: è una cosa in più per chi paga, non una tolta a chi no.
+- **La richiesta di recensione** su iOS, una volta per versione, dopo la settima nota,
+  tornando all'archivio da un foglio chiuso: mai sul foglio, mai durante una ricerca. Le
+  stelle decidono il posto nella ricerca dello store più di qualunque testo.
+
+**Cosa non cambia di D67:** la cattura gratis per sempre, "Manda a…" mai chiuso, il paywall
+solo dove serve e mai sul foglio, StoreKit senza RevenueCat, il nome dello store con le
+parole chiave.
+
+**Il realismo, scritto qui perché non si dimentichi:** l'app ad abbonamento mediana incassa
+492 $ al mese. Il 3% dei download che paga, a circa 25 € il primo anno, fa 7.500 € con
+10.000 download e 52.000 € con 70.000. La differenza fra i due numeri non la fanno le
+funzioni: la fanno la ricerca nello store, il passaparola, la vetrina di Apple e l'iPad
+(`MERCATO.md` §4).
+
 ---
 
 ## 5. Struttura del repository
@@ -2150,7 +2217,8 @@ tools/
   brand/         Il segno e tutte le icone (icons.py, render.mjs, D66); i testi degli store
                  con i limiti di caratteri controllati (store_texts.py, D67)
 codemagic.yaml   Il CI: test del core a ogni push, TestFlight e Play interno su tag (D53)
-lancio/          La storia del prodotto (STORIA.md, D60) e i testi degli store (STORE.md, D67)
+lancio/          La storia del prodotto (STORIA.md, D60), i testi degli store (STORE.md, D67)
+                 e la ricerca di mercato (MERCATO.md, D68)
 site/            Il sito statico: home, privacy, assistenza, in inglese e italiano (D61)
 design/
   brand/         Il segno in SVG e le immagini per gli store (D66)
@@ -2372,8 +2440,9 @@ su Android (D64) compilano contro Android 15. 318 test.
     verso Instink"** aspetta l'App Group (D65); la voce su Android dopo.
 24. ~~Il sito, privacy e assistenza~~ (D61): scritti, da mettere in rete. La pagina vera,
     col video, dopo il disegno definitivo (D50).
-25. **Pro con StoreKit** (D67): da confermare col committente, poi paywall, limite di 30
-    giorni nella ricerca e riga "Scritta con Instink". **Prima del lancio**, non dopo.
+25. **Pro con StoreKit** (D67, D68): **dopo il lancio**, quando fedeltà, voto e il primo
+    pezzo di Pro ci sono. Già fatte adesso: la firma in fondo alle note mandate fuori e la
+    richiesta di recensione (D68).
 
 ### Prima di pubblicare
 
@@ -2386,8 +2455,8 @@ su Android (D64) compilano contro Android 15. 318 test.
   dominio.
 - **Quanti widget nel livello gratuito.** Uno è la proposta; va verificato che non
   renda il livello gratuito inutile e quindi l'app non recensita.
-- **Prezzo effettivo del Pro**, per mercato: proposta in D67 (14,99 € l'anno, 34,99 € a
-  vita), da confermare.
+- **Prezzo effettivo del Pro**, per mercato: D68 (1,99 € al mese, 14,99 € l'anno con 14
+  giorni di prova, 34,99 € a vita), da rivedere coi dati quando Pro si accende.
 - **Gesto della gomma** con dito e con pennino, che sono casi diversi.
 - **Scrivere in corsivo col dito è difficile** (primo telefono vero). Da capire se è
   latenza, spessore, righe troppo fitte o la natura del dito. Se è la dimensione, la

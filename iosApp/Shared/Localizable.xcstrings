@@ -71,12 +71,32 @@
         }
       }
     },
+    "Another app may be using the microphone. Try again in a moment.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forse un'altra app sta usando il microfono. Riprova fra un momento."
+          }
+        }
+      }
+    },
     "Blank sheet": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Foglio bianco"
+          }
+        }
+      }
+    },
+    "Can't record right now": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non si può registrare adesso"
           }
         }
       }
@@ -197,6 +217,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non oggi"
+          }
+        }
+      }
+    },
+    "Not transcribed yet: allow Speech Recognition for Instink in Settings, and download your dictation language. The recording is safe.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non ancora trascritta: consenti a Instink il riconoscimento vocale nelle Impostazioni e scarica la lingua della dettatura. La registrazione è al sicuro."
           }
         }
       }
@@ -507,6 +537,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Scrivi una nota"
+          }
+        }
+      }
+    },
+    "Written with Instink · instink.app": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scritta con Instink · instink.app"
           }
         }
       }

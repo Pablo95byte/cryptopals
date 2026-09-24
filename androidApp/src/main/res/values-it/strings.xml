@@ -52,4 +52,5 @@
     <string name="resurface_week">Una settimana fa, oggi</string>
     <string name="resurface_days">%d giorni fa</string>
     <string name="resurface_hide">Nascondi per oggi</string>
+    <string name="share_signature">Scritta con Instink · instink.app</string>
 </resources>
