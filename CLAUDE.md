@@ -1643,6 +1643,26 @@ nello store ci sono già app con nomi quasi uguali.
 
 Il nome non costa una rinomina del codice: i package restano `app.inknote` (§ iniziale).
 
+**Secondo giro, stesso giorno: il nome deve farsi raccontare, non solo descrivere.**
+Il committente chiede il nome che fa parlare e scaricare. Riletto con quel metro,
+Quicknib è corretto ma **descrive**: "nib" fuori dall'inglese non lo conosce quasi
+nessuno, e a voce si confonde con "quick nip". I nomi che la gente ripete hanno una
+piccola storia dentro. Tutte le parole vere che la contengono (Inkling, Inky, Jotter,
+Nibble, Glimmer, Appunto, Scrivo, Lampo, Segno, Al volo) hanno già il `.app` in uso;
+restano i composti inventati.
+
+| Nome | La storia | Il rischio | Domini |
+|---|---|---|---|
+| **Inkpop** | l'idea che *spunta* (pops up), fermata in inchiostro; si dice e si scrive in un modo solo | suona giocoso, forse giovane; era il nome di una comunità di scrittura di HarperCollins chiusa nel 2011: controllare il marchio | `.app` **e** `.com` senza record |
+| **Instink** | "instinct" + "ink": scrivere d'istinto | sentito a voce lo si scrive "instinct" | `.app` senza record |
+| Quicknib | veloce + pennino | descrittivo, "nib" poco noto | `.app` senza record |
+
+**Proposta aggiornata: Inkpop**, per tre ragioni: si capisce sentito una volta, dice la
+velocità senza la parola "quick", e ha libero anche il `.com`, che è raro e vale più di
+quanto costa. **Il criterio che decide, e costa zero:** dire i tre nomi a dieci persone,
+e il giorno dopo chiedere quale ricordano e come lo scriverebbero. Vince quello ricordato
+e scritto giusto, non quello che piace di più sul momento.
+
 ---
 
 ## 5. Struttura del repository
