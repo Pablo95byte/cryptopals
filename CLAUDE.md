@@ -77,11 +77,11 @@ posto solo invece che sparsi fra le decisioni.
 
 | Anello | Cosa lo accorcia | Stato |
 |---|---|---|
-| Sblocco + ricerca dell'ingresso | **Cattura dalla schermata di blocco** su Android: `showWhenLocked`, foglio cieco (D17) | nel codice, non provata |
-| Sblocco + ricerca dell'ingresso | **Riquadro nelle impostazioni rapide** su Android: l'ingresso a telefono bloccato, da qualunque schermata (D33) | nel codice, non provato |
+| Sblocco + ricerca dell'ingresso | **Cattura dalla schermata di blocco** su Android: `showWhenLocked`, foglio cieco (D17) | **provata** sul Samsung S8 |
+| Sblocco + ricerca dell'ingresso | **Riquadro nelle impostazioni rapide** su Android: l'ingresso a telefono bloccato, da qualunque schermata (D33) | **provato**: sopra il blocco, senza codice |
 | Sblocco | **Più porte d'ingresso su iOS**: widget di blocco, Controllo, tasto Azione, tocco sul retro (§2) | da scrivere |
-| Ricerca dell'ingresso | **Il widget è un foglio bianco che si tocca tutto** (D30): nessun bersaglio da centrare, in nessun formato | Android nel codice (D33), iOS da scrivere |
-| Ricerca dell'ingresso | **Ogni apertura trova un foglio bianco**: la nota si chiude quando il foglio esce dallo schermo (D34) | nel codice |
+| Ricerca dell'ingresso | **Il widget è un foglio bianco che si tocca tutto** (D30): nessun bersaglio da centrare, in nessun formato | Android **provato** (D33), iOS da scrivere |
+| Ricerca dell'ingresso | **Ogni apertura trova un foglio bianco**: la nota si chiude quando il foglio esce dallo schermo (D34) | **provato** |
 | Apertura | **Finestra trasparente sopra il launcher** su Android: non si percepisce il cambio di app | nel codice |
 | Apertura | **Nessuna animazione**: tema senza `windowAnimationStyle`, `overridePendingTransition(0, 0)` | nel codice |
 | Apertura | **Il percorso di cattura non passa dall'app**: niente Compose, niente iniezione, niente database (D20) | nel codice |
@@ -93,7 +93,7 @@ posto solo invece che sparsi fra le decisioni.
 | Ritorno | **OK non salva, è solo un'uscita** (D5): nessun gesto è obbligatorio per non perdere la nota | nel codice |
 | Primo avvio | **Nessun account e nessun onboarding** (D12): all'apertura non c'è niente da configurare | deciso |
 | Mani occupate | **Cattura a voce** (D18): l'unica strada senza sblocco su iPhone | modello fatto, cattura da scrivere |
-| Tutti | **I tetti: foglio pronto in 100 ms a caldo, 400 a freddo; tratto dietro al dito di al massimo 50 ms** (D19, D32, D36). Non sono funzionalità: impediscono alle altre di degradarsi | prima misura fatta: 86 ms a caldo, 358–387 a freddo |
+| Tutti | **I tetti: foglio pronto in 100 ms a caldo, 400 a freddo; tratto dietro al dito di al massimo 50 ms** (D19, D32, D36). Non sono funzionalità: impediscono alle altre di degradarsi | **tutti verdi** sul Samsung S8: 86 ms a caldo, 358–387 a freddo, tratto 13–14 ms a caldo e 30 a freddo |
 | Tutti | **Restare piccoli**: un processo leggero resta nella cache del sistema, e la seconda apertura della giornata è calda (D32) | nel codice, zero dipendenze |
 
 **Fuori da questa catena** sta la ricerca (OCR e trascrizioni, D2 e D25): riduce
@@ -938,9 +938,8 @@ quindi dietro lo sblocco non ci sarebbe niente da proteggere.
 proposta. La decisione resta del committente (§10): per il foglio nudo basta togliere una
 vista dal layout.
 
-**Da provare sul telefono:** che l'Activity lanciata dal riquadro compaia davvero sopra
-il blocco senza chiederne lo sblocco. È il comportamento documentato per le Activity con
-`showWhenLocked`, ma nessuno l'ha visto su questo codice.
+**Provato sul telefono** (Samsung S8, 2026-09-24): dal riquadro, a telefono bloccato, il
+foglio compare sopra il blocco senza chiedere il codice. Anche il widget funziona.
 
 ### D34 — Un foglio vive finché è sullo schermo
 **Data:** 2026-09-24 · **Stato:** attiva · **Ripara una falla contro l'invariante 11**
@@ -962,6 +961,9 @@ conseguenze, entrambe contro decisioni prese:
 **Cosa costa.** Se arriva una chiamata a metà nota, al ritorno il foglio è nuovo e la nota
 interrotta è già salva, ma separata. È il compromesso giusto: la nota non si perde (D5), e
 un foglio che riappare da solo con dentro del testo è peggio di due note.
+
+**Provato sul telefono** (Samsung S8): spento lo schermo senza OK, alla riaccensione si
+vede il blocco e non la nota; il widget apre un foglio bianco.
 
 **Ruotare il telefono non è uscire.** Il manifest dichiara i cambi di configurazione, così
 l'Activity non viene ricreata: ricrearla avrebbe tolto dallo schermo l'inchiostro appena
@@ -1040,11 +1042,50 @@ quando avremo le prime misure.
 | a freddo, dopo l'installazione | 1313 ms — il codice non è ancora compilato dal sistema |
 | a freddo, le volte successive | 358–387 ms — entro 400, ma col margine di un fotogramma o due |
 
+**Seconda serie, stesso giorno, col misuratore corretto:** oltre dieci aperture, tutte
+verdi. Latenza del tratto **13–14 ms a caldo, circa 30 a freddo**, sotto il tetto di 50
+anche nel caso peggiore. Con tutto il codice compilato in anticipo a mano
+(`cmd package compile -m speed`), il freddo scende da 358–387 a **252 ms**: circa un
+terzo in meno, ed è il tetto di quello che il profilo di riferimento può dare.
+
+**Queste misure sono della build di debug**, e un'app debuggabile gira più lenta: ART
+rinuncia ad alcune ottimizzazioni per permettere il debugger. Il numero che vedrà
+l'utente è quello della build di rilascio, ancora da misurare (D37).
+
 Sul freddo siamo al limite, su un telefono del 2017. La leva è il profilo di riferimento
 (D32, leva 1), e il primo passo è misurare quanto potrebbe dare: compilare tutto in
 anticipo a mano sul telefono e rimisurare. Il caso "subito dopo l'installazione" è
 esattamente quello che il profilo di riferimento cura, e sarà la prima impressione di
 ogni utente nuovo.
+
+### D37 — L'avvio a freddo si cura con R8 e con un profilo scritto a mano, senza librerie
+**Data:** 2026-09-24 · **Stato:** attiva, **da misurare** sulla build di rilascio
+
+La build di rilascio passa da R8, e `src/main/baseline-prof.txt` dichiara come percorso di
+avvio **tutto il nostro codice e tutta la parte di Kotlin che R8 lascia**. Nessuna
+libreria aggiunta: niente `profileinstaller`, niente modulo di Macrobenchmark.
+
+**Perché R8.** Senza, l'APK si porta dietro la libreria standard di Kotlin intera, e a
+freddo ogni classe caricata va letta e verificata. R8 toglie quello che non usiamo e
+fonde il resto: meno classi, meno lavoro prima del primo fotogramma. È gratuito, e con
+zero dipendenze e zero riflessione il rischio di togliere qualcosa che serve è basso.
+
+**Perché un profilo scritto a mano e non generato.** Il modo canonico è generarlo con
+Macrobenchmark, che registra quali metodi girano all'avvio. Serve quando l'app è grande e
+se ne vuole compilare solo il percorso caldo. La nostra è minuscola: il percorso di avvio
+**è** quasi tutta l'app. Quattro righe con i caratteri jolly dicono la stessa cosa, e
+restano giuste anche quando il codice cambia. Il tetto di quanto possono dare l'abbiamo
+già misurato: compilare tutto porta il freddo a 252 ms (D36).
+
+**Perché niente `profileinstaller`.** È la libreria che installa il profilo quando l'app
+**non** arriva dal Play Store. Si inizializza con un `ContentProvider`, cioè esattamente
+ciò che l'invariante 21 vieta sul percorso di avvio. Per chi installa dal Play Store il
+profilo nell'APK lo usa lo store all'installazione, senza la libreria. **Da verificare**
+col primo rilascio sul canale di test interno, che è anche l'unico modo di vedere il
+profilo all'opera: installando col cavo il profilo non viene applicato.
+
+**Il caso che conta di più è il primo avvio dopo l'installazione** (1313 ms sul S8): è la
+prima impressione di ogni utente nuovo, ed è esattamente quello che il profilo cura.
 
 ---
 
@@ -1171,9 +1212,9 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
   le cose da non fare ancora.
 
 Stato attuale: **233 test, tutti verdi.** L'app Android **compila e si installa** (Samsung
-Galaxy S8, 2026-09-24, nessuna modifica al codice). Prime misure in D36: 86 ms a caldo,
-358–387 a freddo. Il widget funziona. Il riquadro rapido e la privacy sono ancora da
-provare.
+Galaxy S8, 2026-09-24, nessuna modifica al codice). Misure in D36: tutte verdi. Widget,
+riquadro sopra il blocco e privacy **provati sul telefono**. La build di rilascio con R8
+(D37) non è ancora stata compilata.
 
 ---
 
@@ -1213,9 +1254,9 @@ provare.
 
 ### Bloccato sulla misura
 
-7. ~~Prendere il numero di D19~~ — preso sul Samsung S8: il pavimento regge, a freddo
-   al limite (D36). **Resta da misurare quanto dà la compilazione anticipata**, prima di
-   investire nel profilo di riferimento. Istruzioni in [`GUIDA.md`](GUIDA.md).
+7. ~~Prendere il numero di D19~~ — preso sul Samsung S8: tutti verdi, a freddo al limite
+   (D36). La compilazione anticipata vale un terzo del freddo. **Resta da misurare la
+   build di rilascio** con R8 (D37). Istruzioni in [`GUIDA.md`](GUIDA.md).
 
 ### Si può fare adesso, senza telefono (core puro, verificabile qui)
 
@@ -1233,9 +1274,9 @@ provare.
 
 ### Dopo la misura
 
-12. **Profilo di riferimento per l'avvio a freddo** (baseline profile): la leva più
-    grossa sul numero a freddo, gratuita e senza cambiare logica. Va generata su un
-    dispositivo, quindi subito dopo la misura (D32).
+12. ~~Profilo di riferimento per l'avvio a freddo~~ — scritto a mano, con R8 (D37). Si
+    vede all'opera solo installando dal Play Store: va provato col canale di test
+    interno.
 13. **Il foglio di condivisione** su entrambe le piattaforme: è il 90% di D31, e su
     Android è anche l'unica strada per Keep.
 14. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`

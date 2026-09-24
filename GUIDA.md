@@ -21,8 +21,25 @@ un'apertura a freddo e una a caldo sono due fenomeni fisici diversi:
 
 Il tempo che ci metti tu a toccare lo schermo non entra in nessuno dei due (D36).
 
-**Prima misura, Samsung S8:** 86 ms a caldo, 358–387 ms a freddo. Il pavimento regge;
-a freddo siamo al limite.
+**Misure sul Samsung S8 (build di debug):** tutto verde. 86 ms a caldo, 358–387 ms a
+freddo, 252 ms a freddo con tutto compilato in anticipo; tratto 13–14 ms a caldo, circa 30
+a freddo.
+
+### La prossima misura: la build di rilascio
+
+Le misure fatte finora sono della build di **debug**, che gira più lenta di quella che
+avrà l'utente. La build di rilascio ora passa da R8 (D37):
+
+```sh
+./gradlew :androidApp:installRelease
+```
+
+Poi a freddo tre volte, come prima (arresto forzato + `am start -W`), e mandami i
+`TotalTime`. Nella build di rilascio il misuratore a schermo non c'è: vale solo il numero
+di `am start -W`. Se l'app si chiude da sola o si comporta diversamente dalla debug,
+dimmelo subito: vuol dire che R8 ha tolto qualcosa che serviva.
+
+Per tornare alla build col misuratore: `./gradlew :androidApp:installDebug`.
 
 A freddo la maggior parte del tempo è creazione del processo e inizializzazione del
 sistema: non è codice nostro e non si può saltare, ed è la ragione per cui 100 ms a

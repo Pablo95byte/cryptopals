@@ -23,8 +23,14 @@ android {
     buildTypes {
         // Firmata con la chiave di debug: serve a installarla su un telefono, non a
         // pubblicarla. La firma vera arriverà col primo rilascio.
+        //
+        // R8 acceso non per il peso dell'APK ma per l'avvio a freddo (D37): toglie dalla
+        // libreria standard di Kotlin tutto quello che non usiamo, e meno classi da
+        // caricare e verificare sono millisecondi in meno prima del foglio.
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("debug")
         }
     }

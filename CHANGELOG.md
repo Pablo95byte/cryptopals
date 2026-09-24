@@ -12,6 +12,9 @@ solo cosa è cambiato nel codice.
 
 ### Aggiunto
 
+- **R8 nella build di rilascio** e un **profilo di riferimento** scritto a mano
+  (`baseline-prof.txt`), per l'avvio a freddo. Nessuna libreria aggiunta (D37).
+
 - **Widget della home su Android** (`SheetWidgetProvider`): un foglio bianco col segno
   tenue, tutto il riquadro apre la cattura. `RemoteViews` di piattaforma e non Glance,
   nessun aggiornamento periodico (D33).
