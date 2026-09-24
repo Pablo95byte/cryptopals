@@ -10,6 +10,20 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Aggiunto — gli screenshot dell'App Store (D73)
+
+- **63 screenshot pronti** in `lancio/screenshots/`: sei per iPhone e tre per iPad in sette
+  lingue, alle misure dell'App Store, col fondo vermiglio. Gli schermi sono ridisegnati dal
+  codice dell'app, con le sue parole in ogni lingua.
+- `tools/shots/`: i dati (`build.py`), la pagina che disegna (`page.html`) e lo script che
+  fotografa (`render.mjs`).
+
+### Corretto — il foglio che cambia misura (D74)
+
+- Su iOS, se lo schermo diventa più piccolo della nota (l'iPhone Duo che si chiude a metà
+  nota, un iPhone girato in orizzontale), la nota si mostra intera e rimpicciolita invece di
+  finire fuori dallo schermo.
+
 ### Aggiunto — la goccia "da smistare" (D72)
 
 - Nell'archivio, su iOS e Android, i bigliettini che aspettano lo smistamento portano la

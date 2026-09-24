@@ -23,6 +23,19 @@ final class InkCanvasView: UIView {
     private var reportedFrame = false
     private var reportedInk = false
 
+    /// La misura del foglio quando la nota è cominciata: le coordinate dei tratti stanno lì
+    /// (D10), e non cambiano se cambia lo schermo.
+    private var canvasSize: CGSize = .zero
+
+    /// Quanto rimpicciolire il foglio per vederlo intero (D74). Se lo schermo diventa più
+    /// piccolo della nota — un iPhone Duo che si chiude a metà nota, un telefono che si gira
+    /// — la nota si mostra tutta, più piccola, invece di finire fuori dallo schermo. Se
+    /// diventa più grande non cambia niente: la nota resta dov'è, con più spazio intorno.
+    private var inkScale: CGFloat {
+        guard canvasSize.width > 0, canvasSize.height > 0 else { return 1 }
+        return min(1, bounds.width / canvasSize.width, bounds.height / canvasSize.height)
+    }
+
     init(sheet: InkSheet) {
         self.sheet = sheet
         super.init(frame: .zero)
@@ -33,6 +46,13 @@ final class InkCanvasView: UIView {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("non usata da storyboard") }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // La prima misura vera è quella su cui è nata la nota (CaptureScreen crea il foglio
+        // con le stesse dimensioni).
+        if canvasSize == .zero, bounds.width > 0, bounds.height > 0 { canvasSize = bounds.size }
+    }
 
     // MARK: Tocchi
 
@@ -72,7 +92,9 @@ final class InkCanvasView: UIView {
         // ne consegna 60 o 120. Ignorarli vuol dire buttare metà del tratto.
         let samples = event?.coalescedTouches(for: touch) ?? [touch]
         for sample in samples {
-            let point = sample.preciseLocation(in: self)
+            // Nelle coordinate del foglio, anche quando lo si mostra rimpicciolito.
+            let location = sample.preciseLocation(in: self)
+            let point = CGPoint(x: location.x / inkScale, y: location.y / inkScale)
             // Pressione solo dal pennino: il dito non ce l'ha, e inventarla è ciò che
             // l'invariante 6 vieta.
             let force: Float = sample.type == .pencil && sample.maximumPossibleForce > 0
@@ -98,6 +120,11 @@ final class InkCanvasView: UIView {
         let dark = traitCollection.userInterfaceStyle == .dark
         context.setFillColor(Brand.sheetPaper.resolvedColor(with: traitCollection).cgColor)
         context.fill(bounds)
+
+        context.saveGState()
+        defer { context.restoreGState() }
+        let scale = inkScale
+        if scale < 1 { context.scaleBy(x: scale, y: scale) }
 
         for (path, argb, alpha) in committed {
             context.addPath(path)

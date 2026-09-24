@@ -1,0 +1,277 @@
+<!doctype html>
+<!--
+  Gli screenshot dell'App Store (D70, D73). render.mjs apre questa pagina, chiama
+  draw(dati, lingua, numero, dispositivo) e fotografa il risultato.
+
+  Gli schermi riproducono l'app com'è nel codice: stesse misure in punti, stessi colori di
+  Brand.swift, stesse parole del catalogo. Se l'app cambia, questa pagina va aggiornata:
+  uno screenshot che mostra un'interfaccia che non c'è viola la linea guida 2.3.3 di Apple.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="node_modules/@fontsource/caveat/600.css">
+<link rel="stylesheet" href="node_modules/@fontsource/caveat/700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/klee-one/600.css">
+<link rel="stylesheet" href="node_modules/@fontsource/inter/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/inter/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/inter/600.css">
+<link rel="stylesheet" href="node_modules/@fontsource/inter/700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-jp/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-jp/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-jp/700.css">
+<style>
+@font-face { font-family: "Instrument Sans"; src: url("../../site/fonts/InstrumentSans.ttf"); font-weight: 400 700; }
+
+:root {
+  --field-top: #EA5F35; --field-bottom: #D9481F;
+  --paper: #FBF8F1; --card: #FFFDF8; --desk: #F3EFE7; --ink: #1F2430;
+  --muted: #8B8374; --outline: #E0D8C8; --spark: #E4572E; --blue: #007AFF;
+  --ui: "Inter", "Noto Sans JP", system-ui, sans-serif;
+  --hand: "Caveat", "Klee One", cursive;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { background: #000; }
+body { font-family: var(--ui); -webkit-font-smoothing: antialiased; }
+:lang(ja) { --hand: "Klee One", "Caveat", cursive; --ui: "Noto Sans JP", "Inter", sans-serif; }
+
+/* La composizione: campo vermiglio, icona, didascalia, telefono che esce dal fondo. */
+.canvas { position: relative; overflow: hidden; background: linear-gradient(180deg, var(--field-top), var(--field-bottom)); color: #FBF8F1; }
+.canvas .icon { position: absolute; left: 50%; transform: translateX(-50%); border-radius: 22.37%; overflow: hidden; box-shadow: 0 0 0 1.5px rgba(251,248,241,.55); }
+.canvas .icon img { width: 100%; height: 100%; display: block; }
+.canvas .cap { position: absolute; left: 0; right: 0; text-align: center; padding: 0 28px; }
+.canvas .cap b { display: block; font-family: "Instrument Sans", var(--ui); font-weight: 700; letter-spacing: -0.02em; line-height: 1.06; text-wrap: balance; }
+.canvas .cap span { display: block; font-family: "Instrument Sans", var(--ui); font-weight: 500; opacity: .88; line-height: 1.25; text-wrap: balance; }
+.canvas:lang(ja) .cap b, .canvas:lang(ja) .cap span { font-family: "Noto Sans JP", sans-serif; letter-spacing: 0; word-break: auto-phrase; }
+.device { position: absolute; left: 50%; transform-origin: top center; background: #111; }
+.screen { position: relative; overflow: hidden; background: var(--paper); color: var(--ink); }
+
+/* Barra di stato e isola. */
+.sb { position: absolute; top: 0; left: 0; right: 0; height: 54px; display: flex; align-items: center; justify-content: space-between; padding: 18px 34px 0 50px; font: 600 17px var(--ui); z-index: 5; }
+.sb .r { display: flex; gap: 7px; align-items: center; }
+.sb svg { display: block; }
+.island { position: absolute; top: 11px; left: 50%; width: 126px; height: 37px; margin-left: -63px; background: #000; border-radius: 20px; z-index: 6; }
+.home-ind { position: absolute; bottom: 8px; left: 50%; width: 144px; height: 5px; margin-left: -72px; border-radius: 3px; background: #1F2430; opacity: .85; z-index: 6; }
+.dark .home-ind { background: #fff; }
+
+.hand { font-family: var(--hand); font-weight: 600; color: var(--ink); line-height: 1.02; white-space: nowrap; }
+.hand:lang(ja) { font-weight: 600; line-height: 1.25; }
+
+/* Bigliettino (NoteCard). */
+.card { background: var(--card); border: 1px solid var(--outline); border-radius: 22px; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+.card .ink { flex: 1; display: flex; align-items: center; justify-content: center; padding: 14px; }
+.card .foot { padding: 6px 14px 12px; }
+.card .cap1 { font: 500 13.5px var(--ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .date { font: 400 12px var(--ui); color: var(--muted); margin-top: 3px; }
+.drop { position: absolute; top: 13px; right: 13px; width: 9px; height: 9px; border-radius: 50%; background: var(--spark); }
+
+.capsule { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; font: 600 17px var(--ui); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// ---- Piccole icone disegnate a mano: le forme dei simboli di sistema, non i simboli stessi.
+const I = {
+  check: (c) => `<svg width="17" height="17" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="${c}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  keyboard: (c) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.5"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M7.5 14h9" stroke-linecap="round"/></svg>`,
+  camera: (c) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.5"><path d="M3.5 8h3.2l1.8-2.2h7l1.8 2.2h3.2v11h-17z" stroke-linejoin="round"/><circle cx="12" cy="13.2" r="3.6"/></svg>`,
+  mic: (c) => `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.5"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" stroke-linecap="round"/></svg>`,
+  share: (c, s = 18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5M5 11v9h14v-9"/></svg>`,
+  trash: (c, s = 22) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9.5 7V4.5h5V7M6 7l1 13h10l1-13"/></svg>`,
+  tray: (c, s = 22) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9M8.5 8.5L12 12l3.5-3.5M4 13l2-5M20 13l-2-5M4 13v6h16v-6h-5l-1 2h-4l-1-2z"/></svg>`,
+  pencil: (c) => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.2-4.5L16 4.7l3.3 3.3L8.5 18.8zM14 6.7l3.3 3.3"/></svg>`,
+  search: (c) => `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></svg>`,
+  clear: `<svg width="17" height="17" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#8E8E93"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7" stroke="#E9E6DF" stroke-width="2" stroke-linecap="round"/></svg>`,
+  back: (c) => `<svg width="13" height="21" viewBox="0 0 13 21"><path d="M10.5 2L2.5 10.5l8 8.5" fill="none" stroke="${c}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  signal: (c) => `<svg width="19" height="12" viewBox="0 0 19 12" fill="${c}"><rect x="0" y="8" width="3.2" height="4" rx="1"/><rect x="5" y="5.5" width="3.2" height="6.5" rx="1"/><rect x="10" y="3" width="3.2" height="9" rx="1"/><rect x="15" y="0" width="3.2" height="12" rx="1"/></svg>`,
+  wifi: (c) => `<svg width="17" height="12" viewBox="0 0 17 12" fill="${c}"><path d="M8.5 2.2c2.5 0 4.8 1 6.5 2.6l1.3-1.3A11 11 0 0 0 .7 3.5L2 4.8a9.2 9.2 0 0 1 6.5-2.6zM8.5 6c1.5 0 2.8.6 3.8 1.5l1.3-1.3a7.3 7.3 0 0 0-10.2 0l1.3 1.3c1-.9 2.3-1.5 3.8-1.5zM8.5 9.3c.6 0 1.1.2 1.5.6L8.5 11.6 7 9.9c.4-.4.9-.6 1.5-.6z"/></svg>`,
+  battery: (c) => `<svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="${c}" opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2" fill="${c}"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="${c}" opacity=".45"/></svg>`,
+};
+
+// Il ricciolo e la goccia di Brand.swift, in 24×24.
+const SCRIBBLE = "M4 19.5C7 18.5 9 13 12 8C14.2 4.3 16 3.7 16.8 4.6C17.7 5.6 16.4 7.8 14.4 10.2C12.8 12.1 11.4 13.2 11.4 14.5C11.4 15.5 12.2 16 13.2 15.7C14.6 15.3 15.8 14.1 17 12.5";
+
+function statusBar(color, wide) {
+  return `<div class="sb" style="color:${color}${wide ? ';padding:14px 28px 0 30px;height:30px;font-size:15px' : ''}"><span>9:41</span>` +
+    `<span class="r">${I.signal(color)}${I.wifi(color)}${I.battery(color)}</span></div>`;
+}
+
+function hand(lines, size, extra = '') {
+  return `<div class="hand fit" style="font-size:${size}px;${extra}">${lines.map(l => `<div>${l}</div>`).join('')}</div>`;
+}
+
+// ---- Gli schermi. Misure in punti, come in SwiftUI e UIKit.
+
+// 1. Il foglio (CaptureScreen): carta, inchiostro, tre strumenti tenui, "Fatto".
+function sheet(L, w, h, ipad) {
+  const size = ipad ? 110 : 64;
+  return `<div class="screen" style="width:${w}px;height:${h}px;background:var(--paper)">` +
+    statusBar('#1F2430', ipad) +
+    `<div style="position:absolute;left:${ipad ? 120 : 34}px;top:${ipad ? 300 : 230}px;transform:rotate(-2.5deg);transform-origin:left top">` +
+      hand([L.s1[0]], size) + `<div style="margin:${ipad ? 26 : 18}px 0 0 ${ipad ? 60 : 30}px">${hand([L.s1[1]], size)}</div></div>` +
+    `<div style="position:absolute;left:${ipad ? 20 : 8}px;bottom:${ipad ? 36 : 46}px;display:flex;gap:4px">` +
+      ['keyboard', 'camera', 'mic'].map(k => `<div style="width:50px;height:50px;display:grid;place-items:center">${I[k]('#8B8374')}</div>`).join('') + `</div>` +
+    `<div class="capsule" style="position:absolute;right:16px;bottom:${ipad ? 36 : 46}px;background:#1F2430;color:#FBF8F1;padding:14px 22px">${I.check('#FBF8F1')}${L.ui.done}</div>` +
+    (ipad ? '' : '<div class="home-ind"></div>') + `</div>`;
+}
+
+// 2. La Home, col widget medio: carta e ricciolo tenue (InkNoteWidgets).
+function home(L, w, h, iconSrc) {
+  const tones = ['#E86F5C', '#6E9BD8', '#8C8C94', '#62A77C', '#5AB3E3', '#3A3D46', '#EA5C7B'];
+  const glyphs = [
+    '<rect x="7" y="8" width="18" height="17" rx="3" fill="#fff"/><rect x="7" y="8" width="18" height="5" rx="2" fill="#E86F5C" opacity=".35"/>',
+    '<circle cx="16" cy="16" r="8" fill="#fff" opacity=".95"/><circle cx="16" cy="16" r="3.5" fill="#6E9BD8"/>',
+    '<rect x="7" y="11" width="18" height="12" rx="3" fill="#fff"/><circle cx="16" cy="17" r="3.5" fill="#8C8C94"/>',
+    '<path d="M8 23l5-14 5 9 3-4 3 9z" fill="#fff"/>',
+    '<circle cx="13" cy="14" r="5" fill="#FFD54F"/><path d="M11 21h12a4 4 0 0 0-4-6 5 5 0 0 0-8 2 3 3 0 0 0 0 4z" fill="#fff"/>',
+    '<circle cx="16" cy="16" r="9" fill="#fff"/><path d="M16 10v6l4 2" stroke="#3A3D46" stroke-width="2" fill="none" stroke-linecap="round"/>',
+    '<path d="M13 22a3 3 0 1 1-2-2.8V10l9-2v10a3 3 0 1 1-2-2.8V11l-5 1.1z" fill="#fff"/>',
+  ];
+  const cell = (i) => {
+    const label = L.apps[i];
+    const img = i === 7
+      ? `<img src="${iconSrc}" style="width:64px;height:64px;border-radius:14.3px;display:block;margin:0 auto">`
+      : `<svg width="64" height="64" viewBox="0 0 32 32" style="border-radius:14.3px;display:block;margin:0 auto"><rect width="32" height="32" fill="${tones[i]}"/>${glyphs[i]}</svg>`;
+    return `<div style="width:76px;text-align:center">${img}` +
+      `<div style="margin-top:6px;font:500 12px var(--ui);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.25)">${label}</div></div>`;
+  };
+  const dock = ['#62A77C', '#5AB3E3', '#E86F5C', '#8C8C94'].map(c => `<svg width="64" height="64" viewBox="0 0 32 32" style="border-radius:14.3px"><rect width="32" height="32" fill="${c}"/><circle cx="16" cy="16" r="6" fill="#fff" opacity=".9"/></svg>`).join('');
+  return `<div class="screen dark" style="width:${w}px;height:${h}px;background:linear-gradient(165deg,#9FB3A8 0%,#C9B79F 55%,#B98E78 100%)">` +
+    statusBar('#fff') +
+    `<div style="position:absolute;left:28px;right:28px;top:74px;height:170px;border-radius:24px;background:#FBF8F1;box-shadow:0 2px 10px rgba(0,0,0,.08)">` +
+      `<svg width="38" height="38" viewBox="0 0 24 24" style="position:absolute;left:50%;top:50%;margin:-19px 0 0 -19px"><path d="${SCRIBBLE}" fill="none" stroke="#D9CEB8" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg>` +
+      `<div style="position:absolute;left:47%;top:58%;width:74px;height:74px;margin:-37px 0 0 -37px;border-radius:50%;background:rgba(255,255,255,.35);border:3px solid rgba(31,36,48,.35)"></div>` +
+    `</div>` +
+    `<div style="position:absolute;left:18px;right:18px;top:270px;display:grid;grid-template-columns:repeat(4,76px);justify-content:space-between;row-gap:26px">${[0,1,2,3,4,5,6,7].map(cell).join('')}</div>` +
+    `<div style="position:absolute;left:14px;right:14px;bottom:18px;height:96px;border-radius:34px;background:rgba(255,255,255,.28);display:flex;justify-content:space-around;align-items:center">${dock}</div>` +
+    `<div class="home-ind" style="background:#fff"></div></div>`;
+}
+
+// 3. La nota aperta (NoteScreen) col foglio di condivisione del sistema a metà altezza.
+function share(L, w, h, ipad) {
+  const col = ipad ? 680 : w - 40;
+  const left = (w - col) / 2;
+  const tiles = ['#F5C542', '#1F2430', '#F2B51F', '#3C8CF2'];
+  const apps = L.share_apps.map((n, i) => `<div style="width:76px;text-align:center"><div style="width:62px;height:62px;border-radius:14px;margin:0 auto;background:${tiles[i]};display:grid;place-items:center;color:#fff;font:700 24px var(--ui)">${n.charAt(0)}</div><div style="margin-top:7px;font:400 12px var(--ui);color:#1C1C1E">${n}</div></div>`).join('');
+  const sheetTop = ipad ? 560 : h * 0.47;
+  const panel = `<div style="position:absolute;${ipad ? `left:${w/2 - 210}px;width:420px;top:${sheetTop}px;padding-bottom:18px!important;border-radius:26px;box-shadow:0 10px 60px rgba(0,0,0,.22)` : `left:0;right:0;top:${sheetTop}px;bottom:0;border-radius:38px 38px 0 0;box-shadow:0 -6px 30px rgba(0,0,0,.14)`};background:#F2F2F7;padding:18px 18px 0">` +
+      `<div style="display:flex;align-items:center;gap:12px;padding:4px 4px 16px;border-bottom:1px solid #DDDDE2">` +
+        `<div style="width:44px;height:44px;border-radius:9px;background:#FFFDF8;border:1px solid #E0D8C8;display:grid;place-items:center;overflow:hidden">${hand([L.s3[0].slice(0, 7)], 13)}</div>` +
+        `<div><div style="font:600 15px var(--ui);color:#1C1C1E">Instink</div><div style="font:400 13px var(--ui);color:#8E8E93">${L.share_kind}</div></div>` +
+        `<div style="margin-left:auto;width:30px;height:30px;border-radius:50%;background:#E3E3E8;display:grid;place-items:center;color:#8E8E93;font:600 15px var(--ui)">✕</div></div>` +
+      `<div style="display:flex;justify-content:space-between;padding:20px 4px 18px">${apps}</div>` +
+      `<div style="background:#fff;border-radius:12px">${L.share_rows.map((r, i) => `<div style="padding:15px 16px;font:400 17px var(--ui);color:#1C1C1E;${i ? 'border-top:1px solid #E5E5EA' : ''}">${r}</div>`).join('')}</div>` +
+    `</div>`;
+  return `<div class="screen" style="width:${w}px;height:${h}px;background:var(--desk)">` +
+    statusBar('#1F2430', ipad) +
+    `<div style="position:absolute;top:${ipad ? 38 : 60}px;left:${ipad ? 22 : 12}px;right:${ipad ? 26 : 20}px;height:44px;display:flex;align-items:center;justify-content:space-between;color:var(--blue);font:400 17px var(--ui)">` +
+      `<span style="display:flex;align-items:center;gap:6px">${I.back('#007AFF')}${L.ui.notes}</span>${I.trash('#FF3B30')}</div>` +
+    `<div style="position:absolute;left:${left + 4}px;top:${ipad ? 100 : 118}px;font:600 13px var(--ui);color:#8A8A8E">${L.lock_date} · 9:12</div>` +
+    `<div class="card" style="position:absolute;left:${left}px;width:${col}px;top:${ipad ? 130 : 144}px;height:${ipad ? 360 : 250}px;align-items:center;justify-content:center">` +
+      hand(L.s3, ipad ? 64 : 46, 'transform:rotate(-1.5deg)') + `</div>` +
+    (ipad ? `<div class="capsule" style="position:absolute;left:${w/2 - 90}px;bottom:${ipad ? 30 : 46}px;background:#1F2430;color:#fff;padding:16px 24px">${I.share('#fff')}${L.ui.send_to}</div>` : '') +
+    panel + (ipad ? '' : '<div class="home-ind"></div>') + `</div>`;
+}
+
+// 4. Lo smistamento (TriageScreen): la carta trascinata a destra, "Manda" sopra.
+function triage(L, w, h, ipad) {
+  const btn = (icon, primary) => `<div style="width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:${primary ? '#1F2430' : 'rgba(31,36,48,.07)'}">${icon(primary ? '#fff' : '#1F2430')}</div>`;
+  // La carta ha un massimo di 520 punti (TriageScreen): sull'iPad sta al centro.
+  const cardW = Math.min(w - 48, 520), cardH = ipad ? 520 : 470, cardL = (w - cardW) / 2, cardT = ipad ? 330 : 140;
+  return `<div class="screen" style="width:${w}px;height:${h}px;background:var(--desk)">` + statusBar('#1F2430', ipad) +
+    `<div style="position:absolute;top:${ipad ? 36 : 60}px;left:0;right:0;height:44px;display:flex;align-items:center;justify-content:center;font:600 17px var(--ui)">${L.ui.to_sort.replace('%lld', '3')}</div>` +
+    `<div style="position:absolute;top:${ipad ? 36 : 60}px;right:20px;height:44px;display:flex;align-items:center;color:var(--blue);font:400 17px var(--ui)">${L.ui.close}</div>` +
+    `<div class="card" style="position:absolute;left:${cardL}px;top:${cardT + 10}px;width:${cardW}px;height:${cardH}px;border-radius:28px;opacity:.55"></div>` +
+    `<div class="card" style="position:absolute;left:${cardL}px;top:${cardT}px;width:${cardW}px;height:${cardH}px;border-radius:28px;transform:translateX(96px) rotate(4.4deg);box-shadow:0 18px 40px rgba(31,36,48,.14)">` +
+      `<div class="ink">${hand(L.s4, ipad ? 72 : 50, 'transform:rotate(-1.5deg)')}</div>` +
+      `<div style="display:flex;justify-content:space-between;padding:18px;font:400 13px var(--ui);color:var(--muted)"><span>${L.rel[1]}</span><span>${L.s4.join(' ')}</span></div>` +
+      `<div style="position:absolute;top:16px;left:50%;transform:translateX(-50%);background:rgba(243,239,231,.92);border:1px solid rgba(31,36,48,.06);border-radius:999px;padding:8px 16px;font:600 17px var(--ui)">${L.ui.send}</div>` +
+    `</div>` +
+    `<div style="position:absolute;left:0;right:0;bottom:${ipad ? 190 : 70}px;display:flex;justify-content:center;gap:28px">${btn(I.trash)}${btn(I.tray)}${btn(I.share, true)}</div>` +
+    (ipad ? '' : '<div class="home-ind"></div>') + `</div>`;
+}
+
+// 5. L'archivio (ArchiveScreen) con una ricerca: bigliettini trovati, gocce sui nuovi.
+function archive(L, w, h, ipad) {
+  const pad = 16, gap = 12;
+  const cols = Math.max(2, Math.floor((w - 2 * pad + gap) / (158 + gap)));
+  const cardW = (w - 2 * pad - gap * (cols - 1)) / cols;
+  const cards = L.hits.map((lines, i) => {
+    const drop = i === 0 || i === 3 ? '<div class="drop"></div>' : '';
+    return `<div class="card" style="height:208px">${drop}<div class="ink">${hand(lines, cardW > 190 ? 30 : 24, 'transform:rotate(-1.5deg)')}</div>` +
+      `<div class="foot"><div class="cap1">${lines.join(' ')}</div><div class="date">${L.rel[i]}</div></div></div>`;
+  }).join('');
+  return `<div class="screen" style="width:${w}px;height:${h}px;background:var(--desk)">` + statusBar('#1F2430', ipad) +
+    `<div style="position:absolute;top:${ipad ? 40 : 62}px;right:20px;height:44px;display:flex;align-items:center;gap:7px;color:var(--blue);font:600 15px var(--ui)"><span style="width:8px;height:8px;border-radius:50%;background:var(--spark)"></span>${L.ui.sort.replace('%lld', '3')}</div>` +
+    `<div style="position:absolute;left:${pad}px;top:${ipad ? 92 : 108}px;font:700 34px var(--ui);letter-spacing:-.01em">${L.ui.notes}</div>` +
+    `<div style="position:absolute;left:${pad}px;right:${pad}px;top:${ipad ? 146 : 160}px;height:38px;border-radius:11px;background:rgba(118,118,128,.12);display:flex;align-items:center;gap:7px;padding:0 9px;font:400 17px var(--ui)">${I.search('#8A8A8E')}<span>${L.query}</span><span style="margin-left:auto">${I.clear}</span></div>` +
+    `<div style="position:absolute;left:${pad}px;right:${pad}px;top:${ipad ? 204 : 214}px;display:grid;grid-template-columns:repeat(${cols},1fr);gap:${gap}px">${cards}</div>` +
+    `<div class="capsule" style="position:absolute;right:20px;bottom:${ipad ? 26 : 46}px;background:#1F2430;color:#fff;padding:16px 22px">${I.pencil('#fff')}${L.ui.write}</div>` +
+    (ipad ? '' : '<div class="home-ind"></div>') + `</div>`;
+}
+
+// 6. Siri sulla schermata di blocco (AddNoteIntent): si detta, Siri risponde "Salvata".
+function siri(L, w, h, iconSrc) {
+  return `<div class="screen dark" style="width:${w}px;height:${h}px;background:linear-gradient(170deg,#2B3350 0%,#3D3452 50%,#16182A 100%);color:#F5F2EA">` + statusBar('#fff') +
+    `<div style="position:absolute;top:0;left:0;right:0;bottom:0;border-radius:inherit;box-shadow:inset 0 0 22px 6px rgba(255,120,170,.55), inset 0 0 50px 10px rgba(110,170,255,.35)"></div>` +
+    `<div style="position:absolute;top:118px;left:0;right:0;text-align:center"><div style="font:600 20px var(--ui);opacity:.9">${L.lock_date}</div><div style="font:700 104px var(--ui);letter-spacing:-.02em;line-height:1.02">9:41</div></div>` +
+    `<div style="position:absolute;left:20px;right:20px;bottom:128px;text-align:center;font:500 19px var(--ui);opacity:.78">${L.siri_said}</div>` +
+    `<div style="position:absolute;left:14px;right:14px;bottom:26px;border-radius:30px;background:rgba(245,242,234,.16);padding:18px 20px;display:flex;align-items:center;gap:14px;backdrop-filter:blur(8px)">` +
+      `<img src="${iconSrc}" style="width:44px;height:44px;border-radius:10px">` +
+      `<div><div style="font:600 13px var(--ui);opacity:.7;letter-spacing:.02em">INSTINK</div><div style="font:600 19px var(--ui)">${L.ui.saved}</div></div></div>` +
+    `</div>`;
+}
+
+// ---- La composizione di un'immagine.
+function draw(data, lang, n, device, iconSrc) {
+  const L = data[lang];
+  const ipad = device === 'ipad';
+  const W = ipad ? 1032 : 440, H = ipad ? 1376 : 956;           // punti; la foto li moltiplica
+  const SW = ipad ? 1032 : 440, SH = ipad ? 1376 : 956;         // lo schermo del dispositivo
+  // Il telefono si vede intero: "Fatto", i pulsanti e la risposta di Siri stanno in fondo.
+  const scale = ipad ? 0.74 : 0.725;
+  const top = ipad ? 318 : 236;
+  const screens = {
+    1: () => sheet(L, SW, SH, ipad),
+    2: () => home(L, SW, SH, iconSrc),
+    3: () => share(L, SW, SH, ipad),
+    4: () => triage(L, SW, SH, ipad),
+    5: () => archive(L, SW, SH, ipad),
+    6: () => siri(L, SW, SH, iconSrc),
+  };
+  const radius = ipad ? 26 : 62, bezel = ipad ? 16 : 11;
+  const capSize = ipad ? 76 : 43, subSize = ipad ? 30 : 19;
+  const root = document.getElementById('root');
+  root.innerHTML =
+    `<div class="canvas" lang="${lang}" style="width:${W}px;height:${H}px">` +
+      `<div class="icon" style="top:${ipad ? 44 : 30}px;width:${ipad ? 62 : 40}px;height:${ipad ? 62 : 40}px"><img src="${iconSrc}"></div>` +
+      `<div class="cap" style="top:${ipad ? 132 : 86}px"><b style="font-size:${capSize}px">${L.captions[n - 1]}</b>` +
+        `<span style="font-size:${subSize}px;margin-top:${ipad ? 18 : 11}px">${L.subs[n - 1]}</span></div>` +
+      `<div class="device" style="top:${top}px;width:${SW + 2 * bezel}px;height:${SH + 2 * bezel}px;margin-left:${-(SW + 2 * bezel) / 2}px;padding:${bezel}px;border-radius:${radius + bezel}px;transform:translateX(0) scale(${scale})">` +
+        `<div style="border-radius:${radius}px;overflow:hidden;position:relative;width:${SW}px;height:${SH}px" lang="${lang}">` +
+          screens[n]() + (ipad ? '' : '<div class="island"></div>') +
+        `</div></div>` +
+    `</div>`;
+  // translateX(-50%) e scale insieme: il centro va tenuto a mano.
+  const dev = root.querySelector('.device');
+  dev.style.left = '50%';
+  return { width: W, height: H };
+}
+
+// La scrittura si stringe finché non sta nel suo foglio: una riga lunga (il giapponese, il
+// tedesco) altrimenti uscirebbe dal bigliettino. Si chiama dopo che i caratteri sono pronti.
+function fitHands() {
+  for (const el of document.querySelectorAll('.hand.fit')) {
+    const box = el.closest('.card, .screen');
+    const room = box.clientWidth - (box.classList.contains('card') ? 34 : 72);
+    let size = parseFloat(el.style.fontSize);
+    for (let i = 0; i < 30 && el.scrollWidth > room; i++) {
+      size *= 0.94;
+      el.style.fontSize = size + 'px';
+    }
+  }
+}
+</script>
+</body>
+</html>

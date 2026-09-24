@@ -1,0 +1,11 @@
+{
+  "name": "instink-store-shots",
+  "private": true,
+  "description": "I caratteri per disegnare gli screenshot dell'App Store (D73). Solo per chi li genera: l'app non li usa.",
+  "dependencies": {
+    "@fontsource/caveat": "5.3.0",
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/klee-one": "5.3.0",
+    "@fontsource/noto-sans-jp": "5.3.0"
+  }
+}

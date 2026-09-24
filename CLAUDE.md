@@ -2273,7 +2273,8 @@ dentro (l'anello di D47).
   App Store Connect per paese, non l'intuito.
 
 ### D70 — Gli screenshot: i primi tre sono tutto il messaggio, e c'è una lista sola
-**Data:** 2026-09-24 · **Stato:** attiva · **Supera la lista di `STORIA.md` §6**
+**Data:** 2026-09-24 · **Stato:** attiva · **Supera la lista di `STORIA.md` §6** · gli
+scatti grezzi sono **superati da D73**: gli schermi si ricostruiscono dal codice
 
 Il committente: *"qui ci giochiamo tutto."* È vero: nei risultati di ricerca dell'App
 Store, sotto nome e icona, si vedono **i primi tre screenshot affiancati**, e chi cerca
@@ -2402,6 +2403,78 @@ D51. Un test della facciata controlla che dicano le stesse note.
 **Niente conteggi rossi e niente notifiche** (D51): la goccia non è un "badge" da azzerare,
 è un segno sulla carta. Quando la nota è tenuta, mandata o buttata, sparisce.
 
+### D73 — Gli screenshot si disegnano dal codice, in tutte le lingue, e non si fotografano
+**Data:** 2026-09-24 · **Stato:** attiva, chiesta dal committente · **Supera gli scatti
+grezzi di D70**
+
+Il committente: *"se ti impegni puoi preparare gli screen da mettere sullo store, non servono
+reali."* `tools/shots/` ricostruisce i sei schermi dell'iPhone e tre dell'iPad **dal codice
+dell'app**: stesse misure in punti, stessi colori di `Brand.swift`, stesse parole del catalogo
+di Xcode, lingua per lingua. Il risultato sono 63 immagini in `lancio/screenshots/`, già alle
+misure che l'App Store chiede (1320×2868 e 2064×2752), senza canale alfa.
+
+**Perché è meglio degli scatti, non solo più comodo:**
+
+- **Ogni lingua ha il suo schermo, non solo la sua didascalia.** Il giapponese vede un foglio
+  scritto in giapponese e i pulsanti in giapponese; con gli scatti si sarebbero riusate le
+  schermate inglesi per cinque lingue su sette.
+- **Si rifanno in un minuto** quando cambia un testo, una didascalia o l'app, e restano
+  coerenti fra loro.
+- **Niente dati personali** possibili, per costruzione.
+
+**Il vincolo, e va rispettato: lo schermo deve essere l'app vera** (linea guida 2.3.3 e 2.3.1
+di Apple: le immagini non devono mostrare cose che l'app non fa). Per questo gli schermi
+copiano il codice e non un'idea dell'app, e `page.html` dice in testa quali file riproduce.
+**Ogni volta che cambia l'interfaccia di un di quei file, gli screenshot si rigenerano.**
+Prima di caricarli, il committente li confronta una volta con l'app sul telefono.
+
+**Cosa è disegnato e non è nostro:** la Home, il foglio di condivisione e la schermata di
+blocco di iOS, in forma semplificata. Le app intorno sono icone generiche, senza loghi di
+nessuno; nel foglio di condivisione le destinazioni sono iniziali su un colore, non i loghi di
+Note, Notion o Keep.
+
+**La scrittura a mano è un carattere** (Caveat, e Klee One per il giapponese), passato
+dentro le forme dei bigliettini dell'app. Non è la calligrafia di un utente, ed è il solo
+punto dove l'immagine è più ordinata della realtà: la differenza si vede solo da vicino.
+
+**L'iPad mostra foglio, condivisione e smistamento**, non la ricerca: con quattro risultati la
+griglia dell'iPad lasciava mezzo schermo vuoto.
+
+**Trovati disegnando:** il giapponese andava a capo a metà parola (ora la didascalia usa
+l'andata a capo per frasi del browser), e le righe lunghe uscivano dai bigliettini (ora ogni
+scritta si stringe finché ci sta).
+
+### D74 — L'iPhone Duo: pronti il 23 ottobre, e una nota non si perde quando il telefono si chiude
+**Data:** 2026-09-24 · **Stato:** attiva, **da provare nel simulatore di Xcode** · le fonti
+sono nella risposta al committente
+
+Il committente: *"l'iPhone Duo non è ancora uscito: possiamo sfondare lì, visto che saremo i
+primi a pensarci?"* Apple l'ha presentato il 9 settembre, esce il **23 ottobre**: fuori uno
+schermo da 5,4 pollici, dentro uno da 7,6 che per le app vale come un iPad (classi di
+dimensione regolari). La matita USB-C arriverà più avanti nell'anno.
+
+**La risposta onesta: non saremo i primi a pensarci, ma possiamo essere fra i primi a esserci
+davvero.** Goodnotes e Notability girano già sull'iPad e sul Duo si vedranno bene dal primo
+giorno. Quello che loro non hanno è il gesto: **chiuso, si scrive in un secondo come su un
+telefono; aperto, si smista e si cerca come su un iPad**, e la stessa nota passa dall'uno
+all'altro. Quando esce un apparecchio nuovo, l'App Store mette in vetrina le app pronte:
+per noi vuol dire **essere nello store entro il 23 ottobre**, con la scheda che lo dice.
+
+**Già pronto, senza saperlo:** l'app gira su iPad (`TARGETED_DEVICE_FAMILY` 1,2), l'archivio
+mette tante colonne quante ne stanno, la nota aperta ha una colonna di al massimo 680
+punti, e il foglio accetta la matita con la pressione.
+
+**Corretto adesso: il foglio che cambia misura.** La nota nasce con la misura dello schermo e
+le sue coordinate stanno lì (D10). Se lo schermo si allargava non succedeva niente di male;
+se si stringeva — il Duo che si chiude a metà nota, ma anche un iPhone girato in orizzontale —
+l'inchiostro scritto oltre il nuovo bordo finiva fuori dallo schermo: salvato, ma invisibile.
+Ora il foglio, quando lo schermo è più piccolo della nota, la mostra tutta rimpicciolita, e i
+tocchi nuovi si riportano alla stessa scala. Il giornale e il modello non cambiano: è solo un
+modo di mostrare, come il foglio di notte (D52).
+
+**Da fare sul Mac del committente**, perché qui non c'è un simulatore: aprire l'app nel
+simulatore del Duo di Xcode, scrivere aperto e chiudere a metà nota, e il contrario.
+
 ---
 
 ## 5. Struttura del repository
@@ -2429,9 +2502,10 @@ tools/
                  in sette lingue, con i limiti di caratteri controllati (store_texts.py, D67, D69)
   i18n/          Le traduzioni dell'interfaccia in un file solo, scritte nei cataloghi iOS e
                  nei values-xx Android da apply.py (D69)
+  shots/         Gli screenshot dell'App Store ridisegnati dal codice, in sette lingue (D73)
 codemagic.yaml   Il CI: test del core a ogni push, TestFlight e Play interno su tag (D53)
-lancio/          La storia del prodotto (STORIA.md, D60), i testi degli store (STORE.md, D67)
-                 e la ricerca di mercato (MERCATO.md, D68)
+lancio/          La storia del prodotto (STORIA.md, D60), i testi degli store (STORE.md, D67),
+                 la ricerca di mercato (MERCATO.md, D68) e gli screenshot pronti (screenshots/, D73)
 site/            Il sito statico: home, privacy, assistenza, in inglese e italiano (D61)
 design/
   brand/         Il segno in SVG, le immagini per gli store e il confronto delle icone (D66, D71)
@@ -2666,8 +2740,10 @@ su Android (D64) compilano contro Android 15. Riconoscimento, voce e Siri **comp
 
 ## 10. Questioni ancora aperte
 
-- **Gli screenshot** (D70, D71): scatti grezzi dal committente, dopo una build con l'icona
-  nuova; poi la composizione con uno script, su fondo vermiglio. Il video di 15 secondi (`STORIA.md` §6) dopo.
+- **Gli screenshot** (D70, D71, D73): pronti in `lancio/screenshots/`, da confrontare una
+  volta con l'app sul telefono prima di caricarli.
+- **L'iPhone Duo** (D74): provare nel simulatore di Xcode la nota che passa dallo schermo
+  aperto a quello chiuso; essere nello store entro il 23 ottobre. Il video di 15 secondi (`STORIA.md` §6) dopo.
 - **Le traduzioni** (D69) vanno rilette da un madrelingua per lingua prima del lancio in
   quel paese; `DateHints` va esteso a spagnolo, tedesco, francese, portoghese e giapponese.
 - **Nome commerciale:** scelto, **Instink** (D55). Restano le verifiche: store, marchi,

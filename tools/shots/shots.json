@@ -1,0 +1,646 @@
+{
+ "en": {
+  "captions": [
+   "Tap. Write. Done.",
+   "One tap from your Home Screen",
+   "Send it where your notes live",
+   "Sort new ideas in 10 seconds",
+   "Search your own handwriting",
+   "Locked? Just ask Siri."
+  ],
+  "subs": [
+   "Handwritten notes in a second",
+   "No app to find, nothing to choose",
+   "Text and your handwriting, to any app",
+   "Swipe to send, keep or delete",
+   "Read on your device, never uploaded",
+   "Dictate a note without unlocking"
+  ],
+  "ui": {
+   "done": "Done",
+   "notes": "Notes",
+   "search": "Search",
+   "write": "Write",
+   "sort": "Sort %lld",
+   "send_to": "Send to…",
+   "send": "Send",
+   "keep": "Keep",
+   "delete": "Delete",
+   "to_sort": "%lld to sort",
+   "close": "Close",
+   "saved": "Saved to Instink."
+  },
+  "s1": [
+   "call mum",
+   "re: Sunday"
+  ],
+  "s3": [
+   "podcast idea:",
+   "slow mornings"
+  ],
+  "s4": [
+   "bike to work",
+   "on Fridays"
+  ],
+  "query": "idea",
+  "hits": [
+   [
+    "idea: bike to work",
+    "on Fridays"
+   ],
+   [
+    "podcast idea:",
+    "slow mornings"
+   ],
+   [
+    "gift idea for Anna",
+    "→ a book?"
+   ],
+   [
+    "app idea: a note",
+    "on my wrist"
+   ]
+  ],
+  "rel": [
+   "2 min. ago",
+   "1 hr. ago",
+   "yesterday",
+   "2 days ago"
+  ],
+  "lock_date": "Thursday, September 24",
+  "siri_said": "“Buy flowers for Saturday”",
+  "apps": [
+   "Calendar",
+   "Photos",
+   "Camera",
+   "Maps",
+   "Weather",
+   "Clock",
+   "Music",
+   "Instink"
+  ],
+  "share_apps": [
+   "Notes",
+   "Notion",
+   "Keep",
+   "Mail"
+  ],
+  "share_rows": [
+   "Copy",
+   "Save to Files"
+  ],
+  "share_kind": "Text and image"
+ },
+ "it": {
+  "captions": [
+   "Tocchi. Scrivi. Fatto.",
+   "A un tocco dalla Home",
+   "Poi mandala dove tieni le note",
+   "Smista le idee in 10 secondi",
+   "Cerca nella tua scrittura",
+   "Bloccato? Chiedi a Siri."
+  ],
+  "subs": [
+   "Note a mano in un secondo",
+   "Nessuna app da cercare, niente da scegliere",
+   "Testo e scrittura, a qualunque app",
+   "Scorri per mandare, tenere o buttare",
+   "Letta sul telefono, mai caricata",
+   "Detta una nota senza sbloccare"
+  ],
+  "ui": {
+   "done": "Fatto",
+   "notes": "Note",
+   "search": "Cerca",
+   "write": "Scrivi",
+   "sort": "Smista %lld",
+   "send_to": "Manda a…",
+   "send": "Manda",
+   "keep": "Tieni",
+   "delete": "Elimina",
+   "to_sort": "%lld da smistare",
+   "close": "Chiudi",
+   "saved": "Salvata in Instink."
+  },
+  "s1": [
+   "chiamare mamma",
+   "per domenica"
+  ],
+  "s3": [
+   "idea podcast:",
+   "mattine lente"
+  ],
+  "s4": [
+   "in bici al lavoro",
+   "il venerdì"
+  ],
+  "query": "idea",
+  "hits": [
+   [
+    "idea: in bici al",
+    "lavoro il venerdì"
+   ],
+   [
+    "idea podcast:",
+    "mattine lente"
+   ],
+   [
+    "idea regalo Anna",
+    "→ un libro?"
+   ],
+   [
+    "idea app: una nota",
+    "sul polso"
+   ]
+  ],
+  "rel": [
+   "2 min fa",
+   "1 ora fa",
+   "ieri",
+   "2 giorni fa"
+  ],
+  "lock_date": "giovedì 24 settembre",
+  "siri_said": "«Comprare fiori per sabato»",
+  "apps": [
+   "Calendario",
+   "Foto",
+   "Fotocamera",
+   "Mappe",
+   "Meteo",
+   "Orologio",
+   "Musica",
+   "Instink"
+  ],
+  "share_apps": [
+   "Note",
+   "Notion",
+   "Keep",
+   "Mail"
+  ],
+  "share_rows": [
+   "Copia",
+   "Salva su File"
+  ],
+  "share_kind": "Testo e immagine"
+ },
+ "es": {
+  "captions": [
+   "Toca. Escribe. Listo.",
+   "A un toque desde tu inicio",
+   "Envíala adonde guardas tus notas",
+   "Ordena tus ideas en 10 segundos",
+   "Busca en tu propia letra",
+   "¿Bloqueado? Pídeselo a Siri."
+  ],
+  "subs": [
+   "Notas a mano en un segundo",
+   "Sin buscar la app, sin elegir nada",
+   "Texto y tu letra, a cualquier app",
+   "Desliza para enviar, conservar o eliminar",
+   "Leída en tu dispositivo, nunca subida",
+   "Dicta una nota sin desbloquear"
+  ],
+  "ui": {
+   "done": "Listo",
+   "notes": "Notas",
+   "search": "Buscar",
+   "write": "Escribir",
+   "sort": "Ordenar %lld",
+   "send_to": "Enviar a…",
+   "send": "Enviar",
+   "keep": "Conservar",
+   "delete": "Eliminar",
+   "to_sort": "%lld por ordenar",
+   "close": "Cerrar",
+   "saved": "Guardada en Instink."
+  },
+  "s1": [
+   "llamar a mamá",
+   "por el domingo"
+  ],
+  "s3": [
+   "idea de podcast:",
+   "mañanas lentas"
+  ],
+  "s4": [
+   "en bici al trabajo",
+   "los viernes"
+  ],
+  "query": "idea",
+  "hits": [
+   [
+    "idea: en bici al",
+    "trabajo los viernes"
+   ],
+   [
+    "idea de podcast:",
+    "mañanas lentas"
+   ],
+   [
+    "idea de regalo",
+    "para Ana → ¿libro?"
+   ],
+   [
+    "idea de app: una",
+    "nota en la muñeca"
+   ]
+  ],
+  "rel": [
+   "hace 2 min",
+   "hace 1 h",
+   "ayer",
+   "hace 2 días"
+  ],
+  "lock_date": "jueves, 24 de septiembre",
+  "siri_said": "«Comprar flores para el sábado»",
+  "apps": [
+   "Calendario",
+   "Fotos",
+   "Cámara",
+   "Mapas",
+   "Tiempo",
+   "Reloj",
+   "Música",
+   "Instink"
+  ],
+  "share_apps": [
+   "Notas",
+   "Notion",
+   "Keep",
+   "Mail"
+  ],
+  "share_rows": [
+   "Copiar",
+   "Guardar en Archivos"
+  ],
+  "share_kind": "Texto e imagen"
+ },
+ "de": {
+  "captions": [
+   "Tippen. Schreiben. Fertig.",
+   "Ein Tipp vom Home-Bildschirm",
+   "Dorthin, wo deine Notizen wohnen",
+   "Ideen in 10 Sekunden sortiert",
+   "Durchsuche deine Handschrift",
+   "Gesperrt? Frag einfach Siri."
+  ],
+  "subs": [
+   "Handschrift-Notizen in einer Sekunde",
+   "Keine App suchen, nichts auswählen",
+   "Text und Handschrift, an jede App",
+   "Wischen: senden, behalten, löschen",
+   "Auf dem Gerät gelesen, nie hochgeladen",
+   "Diktieren, ohne zu entsperren"
+  ],
+  "ui": {
+   "done": "Fertig",
+   "notes": "Notizen",
+   "search": "Suchen",
+   "write": "Schreiben",
+   "sort": "%lld sortieren",
+   "send_to": "Senden an …",
+   "send": "Senden",
+   "keep": "Behalten",
+   "delete": "Löschen",
+   "to_sort": "%lld zu sortieren",
+   "close": "Schließen",
+   "saved": "In Instink gespeichert."
+  },
+  "s1": [
+   "Mama anrufen",
+   "wegen Sonntag"
+  ],
+  "s3": [
+   "Podcast-Idee:",
+   "langsame Morgen"
+  ],
+  "s4": [
+   "freitags mit dem",
+   "Rad zur Arbeit"
+  ],
+  "query": "Idee",
+  "hits": [
+   [
+    "Idee: freitags mit",
+    "dem Rad zur Arbeit"
+   ],
+   [
+    "Podcast-Idee:",
+    "langsame Morgen"
+   ],
+   [
+    "Geschenk-Idee für",
+    "Anna → ein Buch?"
+   ],
+   [
+    "App-Idee: Notiz",
+    "am Handgelenk"
+   ]
+  ],
+  "rel": [
+   "vor 2 Min.",
+   "vor 1 Std.",
+   "gestern",
+   "vor 2 Tagen"
+  ],
+  "lock_date": "Donnerstag, 24. September",
+  "siri_said": "„Blumen für Samstag kaufen“",
+  "apps": [
+   "Kalender",
+   "Fotos",
+   "Kamera",
+   "Karten",
+   "Wetter",
+   "Uhr",
+   "Musik",
+   "Instink"
+  ],
+  "share_apps": [
+   "Notizen",
+   "Notion",
+   "Keep",
+   "Mail"
+  ],
+  "share_rows": [
+   "Kopieren",
+   "In „Dateien“ sichern"
+  ],
+  "share_kind": "Text und Bild"
+ },
+ "fr": {
+  "captions": [
+   "Touchez. Écrivez. C’est fait.",
+   "À une touche de l’accueil",
+   "Envoyez-la vers vos notes",
+   "Triez vos idées en 10 secondes",
+   "Cherchez dans votre écriture",
+   "Verrouillé ? Demandez à Siri."
+  ],
+  "subs": [
+   "Des notes manuscrites en une seconde",
+   "Aucune app à chercher, rien à choisir",
+   "Texte et écriture, vers n’importe quelle app",
+   "Glissez pour envoyer, garder ou supprimer",
+   "Lue sur l’appareil, jamais envoyée",
+   "Dictez une note sans déverrouiller"
+  ],
+  "ui": {
+   "done": "Terminé",
+   "notes": "Notes",
+   "search": "Rechercher",
+   "write": "Écrire",
+   "sort": "Trier %lld",
+   "send_to": "Envoyer vers…",
+   "send": "Envoyer",
+   "keep": "Garder",
+   "delete": "Supprimer",
+   "to_sort": "%lld à trier",
+   "close": "Fermer",
+   "saved": "Enregistrée dans Instink."
+  },
+  "s1": [
+   "appeler maman",
+   "pour dimanche"
+  ],
+  "s3": [
+   "idée de podcast :",
+   "matins lents"
+  ],
+  "s4": [
+   "au travail à vélo",
+   "le vendredi"
+  ],
+  "query": "idée",
+  "hits": [
+   [
+    "idée : au travail",
+    "à vélo le vendredi"
+   ],
+   [
+    "idée de podcast :",
+    "matins lents"
+   ],
+   [
+    "idée cadeau Anna",
+    "→ un livre ?"
+   ],
+   [
+    "idée d’app : une",
+    "note au poignet"
+   ]
+  ],
+  "rel": [
+   "il y a 2 min",
+   "il y a 1 h",
+   "hier",
+   "il y a 2 jours"
+  ],
+  "lock_date": "jeudi 24 septembre",
+  "siri_said": "« Acheter des fleurs pour samedi »",
+  "apps": [
+   "Calendrier",
+   "Photos",
+   "Appareil photo",
+   "Plans",
+   "Météo",
+   "Horloge",
+   "Musique",
+   "Instink"
+  ],
+  "share_apps": [
+   "Notes",
+   "Notion",
+   "Keep",
+   "Mail"
+  ],
+  "share_rows": [
+   "Copier",
+   "Enregistrer dans Fichiers"
+  ],
+  "share_kind": "Texte et image"
+ },
+ "pt-BR": {
+  "captions": [
+   "Toque. Escreva. Pronto.",
+   "A um toque da Tela de Início",
+   "Envie para onde ficam suas notas",
+   "Organize ideias em 10 segundos",
+   "Busque na sua própria letra",
+   "Bloqueado? Peça à Siri."
+  ],
+  "subs": [
+   "Notas à mão em um segundo",
+   "Sem procurar o app, nada para escolher",
+   "Texto e sua letra, para qualquer app",
+   "Deslize para enviar, manter ou apagar",
+   "Lida no aparelho, nunca enviada",
+   "Dite uma nota sem desbloquear"
+  ],
+  "ui": {
+   "done": "Pronto",
+   "notes": "Notas",
+   "search": "Buscar",
+   "write": "Escrever",
+   "sort": "Organizar %lld",
+   "send_to": "Enviar para…",
+   "send": "Enviar",
+   "keep": "Manter",
+   "delete": "Apagar",
+   "to_sort": "%lld para organizar",
+   "close": "Fechar",
+   "saved": "Salva no Instink."
+  },
+  "s1": [
+   "ligar pra mãe",
+   "sobre domingo"
+  ],
+  "s3": [
+   "ideia de podcast:",
+   "manhãs lentas"
+  ],
+  "s4": [
+   "de bike pro",
+   "trabalho na sexta"
+  ],
+  "query": "ideia",
+  "hits": [
+   [
+    "ideia: de bike pro",
+    "trabalho na sexta"
+   ],
+   [
+    "ideia de podcast:",
+    "manhãs lentas"
+   ],
+   [
+    "ideia de presente",
+    "pra Ana → livro?"
+   ],
+   [
+    "ideia de app: nota",
+    "no pulso"
+   ]
+  ],
+  "rel": [
+   "há 2 min",
+   "há 1 h",
+   "ontem",
+   "há 2 dias"
+  ],
+  "lock_date": "quinta-feira, 24 de setembro",
+  "siri_said": "“Comprar flores pro sábado”",
+  "apps": [
+   "Calendário",
+   "Fotos",
+   "Câmera",
+   "Mapas",
+   "Tempo",
+   "Relógio",
+   "Música",
+   "Instink"
+  ],
+  "share_apps": [
+   "Notas",
+   "Notion",
+   "Keep",
+   "Mail"
+  ],
+  "share_rows": [
+   "Copiar",
+   "Salvar em Arquivos"
+  ],
+  "share_kind": "Texto e imagem"
+ },
+ "ja": {
+  "captions": [
+   "タップ。書く。完了。",
+   "ホーム画面からワンタップ",
+   "いつものメモアプリへ送る",
+   "10秒でアイデアを整理",
+   "手書きの文字も検索",
+   "ロック中でもSiriに頼むだけ"
+  ],
+  "subs": [
+   "手書きメモを一瞬で",
+   "アプリを探す必要も、選ぶ必要もなし",
+   "テキストと手書きを、どのアプリにも",
+   "スワイプで送信・保存・削除",
+   "端末上で読み取り、アップロードなし",
+   "ロックを解除せずに口述"
+  ],
+  "ui": {
+   "done": "完了",
+   "notes": "メモ",
+   "search": "検索",
+   "write": "書く",
+   "sort": "整理 %lld",
+   "send_to": "送信先…",
+   "send": "送る",
+   "keep": "残す",
+   "delete": "削除",
+   "to_sort": "整理待ち %lld件",
+   "close": "閉じる",
+   "saved": "Instinkに保存しました。"
+  },
+  "s1": [
+   "母に電話",
+   "日曜のこと"
+  ],
+  "s3": [
+   "ポッドキャスト案",
+   "ゆっくりな朝"
+  ],
+  "s4": [
+   "金曜は",
+   "自転車で出勤"
+  ],
+  "query": "アイデア",
+  "hits": [
+   [
+    "アイデア：金曜は",
+    "自転車で出勤"
+   ],
+   [
+    "番組のアイデア：",
+    "ゆっくりな朝"
+   ],
+   [
+    "プレゼントの",
+    "アイデア→本？"
+   ],
+   [
+    "アプリのアイデア：",
+    "手首のメモ"
+   ]
+  ],
+  "rel": [
+   "2分前",
+   "1時間前",
+   "昨日",
+   "2日前"
+  ],
+  "lock_date": "9月24日 木曜日",
+  "siri_said": "「土曜日に花を買う」",
+  "apps": [
+   "カレンダー",
+   "写真",
+   "カメラ",
+   "マップ",
+   "天気",
+   "時計",
+   "ミュージック",
+   "Instink"
+  ],
+  "share_apps": [
+   "メモ",
+   "Notion",
+   "Keep",
+   "メール"
+  ],
+  "share_rows": [
+   "コピー",
+   "“ファイル”に保存"
+  ],
+  "share_kind": "テキストと画像"
+ }
+}
