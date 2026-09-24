@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generato da tools/i18n/apply.py (D69): le traduzioni si cambiano in
+     tools/i18n/translations.py, non qui. -->
+<resources>
+    <string name="capture_label">書く</string>
+    <string name="ok">OK</string>
+    <string name="recovered_title">ジャーナル内のメモ</string>
+    <string name="clear_journal">ジャーナルを消去</string>
+    <string name="journal_failed">ストレージがいっぱいです。このメモは保存されていません</string>
+    <string name="widget_description">白紙：タップして書くだけ</string>
+    <string name="tile_label">メモを書く</string>
+    <string name="keyboard">入力</string>
+    <string name="camera">写真</string>
+    <string name="text_hint">ここに入力…</string>
+    <string name="no_camera">カメラアプリが見つかりません</string>
+    <string name="archive_title">メモ</string>
+    <string name="search_hint">検索</string>
+    <string name="search_empty">見つかりませんでした。</string>
+    <string name="new_note">新規メモ</string>
+    <string name="handwritten_note">手書きメモ</string>
+    <string name="photo_note">写真</string>
+    <string name="share">送信先…</string>
+    <string name="share_title">メモの送信先</string>
+    <string name="share_nothing">このメモは空です</string>
+    <string name="delete">削除</string>
+    <string name="delete_confirm">このメモを削除しますか？</string>
+    <string name="cancel">キャンセル</string>
+    <string name="torn_tail_notice">アプリが閉じる直前の最後の一筆は保存できませんでした。</string>
+    <string name="shortcut_new_note">新規メモ</string>
+    <string name="done">完了</string>
+    <string name="back">戻る</string>
+    <string name="camera_denied">カメラの許可がないと、シートから写真を撮影できません。</string>
+    <string name="archive_empty_title">まだ何もありません</string>
+    <string name="archive_empty_body">「書く」をタップするか、ホーム画面にウィジェットを追加しましょう。アイデアは1秒で書き留められます。</string>
+    <string name="sort_button">整理 %d</string>
+    <string name="keep">残す</string>
+    <string name="send">送る</string>
+    <string name="close">閉じる</string>
+    <string name="all_sorted">すべて整理済み</string>
+    <string name="all_sorted_body">新しいメモは、時間ができるまでここで待っています。</string>
+    <string name="resurface_year">ちょうど1年前</string>
+    <string name="resurface_quarter">ちょうど3か月前</string>
+    <string name="resurface_month">ちょうど1か月前</string>
+    <string name="resurface_week">ちょうど1週間前</string>
+    <string name="resurface_days">%d日前</string>
+    <string name="resurface_hide">今日は非表示</string>
+    <string name="share_signature">Instinkで書きました · instink.app</string>
+    <plurals name="note_count">
+        <item quantity="other">%d件のメモ</item>
+    </plurals>
+    <plurals name="to_sort">
+        <item quantity="other">整理待ち %d件</item>
+    </plurals>
+</resources>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generato da tools/i18n/apply.py (D69): le traduzioni si cambiano in
+     tools/i18n/translations.py, non qui. -->
+<resources>
+    <string name="capture_label">Escrever</string>
+    <string name="ok">OK</string>
+    <string name="recovered_title">Notas no registro</string>
+    <string name="clear_journal">Limpar o registro</string>
+    <string name="journal_failed">Armazenamento cheio: esta nota não está sendo salva</string>
+    <string name="widget_description">Uma folha em branco: toque e escreva</string>
+    <string name="tile_label">Escrever uma nota</string>
+    <string name="keyboard">Digitar</string>
+    <string name="camera">Foto</string>
+    <string name="text_hint">Digite aqui…</string>
+    <string name="no_camera">Nenhum app de câmera encontrado</string>
+    <string name="archive_title">Notas</string>
+    <string name="search_hint">Buscar</string>
+    <string name="search_empty">Nada encontrado.</string>
+    <string name="new_note">Nova nota</string>
+    <string name="handwritten_note">Nota manuscrita</string>
+    <string name="photo_note">Foto</string>
+    <string name="share">Enviar para…</string>
+    <string name="share_title">Enviar nota para</string>
+    <string name="share_nothing">Esta nota está vazia</string>
+    <string name="delete">Apagar</string>
+    <string name="delete_confirm">Apagar esta nota?</string>
+    <string name="cancel">Cancelar</string>
+    <string name="torn_tail_notice">O último traço antes de o app fechar não pôde ser salvo.</string>
+    <string name="shortcut_new_note">Nova nota</string>
+    <string name="done">Pronto</string>
+    <string name="back">Voltar</string>
+    <string name="camera_denied">Sem a permissão da câmera, não é possível tirar fotos pela folha.</string>
+    <string name="archive_empty_title">Nada aqui ainda</string>
+    <string name="archive_empty_body">Toque em Escrever ou adicione o widget à tela inicial: uma ideia leva um segundo.</string>
+    <string name="sort_button">Organizar %d</string>
+    <string name="keep">Manter</string>
+    <string name="send">Enviar</string>
+    <string name="close">Fechar</string>
+    <string name="all_sorted">Tudo organizado</string>
+    <string name="all_sorted_body">As notas novas esperam aqui até você ter um minuto.</string>
+    <string name="resurface_year">Há um ano, hoje</string>
+    <string name="resurface_quarter">Há três meses, hoje</string>
+    <string name="resurface_month">Há um mês, hoje</string>
+    <string name="resurface_week">Há uma semana, hoje</string>
+    <string name="resurface_days">Há %d dias</string>
+    <string name="resurface_hide">Ocultar por hoje</string>
+    <string name="share_signature">Escrita com Instink · instink.app</string>
+    <plurals name="note_count">
+        <item quantity="one">%d nota</item>
+        <item quantity="other">%d notas</item>
+    </plurals>
+    <plurals name="to_sort">
+        <item quantity="one">%d para organizar</item>
+        <item quantity="other">%d para organizar</item>
+    </plurals>
+</resources>

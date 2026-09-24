@@ -33,7 +33,7 @@ targets:
         CFBundleDisplayName: Instink
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        CFBundleLocalizations: [en, it]
+        CFBundleLocalizations: [en, it, es, de, fr, pt-BR, ja]
         UILaunchScreen:
           UIColorName: Paper
         UIApplicationSupportsIndirectInputEvents: true
@@ -91,7 +91,7 @@ targets:
         CFBundleDisplayName: Instink
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        CFBundleLocalizations: [en, it]
+        CFBundleLocalizations: [en, it, es, de, fr, pt-BR, ja]
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:

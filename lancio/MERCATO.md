@@ -120,6 +120,23 @@ Android fa il 30% della spesa, ma porta utenti, recensioni e passaparola, e Goog
 cominciato adesso**, perché quei 14 giorni non si accorciano: così Android è pronto quando
 lo è iOS. La guida è in `GUIDA.md`, §0nonies.
 
+## 6. Note di Apple e il mondo (D69)
+
+**Cosa Note può fare e noi no.** La Nota rapida si aggiunge al Centro di Controllo e si apre
+**a telefono bloccato**; un'impostazione di Note sceglie se dalla schermata di blocco si crea
+una nota nuova o si riprende l'ultima. È un privilegio di sistema: a un'app di terzi Apple
+non lo concede. Su iPhone quindi non si compete sull'accesso, si compete sul gesto (la mano
+subito, nessuna scelta) e su ciò che succede dopo (smistare, riemergere, mandare altrove).
+
+**Perché tradurre subito.** Gli studi pubblici sulla localizzazione delle schede riportano
++26% di conversione della pagina (Storemaven), +38% di download in media, e casi fra +100%
+e +128% per lingua. Sono medie di agenzie che vendono localizzazione: si pianifica col
+numero basso (+15–40% nei mercati dove c'è già domanda).
+
+**Il Giappone.** L'iPhone vende circa metà degli smartphone nuovi (49% nel secondo
+trimestre 2025, con stime per l'anno intorno al 60%), mentre nella base installata Android
+resta sopra. È il mercato fuori dall'Europa dove un'app a mano, per iPhone, ha più senso.
+
 ---
 
 ## Fonti
@@ -136,3 +153,10 @@ lo è iOS. La guida è in `GUIDA.md`, §0nonies.
 - Apple, *App Store Small Business Program*: developer.apple.com/app-store/small-business-program
 - Google, *App testing requirements for new personal developer accounts*:
   support.google.com/googleplay/android-developer/answer/14151465
+- Note di Apple sulla schermata di blocco: iphonelife.com/content/how-to-add-quick-note-to-your-control-center-iphone,
+  9to5mac.com/2018/12/13/access-notes-from-the-lock-screen-on-iphone-and-ipad,
+  support.apple.com/guide/iphone/use-quick-notes-iph5084c0387/ios
+- Localizzazione: appscreens.com/blog/app-localization-download-lift,
+  appfollow.io/blog/app-store-optimization-localization
+- Giappone: appleworld.today/2025/09/apple-now-has-49-of-japans-smartphone-markets-as-sales-skyrocket-38-year-over-year,
+  statista.com/statistics/260415/market-share-held-by-smartphone-operating-systems-in-japan

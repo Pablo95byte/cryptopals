@@ -3,7 +3,37 @@
   "strings": {
     "CFBundleDisplayName": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instink"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instink"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instink"
+          }
+        },
         "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instink"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instink"
+          }
+        },
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Instink"
@@ -13,30 +43,120 @@
     },
     "NSCameraUsageDescription": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um deiner Notiz ein Foto von einem Whiteboard, einem Beleg oder einer Seite hinzuzufügen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para añadir a tu nota la foto de una pizarra, un recibo o una página."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pour ajouter à votre note la photo d’un tableau, d’un reçu ou d’une page."
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Per aggiungere alla nota la foto di una lavagna, di uno scontrino o di una pagina."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ホワイトボードやレシート、ページの写真をメモに追加するために使用します。"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para adicionar à sua nota a foto de um quadro, um recibo ou uma página."
           }
         }
       }
     },
     "NSMicrophoneUsageDescription": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um Sprachnotizen aufzunehmen, wenn du die Hände voll hast."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para grabar notas de voz cuando tienes las manos ocupadas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pour enregistrer des notes vocales quand vous avez les mains occupées."
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Per registrare note vocali quando hai le mani occupate."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手がふさがっているときにボイスメモを録音するために使用します。"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para gravar notas de voz quando suas mãos estão ocupadas."
           }
         }
       }
     },
     "NSSpeechRecognitionUsageDescription": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um deine Sprachnotizen auf dem iPhone in durchsuchbaren Text zu verwandeln. Es wird nichts gesendet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para convertir tus notas de voz en texto que se puede buscar, en tu iPhone. No se envía nada a ningún sitio."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pour transformer vos notes vocales en texte consultable, sur votre iPhone. Rien n’est envoyé."
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
             "value": "Per trasformare le note vocali in testo cercabile, sul tuo iPhone. Niente viene mandato altrove."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ボイスメモをiPhone上で検索可能なテキストに変換するために使用します。どこにも送信されません。"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para transformar suas notas de voz em texto pesquisável, no seu iPhone. Nada é enviado."
           }
         }
       }

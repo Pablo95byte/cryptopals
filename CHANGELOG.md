@@ -10,6 +10,22 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Aggiunto — sette lingue (D69)
+
+- **L'app parla spagnolo, tedesco, francese, portoghese del Brasile e giapponese**, oltre a
+  inglese e italiano: interfaccia, permessi, frasi di Siri su iOS; tutte le stringhe su
+  Android (`values-es`, `-de`, `-fr`, `-pt`, `-ja`).
+- **`tools/i18n/`**: le traduzioni in un file solo, e uno script che controlla i segnaposto
+  e scrive cataloghi di Xcode e risorse Android.
+- **Le schede dell'App Store nelle cinque lingue nuove** in `lancio/STORE.md`, con i
+  limiti di caratteri controllati; per il Play Store titolo e descrizione breve.
+- **`lancio/MERCATO.md` §6**: Note di Apple, la localizzazione e il Giappone, con le fonti.
+
+### Cambiato
+
+- Una nota di solo inchiostro si manda come `instink-1a2b3c4d.png`, non più
+  `nota-1a2b3c4d.png`: il file arriva a chiunque, in qualunque lingua.
+
 ### Corretto — il microfono (D63)
 
 - **La registrazione vocale non partiva su iPhone**: la sessione audio usava un modo di

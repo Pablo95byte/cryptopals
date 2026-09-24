@@ -138,6 +138,9 @@ object NoteExport {
      *
      * Riusa la normalizzazione della ricerca: accenti e punteggiatura vanno via, e il
      * risultato è già una sequenza di parole separate da spazi.
+     *
+     * Senza testo ripiega sul nome dell'app, non su una parola italiana: il file arriva a
+     * chiunque, in qualunque lingua, e chi lo riceve vede da dove viene (D69).
      */
     private fun fileBaseName(note: Note, text: String?): String {
         val slug = SearchText.normalize(text)
@@ -148,6 +151,6 @@ object NoteExport {
             ?.take(NAME_MAX_LENGTH)
             ?.trimEnd('-')
 
-        return if (slug.isNullOrEmpty()) "nota-${note.id.value.take(8)}" else slug
+        return if (slug.isNullOrEmpty()) "instink-${note.id.value.take(8)}" else slug
     }
 }

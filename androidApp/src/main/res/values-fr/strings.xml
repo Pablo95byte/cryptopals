@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generato da tools/i18n/apply.py (D69): le traduzioni si cambiano in
+     tools/i18n/translations.py, non qui. -->
+<resources>
+    <string name="capture_label">Écrire</string>
+    <string name="ok">OK</string>
+    <string name="recovered_title">Notes dans le journal</string>
+    <string name="clear_journal">Vider le journal</string>
+    <string name="journal_failed">Stockage plein : cette note n’est pas enregistrée</string>
+    <string name="widget_description">Une feuille blanche : touchez-la et écrivez</string>
+    <string name="tile_label">Écrire une note</string>
+    <string name="keyboard">Saisir</string>
+    <string name="camera">Photo</string>
+    <string name="text_hint">Saisissez ici…</string>
+    <string name="no_camera">Aucune app d’appareil photo trouvée</string>
+    <string name="archive_title">Notes</string>
+    <string name="search_hint">Rechercher</string>
+    <string name="search_empty">Aucun résultat.</string>
+    <string name="new_note">Nouvelle note</string>
+    <string name="handwritten_note">Note manuscrite</string>
+    <string name="photo_note">Photo</string>
+    <string name="share">Envoyer vers…</string>
+    <string name="share_title">Envoyer la note vers</string>
+    <string name="share_nothing">Cette note est vide</string>
+    <string name="delete">Supprimer</string>
+    <string name="delete_confirm">Supprimer cette note ?</string>
+    <string name="cancel">Annuler</string>
+    <string name="torn_tail_notice">Le dernier trait avant la fermeture de l’app n’a pas pu être enregistré.</string>
+    <string name="shortcut_new_note">Nouvelle note</string>
+    <string name="done">Terminé</string>
+    <string name="back">Retour</string>
+    <string name="camera_denied">Sans l’autorisation de l’appareil photo, impossible de prendre des photos depuis la feuille.</string>
+    <string name="archive_empty_title">Rien pour l’instant</string>
+    <string name="archive_empty_body">Touchez Écrire, ou ajoutez le widget à l’écran d’accueil : une idée prend une seconde.</string>
+    <string name="sort_button">Trier %d</string>
+    <string name="keep">Garder</string>
+    <string name="send">Envoyer</string>
+    <string name="close">Fermer</string>
+    <string name="all_sorted">Tout est trié</string>
+    <string name="all_sorted_body">Les nouvelles notes vous attendent ici jusqu’à ce que vous ayez une minute.</string>
+    <string name="resurface_year">Il y a un an, jour pour jour</string>
+    <string name="resurface_quarter">Il y a trois mois, jour pour jour</string>
+    <string name="resurface_month">Il y a un mois, jour pour jour</string>
+    <string name="resurface_week">Il y a une semaine, jour pour jour</string>
+    <string name="resurface_days">Il y a %d jours</string>
+    <string name="resurface_hide">Masquer pour aujourd’hui</string>
+    <string name="share_signature">Écrite avec Instink · instink.app</string>
+    <plurals name="note_count">
+        <item quantity="one">%d note</item>
+        <item quantity="other">%d notes</item>
+    </plurals>
+    <plurals name="to_sort">
+        <item quantity="one">%d à trier</item>
+        <item quantity="other">%d à trier</item>
+    </plurals>
+</resources>

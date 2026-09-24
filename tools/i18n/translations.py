@@ -1,0 +1,203 @@
+"""
+Le traduzioni dell'interfaccia, per iOS e Android insieme (D69).
+
+La chiave è il testo inglese (la lingua di base, D41); per Android, le stringhe che non
+esistono su iOS hanno la chiave `android:<nome>`. `apply.py` le scrive nei cataloghi di
+Xcode e nei `values-xx` di Android. Si cambia qui, non nei file generati.
+
+Registro: "tu" in spagnolo e tedesco, "vous" in francese, "você" in portoghese
+brasiliano, cortese in giapponese — come le app di sistema di ciascuna lingua.
+"""
+
+LANGS = ["es", "de", "fr", "pt-BR", "ja"]
+
+T = {
+    "%lld days ago": ["Hace %lld días", "Vor %lld Tagen", "Il y a %lld jours", "Há %lld dias", "%lld日前"],
+    "%lld to sort": ["%lld por ordenar", "%lld zu sortieren", "%lld à trier", "%lld para organizar", "整理待ち %lld件"],
+    "A month ago today": ["Hoy hace un mes", "Heute vor einem Monat", "Il y a un mois, jour pour jour", "Há um mês, hoje", "ちょうど1か月前"],
+    "A week ago today": ["Hoy hace una semana", "Heute vor einer Woche", "Il y a une semaine, jour pour jour", "Há uma semana, hoje", "ちょうど1週間前"],
+    "A year ago today": ["Hoy hace un año", "Heute vor einem Jahr", "Il y a un an, jour pour jour", "Há um ano, hoje", "ちょうど1年前"],
+    "Add a note": ["Añadir una nota", "Notiz hinzufügen", "Ajouter une note", "Adicionar uma nota", "メモを追加"],
+    "All sorted": ["Todo ordenado", "Alles sortiert", "Tout est trié", "Tudo organizado", "すべて整理済み"],
+    "Another app may be using the microphone. Try again in a moment.": [
+        "Puede que otra app esté usando el micrófono. Inténtalo de nuevo en un momento.",
+        "Vielleicht nutzt eine andere App das Mikrofon. Versuch es gleich noch einmal.",
+        "Une autre app utilise peut-être le micro. Réessayez dans un instant.",
+        "Talvez outro app esteja usando o microfone. Tente de novo em instantes.",
+        "別のアプリがマイクを使用している可能性があります。少し待ってからもう一度お試しください。",
+    ],
+    "Blank sheet": ["Hoja en blanco", "Leeres Blatt", "Feuille blanche", "Folha em branco", "白紙"],
+    "Can't record right now": ["No se puede grabar ahora", "Aufnahme gerade nicht möglich", "Impossible d’enregistrer pour l’instant", "Não dá para gravar agora", "今は録音できません"],
+    "Close": ["Cerrar", "Schließen", "Fermer", "Fechar", "閉じる"],
+    "Delete": ["Eliminar", "Löschen", "Supprimer", "Apagar", "削除"],
+    "Delete this note?": ["¿Eliminar esta nota?", "Diese Notiz löschen?", "Supprimer cette note ?", "Apagar esta nota?", "このメモを削除しますか？"],
+    "Dictate": ["Dictar", "Diktieren", "Dicter", "Ditar", "音声入力"],
+    "Dictate a note to Instink without unlocking.": [
+        "Dicta una nota a Instink sin desbloquear.",
+        "Diktiere Instink eine Notiz, ohne zu entsperren.",
+        "Dictez une note à Instink sans déverrouiller.",
+        "Dite uma nota para o Instink sem desbloquear.",
+        "ロックを解除せずにInstinkにメモを口述します。",
+    ],
+    "Done": ["Listo", "Fertig", "Terminé", "Pronto", "完了"],
+    "From a note written in Instink.": ["De una nota escrita en Instink.", "Aus einer Notiz, geschrieben in Instink.", "D’une note écrite dans Instink.", "De uma nota escrita no Instink.", "Instinkで書いたメモから。"],
+    "Keep": ["Conservar", "Behalten", "Garder", "Manter", "残す"],
+    "Microphone is off": ["El micrófono está desactivado", "Mikrofon ist aus", "Le micro est désactivé", "O microfone está desativado", "マイクがオフです"],
+    "New notes will wait here until you have a minute.": [
+        "Las notas nuevas te esperan aquí hasta que tengas un minuto.",
+        "Neue Notizen warten hier, bis du eine Minute Zeit hast.",
+        "Les nouvelles notes vous attendent ici jusqu’à ce que vous ayez une minute.",
+        "As notas novas esperam aqui até você ter um minuto.",
+        "新しいメモは、時間ができるまでここで待っています。",
+    ],
+    "Not now": ["Ahora no", "Nicht jetzt", "Plus tard", "Agora não", "今はしない"],
+    "Not today": ["Hoy no", "Heute nicht", "Pas aujourd’hui", "Hoje não", "今日は表示しない"],
+    "Not transcribed yet: allow Speech Recognition for Instink in Settings, and download your dictation language. The recording is safe.": [
+        "Aún sin transcribir: permite el Reconocimiento de voz para Instink en Ajustes y descarga el idioma del dictado. La grabación está a salvo.",
+        "Noch nicht transkribiert: Erlaube Instink die Spracherkennung in den Einstellungen und lade die Diktiersprache. Die Aufnahme ist sicher.",
+        "Pas encore transcrite : autorisez la reconnaissance vocale pour Instink dans Réglages et téléchargez la langue de dictée. L’enregistrement est en sécurité.",
+        "Ainda sem transcrição: permita o Reconhecimento de Fala para o Instink em Ajustes e baixe o idioma do ditado. A gravação está segura.",
+        "まだ文字起こしされていません。設定でInstinkの音声認識を許可し、音声入力の言語をダウンロードしてください。録音は安全に保存されています。",
+    ],
+    "Note": ["Nota", "Notiz", "Note", "Nota", "メモ"],
+    "Notes": ["Notas", "Notizen", "Notes", "Notas", "メモ"],
+    "Nothing found.": ["No se encontró nada.", "Nichts gefunden.", "Aucun résultat.", "Nada encontrado.", "見つかりませんでした。"],
+    "Nothing here yet": ["Todavía no hay nada", "Noch nichts hier", "Rien pour l’instant", "Nada aqui ainda", "まだ何もありません"],
+    "Nothing to save.": ["No hay nada que guardar.", "Nichts zu speichern.", "Rien à enregistrer.", "Nada para salvar.", "保存するものがありません。"],
+    "OK": ["OK", "OK", "OK", "OK", "OK"],
+    "Opens a blank sheet, ready for your handwriting.": [
+        "Abre una hoja en blanco, lista para tu letra.",
+        "Öffnet ein leeres Blatt, bereit für deine Handschrift.",
+        "Ouvre une feuille blanche, prête pour votre écriture.",
+        "Abre uma folha em branco, pronta para a sua letra.",
+        "手書きのための白紙をすぐに開きます。",
+    ],
+    "Opens a blank sheet.": ["Abre una hoja en blanco.", "Öffnet ein leeres Blatt.", "Ouvre une feuille blanche.", "Abre uma folha em branco.", "白紙を開きます。"],
+    "Pause": ["Pausa", "Pause", "Pause", "Pausar", "一時停止"],
+    "Photo": ["Foto", "Foto", "Photo", "Foto", "写真"],
+    "Play voice note": ["Reproducir nota de voz", "Sprachnotiz abspielen", "Écouter la note vocale", "Ouvir a nota de voz", "ボイスメモを再生"],
+    "Record": ["Grabar", "Aufnehmen", "Enregistrer", "Gravar", "録音"],
+    "Remind me · %@": ["Recuérdamelo · %@", "Erinnern · %@", "Me le rappeler · %@", "Lembrar · %@", "リマインド · %@"],
+    "Saved to Instink.": ["Guardada en Instink.", "In Instink gespeichert.", "Enregistrée dans Instink.", "Salva no Instink.", "Instinkに保存しました。"],
+    "Search": ["Buscar", "Suchen", "Rechercher", "Buscar", "検索"],
+    "Send": ["Enviar", "Senden", "Envoyer", "Enviar", "送る"],
+    "Send to…": ["Enviar a…", "Senden an …", "Envoyer vers…", "Enviar para…", "送信先…"],
+    "Settings": ["Ajustes", "Einstellungen", "Réglages", "Ajustes", "設定"],
+    "Sort %lld": ["Ordenar %lld", "%lld sortieren", "Trier %lld", "Organizar %lld", "整理 %lld"],
+    "Stop recording": ["Detener grabación", "Aufnahme stoppen", "Arrêter l’enregistrement", "Parar gravação", "録音を停止"],
+    "Tap Write, or add the widget to your Home Screen: an idea takes a second.": [
+        "Toca Escribir o añade el widget a tu pantalla de inicio: una idea lleva un segundo.",
+        "Tippe auf Schreiben oder füge das Widget zum Home-Bildschirm hinzu: Eine Idee dauert eine Sekunde.",
+        "Touchez Écrire, ou ajoutez le widget à l’écran d’accueil : une idée prend une seconde.",
+        "Toque em Escrever ou adicione o widget à Tela de Início: uma ideia leva um segundo.",
+        "「書く」をタップするか、ホーム画面にウィジェットを追加しましょう。アイデアは1秒で書き留められます。",
+    ],
+    "Tap anywhere and write.": ["Toca en cualquier sitio y escribe.", "Tippe irgendwo und schreib.", "Touchez n’importe où et écrivez.", "Toque em qualquer lugar e escreva.", "どこでもタップして書こう。"],
+    "The last stroke before the app closed could not be saved.": [
+        "No se pudo guardar el último trazo antes de que se cerrara la app.",
+        "Der letzte Strich vor dem Schließen der App konnte nicht gespeichert werden.",
+        "Le dernier trait avant la fermeture de l’app n’a pas pu être enregistré.",
+        "O último traço antes de o app fechar não pôde ser salvo.",
+        "アプリが閉じる直前の最後の一筆は保存できませんでした。",
+    ],
+    "Three months ago today": ["Hoy hace tres meses", "Heute vor drei Monaten", "Il y a trois mois, jour pour jour", "Há três meses, hoje", "ちょうど3か月前"],
+    "To record voice notes, allow Instink to use the microphone in Settings.": [
+        "Para grabar notas de voz, permite que Instink use el micrófono en Ajustes.",
+        "Um Sprachnotizen aufzunehmen, erlaube Instink in den Einstellungen den Zugriff auf das Mikrofon.",
+        "Pour enregistrer des notes vocales, autorisez Instink à utiliser le micro dans Réglages.",
+        "Para gravar notas de voz, permita que o Instink use o microfone em Ajustes.",
+        "ボイスメモを録音するには、設定でInstinkのマイク使用を許可してください。",
+    ],
+    "Transcript on its way": ["La transcripción está en camino", "Transkription folgt gleich", "Transcription en cours", "A transcrição está a caminho", "文字起こし中"],
+    "Type": ["Teclado", "Tippen", "Saisir", "Digitar", "入力"],
+    "Voice note": ["Nota de voz", "Sprachnotiz", "Note vocale", "Nota de voz", "ボイスメモ"],
+    "What's the note?": ["¿Cuál es la nota?", "Was ist die Notiz?", "Quelle est la note ?", "Qual é a nota?", "メモの内容は？"],
+    "Write": ["Escribir", "Schreiben", "Écrire", "Escrever", "書く"],
+    "Write a note": ["Escribir una nota", "Notiz schreiben", "Écrire une note", "Escrever uma nota", "メモを書く"],
+    "Written with Instink · instink.app": ["Escrita con Instink · instink.app", "Geschrieben mit Instink · instink.app", "Écrite avec Instink · instink.app", "Escrita com Instink · instink.app", "Instinkで書きました · instink.app"],
+    "You wrote this. Still a good idea?": [
+        "Lo escribiste tú. ¿Sigue siendo una buena idea?",
+        "Das hast du geschrieben. Immer noch eine gute Idee?",
+        "Vous avez écrit ceci. Toujours une bonne idée ?",
+        "Você escreveu isto. Ainda é uma boa ideia?",
+        "あなたが書いたメモです。今でも良いアイデアですか？",
+    ],
+    # Info.plist: i permessi e il nome sotto l'icona.
+    "plist:CFBundleDisplayName": ["Instink"] * 5,
+    "plist:NSCameraUsageDescription": [
+        "Para añadir a tu nota la foto de una pizarra, un recibo o una página.",
+        "Um deiner Notiz ein Foto von einem Whiteboard, einem Beleg oder einer Seite hinzuzufügen.",
+        "Pour ajouter à votre note la photo d’un tableau, d’un reçu ou d’une page.",
+        "Para adicionar à sua nota a foto de um quadro, um recibo ou uma página.",
+        "ホワイトボードやレシート、ページの写真をメモに追加するために使用します。",
+    ],
+    "plist:NSMicrophoneUsageDescription": [
+        "Para grabar notas de voz cuando tienes las manos ocupadas.",
+        "Um Sprachnotizen aufzunehmen, wenn du die Hände voll hast.",
+        "Pour enregistrer des notes vocales quand vous avez les mains occupées.",
+        "Para gravar notas de voz quando suas mãos estão ocupadas.",
+        "手がふさがっているときにボイスメモを録音するために使用します。",
+    ],
+    "plist:NSSpeechRecognitionUsageDescription": [
+        "Para convertir tus notas de voz en texto que se puede buscar, en tu iPhone. No se envía nada a ningún sitio.",
+        "Um deine Sprachnotizen auf dem iPhone in durchsuchbaren Text zu verwandeln. Es wird nichts gesendet.",
+        "Pour transformer vos notes vocales en texte consultable, sur votre iPhone. Rien n’est envoyé.",
+        "Para transformar suas notas de voz em texto pesquisável, no seu iPhone. Nada é enviado.",
+        "ボイスメモをiPhone上で検索可能なテキストに変換するために使用します。どこにも送信されません。",
+    ],
+    # Le frasi per Siri: ognuna deve contenere ${applicationName}, e devono essere diverse.
+    "siri:Add a note to ${applicationName}": ["Añadir una nota a ${applicationName}", "Notiz zu ${applicationName} hinzufügen", "Ajouter une note à ${applicationName}", "Adicionar uma nota ao ${applicationName}", "${applicationName}にメモを追加"],
+    "siri:Add an ${applicationName} note": ["Nueva nota en ${applicationName}", "Neue ${applicationName}-Notiz", "Nouvelle note ${applicationName}", "Nova nota no ${applicationName}", "${applicationName}でメモ"],
+    "siri:New ${applicationName} note": ["Crear nota en ${applicationName}", "Neue Notiz in ${applicationName}", "Créer une note dans ${applicationName}", "Criar nota no ${applicationName}", "${applicationName}で新規メモ"],
+    "siri:Take a note in ${applicationName}": ["Tomar una nota en ${applicationName}", "Notiz in ${applicationName} machen", "Prendre une note dans ${applicationName}", "Anotar no ${applicationName}", "${applicationName}でメモを取る"],
+    "siri:Write a note in ${applicationName}": ["Escribir una nota en ${applicationName}", "Notiz in ${applicationName} schreiben", "Écrire une note dans ${applicationName}", "Escrever uma nota no ${applicationName}", "${applicationName}でメモを書く"],
+    # Solo Android.
+    "android:recovered_title": ["Notas en el registro", "Notizen im Journal", "Notes dans le journal", "Notas no registro", "ジャーナル内のメモ"],
+    "android:clear_journal": ["Vaciar el registro", "Journal leeren", "Vider le journal", "Limpar o registro", "ジャーナルを消去"],
+    "android:journal_failed": ["Almacenamiento lleno: esta nota no se está guardando", "Speicher voll: Diese Notiz wird nicht gespeichert", "Stockage plein : cette note n’est pas enregistrée", "Armazenamento cheio: esta nota não está sendo salva", "ストレージがいっぱいです。このメモは保存されていません"],
+    "android:widget_description": ["Una hoja en blanco: tócala y escribe", "Ein leeres Blatt: antippen und schreiben", "Une feuille blanche : touchez-la et écrivez", "Uma folha em branco: toque e escreva", "白紙：タップして書くだけ"],
+    "android:text_hint": ["Escribe aquí…", "Hier tippen…", "Saisissez ici…", "Digite aqui…", "ここに入力…"],
+    "android:no_camera": ["No se encontró ninguna app de cámara", "Keine Kamera-App gefunden", "Aucune app d’appareil photo trouvée", "Nenhum app de câmera encontrado", "カメラアプリが見つかりません"],
+    "android:new_note": ["Nota nueva", "Neue Notiz", "Nouvelle note", "Nova nota", "新規メモ"],
+    "android:handwritten_note": ["Nota manuscrita", "Handschriftliche Notiz", "Note manuscrite", "Nota manuscrita", "手書きメモ"],
+    "android:share_title": ["Enviar nota a", "Notiz senden an", "Envoyer la note vers", "Enviar nota para", "メモの送信先"],
+    "android:share_nothing": ["Esta nota está vacía", "Diese Notiz ist leer", "Cette note est vide", "Esta nota está vazia", "このメモは空です"],
+    "android:cancel": ["Cancelar", "Abbrechen", "Annuler", "Cancelar", "キャンセル"],
+    "android:back": ["Atrás", "Zurück", "Retour", "Voltar", "戻る"],
+    "android:camera_denied": [
+        "Sin el permiso de cámara no se pueden hacer fotos desde la hoja.",
+        "Ohne Kameraberechtigung können auf dem Blatt keine Fotos aufgenommen werden.",
+        "Sans l’autorisation de l’appareil photo, impossible de prendre des photos depuis la feuille.",
+        "Sem a permissão da câmera, não é possível tirar fotos pela folha.",
+        "カメラの許可がないと、シートから写真を撮影できません。",
+    ],
+    "android:archive_empty_body": [
+        "Toca Escribir o añade el widget a tu pantalla de inicio: una idea lleva un segundo.",
+        "Tippe auf Schreiben oder füge das Widget zum Startbildschirm hinzu: Eine Idee dauert eine Sekunde.",
+        "Touchez Écrire, ou ajoutez le widget à l’écran d’accueil : une idée prend une seconde.",
+        "Toque em Escrever ou adicione o widget à tela inicial: uma ideia leva um segundo.",
+        "「書く」をタップするか、ホーム画面にウィジェットを追加しましょう。アイデアは1秒で書き留められます。",
+    ],
+    "android:resurface_hide": ["Ocultar por hoy", "Für heute ausblenden", "Masquer pour aujourd’hui", "Ocultar por hoje", "今日は非表示"],
+    "android:sort_button": ["Ordenar %d", "%d sortieren", "Trier %d", "Organizar %d", "整理 %d"],
+    "android:resurface_days": ["Hace %d días", "Vor %d Tagen", "Il y a %d jours", "Há %d dias", "%d日前"],
+}
+
+# Plurali Android: (one, other). Il giapponese ha solo "other".
+PLURALS = {
+    "note_count": [("%d nota", "%d notas"), ("%d Notiz", "%d Notizen"), ("%d note", "%d notes"), ("%d nota", "%d notas"), (None, "%d件のメモ")],
+    "to_sort": [("%d por ordenar", "%d por ordenar"), ("%d zu sortieren", "%d zu sortieren"), ("%d à trier", "%d à trier"), ("%d para organizar", "%d para organizar"), (None, "整理待ち %d件")],
+}
+
+# Dalle stringhe iOS a quelle Android con lo stesso testo inglese.
+ANDROID_FROM_SHARED = {
+    "capture_label": "Write", "ok": "OK", "tile_label": "Write a note", "keyboard": "Type",
+    "camera": "Photo", "archive_title": "Notes", "search_hint": "Search", "search_empty": "Nothing found.",
+    "photo_note": "Photo", "share": "Send to…", "delete": "Delete", "delete_confirm": "Delete this note?",
+    "torn_tail_notice": "The last stroke before the app closed could not be saved.", "shortcut_new_note": "android:new_note",
+    "done": "Done", "archive_empty_title": "Nothing here yet", "keep": "Keep", "send": "Send", "close": "Close",
+    "all_sorted": "All sorted", "all_sorted_body": "New notes will wait here until you have a minute.",
+    "resurface_year": "A year ago today", "resurface_quarter": "Three months ago today",
+    "resurface_month": "A month ago today", "resurface_week": "A week ago today",
+    "share_signature": "Written with Instink · instink.app",
+}

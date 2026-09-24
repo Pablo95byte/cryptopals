@@ -2191,6 +2191,86 @@ parole chiave.
 funzioni: la fanno la ricerca nello store, il passaparola, la vetrina di Apple e l'iPad
 (`MERCATO.md` §4).
 
+### D69 — Contro Note non si vince sull'archivio: Instink è la penna, Note una destinazione. E si parla sette lingue
+**Data:** 2026-09-24 · **Stato:** attiva · **Precisa D17, D31 e D41** · le fonti sono in
+[`lancio/MERCATO.md`](lancio/MERCATO.md) §6
+
+Il committente: *"se il nostro rivale è Note, come possiamo differenziarci e diventare
+un'app internazionale unica al mondo?"*
+
+**Prima la parte scomoda, perché decide tutto il resto.** Note di Apple ha privilegi che a
+nessuna app di terzi vengono concessi: la Nota rapida dal Centro di Controllo **si apre a
+telefono bloccato** (Impostazioni → App → Note → Accedi alle note da schermata di blocco),
+sincronizza con iCloud senza chiedere niente, sta sull'Apple Watch ed è già installata.
+D17 diceva "su iPhone non si può": vale **per noi**, non per Apple. Quindi su iPhone non si
+batte Note sul suo terreno — l'archivio, la sincronizzazione, l'accesso di sistema — e
+non ci si prova.
+
+**Dove Note non va, e dove andiamo noi:**
+
+1. **La scrittura a mano come gesto primo, non come strumento.** In Note si scrive testo;
+   per scrivere a mano si apre una nota, si tocca la penna, si sceglie lo strumento. In
+   Instink la mano è il punto di partenza: tocco, foglio pronto in 86 ms a caldo (D36),
+   nessuna scelta. È D1, e resta l'identità.
+2. **Un flusso che si svuota, non un archivio che si riempie.** Note accumula; dopo un anno
+   è un cassetto. Instink ha smistamento, riemersione e date che diventano promemoria (D52):
+   **una casella d'entrata per le idee**, che l'utente svuota in dieci secondi verso il
+   posto dove le idee lavorano. Nessuna app di note ha interesse a farlo: vuole che le note
+   restino lì.
+3. **Note è una destinazione, non un rivale.** "Manda a…" arriva già a Note, oltre che a
+   Keep, Notion e Obsidian (D31). Il messaggio non è "lascia Note", è **"scrivi qui, tieni
+   dove vuoi"**: così chi usa Note non deve scegliere, e l'obiezione "ho già un'app di note"
+   sparisce.
+4. **Due piattaforme.** Note esiste solo su Apple; Keep vuole un account Google. Instink è
+   la stessa penna su iPhone e Android, senza account (D12): per chi ha un telefono di un
+   tipo e un tablet dell'altro, per una famiglia mista, per i tre quarti del mondo che usano
+   Android.
+
+**"Unica al mondo" è una combinazione, non una funzione:** scrittura a mano più velocità
+misurata più un flusso che si svuota più nessun account. Ognuna esiste da qualche parte;
+tutte insieme no. Ogni nuova funzione si giudica su questo: se rafforza la combinazione
+entra, se ci rende più simili a Note (cartelle, formattazione, sincronizzazione nostra
+prima del tempo) no — la stessa regola di D51.
+
+**Internazionale: sette lingue, da subito.** L'app parla inglese, italiano, spagnolo,
+tedesco, francese, portoghese del Brasile e giapponese, su iOS (cataloghi, permessi, frasi
+di Siri) e su Android. Le schede dell'App Store sono pronte nelle stesse sette
+([`lancio/STORE.md`](lancio/STORE.md)). **Perché adesso e non dopo:** tradurre la scheda è
+la leva più economica che esista per i download (gli studi pubblici riportano +26–38%
+per lingua, più nei mercati senza concorrenti tradotti), e una scheda in inglese in
+Germania o in Giappone perde contro qualunque app locale mediocre. **Perché queste lingue:**
+sono i mercati dove si spende di più nelle app (Stati Uniti, Giappone, Germania, Francia,
+Regno Unito) più i due mercati grandi di lingua spagnola e portoghese. **Il Giappone è il
+primo fuori dall'Europa**: l'iPhone vi vende circa metà degli smartphone, la cultura della
+cartoleria e della scrittura a mano è fortissima, e Vision legge il giapponese.
+
+**Come è fatta la traduzione, e perché così.** Un file solo, `tools/i18n/translations.py`,
+con la chiave inglese e le cinque traduzioni; `apply.py` controlla che ogni traduzione
+abbia gli stessi segnaposto dell'originale (un `%lld` perso manda in crash l'app quando la
+stringa compare) e scrive i cataloghi di Xcode e i `values-xx` di Android. Una stringa che
+manca resta in inglese: meglio l'originale di una traduzione inventata. Registro: "tu" in
+spagnolo e tedesco, "vous" in francese, "você" in portoghese, cortese in giapponese, come le
+app di sistema di ciascuna lingua. **Le traduzioni vanno fatte rileggere da un madrelingua
+prima del lancio in quel paese** — un tester di TestFlight per lingua basta.
+
+**Un file mandato fuori non parla italiano.** Una nota di solo inchiostro partiva come
+`nota-1a2b3c4d.png` in ogni lingua; ora è `instink-1a2b3c4d.png`, neutro e con il nome
+dentro (l'anello di D47).
+
+**Limiti dichiarati:**
+
+- **Le date riconosciute** (`DateHints`, D52) leggono solo italiano e inglese. In spagnolo,
+  tedesco, francese e portoghese la struttura è la stessa e vanno aggiunte le parole; in
+  giapponese la grammatica delle date è diversa e serve un lettore a parte. Finché non ci
+  sono, "Ricordamelo" in quelle lingue compare solo per le date numeriche.
+- **Le etichette del Markdown** in `NoteExport` sono ancora in italiano (debito di D41):
+  oggi nessuna app le usa; vanno passate da fuori prima dell'integrazione con le cartelle.
+- **Il sito** è in inglese e italiano: le altre lingue quando il nome è verificato (D55).
+- **La descrizione completa del Play Store** nelle cinque lingue nuove si traduce prima di
+  pubblicare Android.
+- **Le lingue successive** (coreano, cinese tradizionale, olandese) le decidono i dati di
+  App Store Connect per paese, non l'intuito.
+
 ---
 
 ## 5. Struttura del repository
@@ -2215,7 +2295,9 @@ androidApp/      L'app Android: il foglio (cattura, D20), l'archivio (D39), il w
 tools/
   android-check/ Compilazione di controllo di :androidApp senza SDK (D44)
   brand/         Il segno e tutte le icone (icons.py, render.mjs, D66); i testi degli store
-                 con i limiti di caratteri controllati (store_texts.py, D67)
+                 in sette lingue, con i limiti di caratteri controllati (store_texts.py, D67, D69)
+  i18n/          Le traduzioni dell'interfaccia in un file solo, scritte nei cataloghi iOS e
+                 nei values-xx Android da apply.py (D69)
 codemagic.yaml   Il CI: test del core a ogni push, TestFlight e Play interno su tag (D53)
 lancio/          La storia del prodotto (STORIA.md, D60), i testi degli store (STORE.md, D67)
                  e la ricerca di mercato (MERCATO.md, D68)
@@ -2351,7 +2433,9 @@ dopo la correzione di Gradle (D57). **È su TestFlight** (build 5, 2026-09-24), 
 il certificato di distribuzione del committente, e **provata su iPhone**: il foglio si apre
 subito, i widget funzionano (D59). Riconoscimento della scrittura, voce e Siri (D62, D63)
 **non sono ancora compilati**: li compila il prossimo `ios-check`. Smistamento e riemersione
-su Android (D64) compilano contro Android 15. 318 test.
+su Android (D64) compilano contro Android 15. Riconoscimento, voce e Siri **compilano**
+(`ios-check` verde dopo D63) e sono su TestFlight. L'app parla **sette lingue** (D69).
+320 test.
 
 ---
 
@@ -2451,6 +2535,8 @@ su Android (D64) compilano contro Android 15. 318 test.
 
 ## 10. Questioni ancora aperte
 
+- **Le traduzioni** (D69) vanno rilette da un madrelingua per lingua prima del lancio in
+  quel paese; `DateHints` va esteso a spagnolo, tedesco, francese, portoghese e giapponese.
 - **Nome commerciale:** scelto, **Instink** (D55). Restano le verifiche: store, marchi,
   dominio.
 - **Quanti widget nel livello gratuito.** Uno è la proposta; va verificato che non

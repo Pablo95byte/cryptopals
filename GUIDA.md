@@ -2,9 +2,9 @@
 
 Questo file dice cosa tocca a te, in ordine. Tutto il resto lo faccio io.
 
-Se leggi solo una cosa: **metti in rete il sito** (§0quater), poi **comincia il test chiuso
-del Play Store** (§0nonies: i 14 giorni sono il collo di bottiglia), e manda una build nuova
-su TestFlight per riprovare il microfono (§0quinquies).
+Se leggi solo una cosa: **§0decies**, il piano delle prossime due settimane fino all'App
+Store. Il primo passo è sempre lo stesso: **mettere in rete il sito** (§0quater), perché
+TestFlight esterno e Play Console chiedono l'indirizzo della privacy.
 
 ---
 
@@ -215,6 +215,38 @@ TestFlight: *Start new build* → workflow **iOS — TestFlight**, oppure un tag
 
 **Il primo giro iOS dura di più** (una ventina di minuti): scarica il compilatore di
 Kotlin/Native. Dal secondo è in cache.
+
+## 0decies. Dalla build su TestFlight all'App Store, in due settimane (D69)
+
+**Settimana 1 — farla provare a persone vere.**
+
+1. **Il sito in rete** (§0quater): `instink.app`, con l'inoltro di `hello@instink.app`.
+2. **Una build nuova su TestFlight** (tag `ios-*`): porta le sette lingue. Per provarle:
+   Impostazioni → Instink → Lingua, senza cambiare la lingua del telefono.
+3. **TestFlight esterno.** App Store Connect → TestFlight → Test esterni → nuovo gruppo →
+   aggiungi la build. Apple chiede una revisione breve della beta (un giorno circa) e
+   l'indirizzo della privacy. Poi **Link pubblico**: 20–50 persone, e **almeno una per
+   lingua** (spagnolo, tedesco, francese, portoghese, giapponese) a cui chiedi solo:
+   "c'è una frase che suona strana?". Le traduzioni le ho scritte io: un madrelingua le
+   deve rileggere prima del lancio in quel paese.
+4. **Il test chiuso del Play Store** in parallelo (§0nonies): i 14 giorni corrono intanto.
+
+**Settimana 2 — la scheda e l'invio.**
+
+5. **La scheda in sette lingue.** App Store Connect → la tua app → Distribuzione →
+   informazioni sull'app e la versione: in alto a destra il menu della lingua → aggiungi
+   Spagnolo (Spagna) **e** Spagnolo (Messico), Tedesco, Francese **e** Francese (Canada),
+   Portoghese (Brasile), Giapponese. In ognuna copia i campi da `lancio/STORE.md`. Lo
+   spagnolo del Messico conta anche per la ricerca negli Stati Uniti, il francese del
+   Canada in Canada: stessi testi, doppia presenza.
+6. **Gli screenshot** (servono quelli da 6,9 pollici): le sei frasi di `STORE.md`. Te li
+   preparo io in tutte le lingue se mi mandi sei schermate vere dal telefono, una per
+   frase.
+7. **Privacy dell'app:** "Nessun dato raccolto". **Età:** 4+. **Prezzo:** gratuita, in
+   tutti i paesi.
+8. **Invia per la revisione** quando i tester esterni non trovano più niente di grave.
+   Scegli **rilascio manuale**: così decidi tu il giorno, e puoi farlo coincidere con il
+   primo post (`lancio/STORIA.md`).
 
 ## 0quater. Il sito su Cloudflare, passo per passo (D61)
 
@@ -515,7 +547,7 @@ Nessuna blocca il codice, ma prima o poi servono. In ordine di quanto pesano:
 4. **Cosa sta nel Pro.** "Widget multipli" non vale più niente da quando il widget è
    bianco. La proposta: il Pro poggia su esportazione automatica verso Notion e i file,
    ricerca nel testo, punte e temi — col foglio di condivisione sempre gratuito.
-5. **Prezzo del Pro.** 6,99 € è la proposta, da confrontare col mercato.
+5. ~~Prezzo del Pro~~ — deciso in D68: si lancia gratis, Pro dopo.
 
 ---
 
@@ -538,12 +570,12 @@ Ti risparmia soldi e tempo:
 Il **core condiviso è scritto e verificato**: modello dati pronto per il sync, motore
 d'inchiostro, archivio SQLite con cinque migrazioni provate, giornale che mette
 l'inchiostro al sicuro dal primo tratto, ricerca, uscita verso altre app, smistamento,
-riemersione e date, lettura della scrittura e voce. **318 test, tutti verdi, su qualunque
+riemersione e date, lettura della scrittura e voce. **320 test, tutti verdi, su qualunque
 macchina.**
 
 L'**app Android compila e gira** sul tuo S8, con le misure tutte verdi. L'**app iOS è su
-TestFlight** e funziona sul tuo iPhone; la scrittura letta, la voce e Siri (D62, D63)
-aspettano la prossima build.
+TestFlight** e funziona sul tuo iPhone, con scrittura letta, voce e Siri (D62, D63).
+L'app parla **sette lingue**, e le schede dello store sono pronte nelle stesse (D69).
 
 Le ragioni di ogni scelta stanno in [`CLAUDE.md`](CLAUDE.md), che è la memoria del
 progetto: se una decisione ti sembra sbagliata, lì c'è scritto perché era stata presa e
