@@ -59,6 +59,10 @@ workflows:
           - "shared/**"
           - "core/**"
           - "codemagic.yaml"
+          # Il build di Gradle: una modifica qui può rompere InkNoteKit (D57).
+          - "*.gradle.kts"
+          - "gradle/**"
+          - "gradle.properties"
     cache: *gradle_cache
     scripts:
       - name: Il progetto Xcode
