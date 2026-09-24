@@ -17,6 +17,8 @@ solo cosa è cambiato nel codice.
 
 ### Aggiunto
 
+- **Workflow `ios-check`** su Codemagic (D56): compila l'app iOS senza firma a ogni push
+  che tocca iOS o il core, e stampa solo gli errori. L'Apple ID di Instink è nel file.
 - **Smistamento a carte** (D52): `Note.sortedAt` con migrazione 5 → 6, la coda
   `notesToSort` nell'archivio, e su iOS la schermata a carte — destra manda, sinistra
   tieni, giù butta — con gli stessi tre gesti come pulsanti.

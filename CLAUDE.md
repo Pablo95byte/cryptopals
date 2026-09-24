@@ -1693,6 +1693,36 @@ categorie: conta la somiglianza nella stessa classe), dominio `instink.app` dal 
 Se una di queste verifiche cade, si torna alla rosa di D54 e si cambiano solo le righe
 elencate sopra.
 
+
+### D56 — Lo Swift si compila su Codemagic, senza firma, prima che sul Mac
+**Data:** 2026-09-24 · **Stato:** attiva, chiesta dal committente · **Precisa D53**
+
+Il committente preferisce non passare dal Mac per la prima compilazione. Si aggiunge un
+quarto workflow, `ios-check`: genera il progetto, compila l'app e il widget per iPhone
+**senza firma** (`CODE_SIGNING_ALLOWED=NO`), e se fallisce stampa **solo gli errori** di
+Swift e di Kotlin in un blocco da copiare.
+
+**Perché senza firma.** La firma richiede certificato, profili e chiave API: tre cose da
+configurare prima di sapere se il codice compila. Compilare senza firma separa i due
+problemi, e il primo si può risolvere subito.
+
+**Quando parte:** a ogni push che tocca `iosApp/`, `shared/`, `core/` o il file stesso, su
+qualunque branch. Un push che cambia solo la documentazione non consuma minuti di Mac.
+
+**Cosa costa, e va detto.**
+
+- **Il giro è più lento**: dieci-venti minuti per tentativo, contro uno o due in Xcode
+  dopo la prima volta. Il primo è il più lungo, perché scarica il compilatore di
+  Kotlin/Native (poi resta in cache).
+- **Consuma i minuti di Mac gratuiti** del piano di Codemagic.
+- **Chi sviluppa qui non legge i registri di Codemagic**: gli errori li copia il
+  committente. Per questo il workflow li stampa già filtrati.
+- **Non prova l'app sul telefono.** Compilare dice che il codice è giusto per il
+  compilatore, non che funziona: per quello serve TestFlight, cioè la firma (D53).
+
+L'Apple ID di Instink (`6815617566`) è nel file: il numero della build su TestFlight ora
+parte dall'ultimo caricato.
+
 ---
 
 ## 5. Struttura del repository
@@ -1828,7 +1858,8 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
   le richieste: se lo script dice "download limitato", aspetta da solo.
 - **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
   coincidano. Va eseguito quando si toccano i file `.sq`.
-- **Codemagic** (`codemagic.yaml`, D53) ripete i test del core a ogni push, e con un tag
+- **Codemagic** (`codemagic.yaml`, D53) ripete i test del core a ogni push, compila l'app
+  iOS senza firma quando si tocca iOS o il core (D56), e con un tag
   `ios-*` o `android-*` consegna a TestFlight o al canale interno del Play Store. È anche
   il primo posto, fuori dal Mac del committente, dove lo Swift viene compilato.
 - **[`GUIDA.md`](GUIDA.md)** dice cosa tocca al committente, in ordine: la misura di D19

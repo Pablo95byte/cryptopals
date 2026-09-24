@@ -147,6 +147,16 @@ se Xcode si lamenta, mandami gli errori così come li vedi (anche uno screenshot
 E in parallelo, se riesci: **trova le 12 persone per il test chiuso Android**. I 14 giorni
 del Play Store corrono mentre io scrivo iOS, e alla fine usciamo su tutti e due insieme.
 
+## 0, senza Mac. La prima compilazione su Codemagic (D56)
+
+Se non vuoi passare da Xcode: su codemagic.io, dopo aver aggiunto il repository,
+**Start new build → branch `claude/notes-homescreen-app-drbsfv` → workflow
+"iOS — compila (senza firma)"**. Da lì in poi parte da solo a ogni mio push che tocca iOS.
+
+Non serve nessun certificato. Se fallisce, apri il passo **"Compila per iPhone, senza
+firma"** e copiami il blocco fra le due righe `ERRORI: copia da qui`. Il primo giro
+dura una ventina di minuti; i successivi meno.
+
 ## 0bis. iOS, la seconda tappa: cosa provare (D52)
 
 Si compila insieme alla prima: stesso `git pull`, stesso `xcodegen generate`. Poi, sul
