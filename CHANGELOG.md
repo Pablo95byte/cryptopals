@@ -28,6 +28,10 @@ solo cosa è cambiato nel codice.
 
 ### Aggiunto
 
+- **"Manda a…" tenendo premuta una nota** nell'archivio, su iOS e Android; su Android il
+  tocco prolungato apre anche "Elimina" (D59).
+- **`lancio/STORIA.md`**: la storia del prodotto, i testi dello store, gli screenshot, il
+  video di 15 secondi e l'ordine dei canali di lancio (D60).
 - **Workflow `ios-check`** su Codemagic (D56): compila l'app iOS senza firma a ogni push
   che tocca iOS o il core, e stampa solo gli errori. L'Apple ID di Instink è nel file.
 - **Smistamento a carte** (D52): `Note.sortedAt` con migrazione 5 → 6, la coda

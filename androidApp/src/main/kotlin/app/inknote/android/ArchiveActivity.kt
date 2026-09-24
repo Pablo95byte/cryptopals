@@ -1,6 +1,7 @@
 package app.inknote.android
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -14,6 +15,7 @@ import android.text.TextWatcher
 import android.text.format.DateUtils
 import android.util.LruCache
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -24,6 +26,7 @@ import android.widget.FrameLayout
 import android.widget.GridView
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import app.inknote.core.model.Note
@@ -110,6 +113,11 @@ class ArchiveActivity : Activity() {
             setOnItemClickListener { _, _, position, _ ->
                 val note = this@ArchiveActivity.adapter.getItem(position)
                 startActivity(Intent(this@ArchiveActivity, NoteActivity::class.java).putExtra(NoteActivity.EXTRA_NOTE_ID, note.id.value))
+            }
+            // Tenendo premuto: mandare o eliminare senza aprire la nota (D59).
+            setOnItemLongClickListener { _, view, position, _ ->
+                showNoteMenu(view, this@ArchiveActivity.adapter.getItem(position))
+                true
             }
             // Scorrendo, la tastiera della ricerca si chiude: si stava guardando, non scrivendo.
             setOnScrollListener(object : AbsListView.OnScrollListener {
@@ -221,6 +229,32 @@ class ArchiveActivity : Activity() {
         addView(emptyBody)
     }
 
+    private fun showNoteMenu(anchor: View, note: Note) {
+        anchor.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        PopupMenu(this, anchor).apply {
+            menu.add(0, MENU_SHARE, 0, R.string.share)
+            menu.add(0, MENU_DELETE, 1, R.string.delete)
+            setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    MENU_SHARE -> ShareNote.share(this@ArchiveActivity, note)
+                    MENU_DELETE -> confirmDelete(note)
+                }
+                true
+            }
+        }.show()
+    }
+
+    private fun confirmDelete(note: Note) {
+        AlertDialog.Builder(this)
+            .setMessage(R.string.delete_confirm)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                // Un tombstone, non una cancellazione (D8, D26).
+                Archive.run(this, { it.markDeleted(note.id, System.currentTimeMillis()) }) { reload() }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
     private fun hideKeyboard() {
         getSystemService(android.view.inputmethod.InputMethodManager::class.java)?.hideSoftInputFromWindow(search.windowToken, 0)
         search.clearFocus()
@@ -230,6 +264,8 @@ class ArchiveActivity : Activity() {
 
     private companion object {
         const val SEARCH_DELAY_MS = 200L
+        const val MENU_SHARE = 1
+        const val MENU_DELETE = 2
     }
 }
 

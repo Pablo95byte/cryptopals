@@ -9,6 +9,7 @@ struct ArchiveScreen: View {
     @StateObject private var model = ArchiveModel()
     @Environment(\.scenePhase) private var scenePhase
     @State private var sorting = false
+    @State private var share: SharePayload?
 
     var body: some View {
         NavigationStack {
@@ -29,6 +30,12 @@ struct ArchiveScreen: View {
                                 NavigationLink(value: item.id) { NoteCard(item: item) }
                                     .buttonStyle(.plain)
                                     .contextMenu {
+                                        // Tenendo premuto: mandare senza aprire la nota (D59).
+                                        Button {
+                                            SharePayload.prepare(noteId: item.id) { payload in share = payload }
+                                        } label: {
+                                            Label("Send to…", systemImage: "square.and.arrow.up")
+                                        }
                                         Button(role: .destructive) { model.delete(item) } label: {
                                             Label("Delete", systemImage: "trash")
                                         }
@@ -74,6 +81,14 @@ struct ArchiveScreen: View {
         }
         .fullScreenCover(isPresented: $sorting) {
             TriageScreen { model.reload() }
+        }
+        .sheet(item: $share) { payload in
+            // L'invio si registra solo se l'utente sceglie una destinazione (invariante 18).
+            ShareSheet(items: payload.items) { sent in
+                share = nil
+                if sent { SharePayload.markSent(payload.id) { model.reload() } }
+            }
+            .presentationDetents([.medium, .large])
         }
         .onAppear { model.refresh() }
         .onChange(of: scenePhase) { _, phase in if phase == .active { model.refresh() } }

@@ -1797,6 +1797,54 @@ Mac con l'SDK ha superato il test della facciata e ha caricato la build su TestF
 caso "SDK presente", che qui non si vede. Il modo meno costoso è lanciare `core-tests` su
 Codemagic prima dei workflow su Mac.
 
+
+### D59 — Tenendo premuta una nota nell'archivio: "Manda a…" ed "Elimina"
+**Data:** 2026-09-24 · **Stato:** attiva, chiesta dal committente dopo la prima prova su
+iPhone
+
+Nell'archivio, tenere premuto un bigliettino apre un menu con **"Manda a…"** oltre a
+"Elimina", su iOS e su Android (dove prima il tocco prolungato non faceva niente).
+
+**Perché.** Mandare una nota è l'azione più frequente dopo scriverla (D31), e aprirla solo
+per mandarla è un passaggio in più. L'invio si registra comunque solo se l'utente sceglie
+una destinazione (invariante 18). Su Android eliminare chiede conferma, come nella nota
+aperta.
+
+**La prima prova su iPhone** (TestFlight, build 5): il foglio si apre subito, i widget
+funzionano.
+
+### D60 — Il lancio si racconta da un file solo, e i soldi si fanno con la fedeltà
+**Data:** 2026-09-24 · **Stato:** proposta, **da confermare col committente**
+
+**Lo storytelling sta in [`lancio/STORIA.md`](lancio/STORIA.md)**: la frase ("Instink. Write
+on instinct."), la storia in trenta secondi, tre messaggi in un ordine fisso, per chi è e
+per chi no, i testi dello store, gli screenshot come sequenza, il video di 15 secondi col
+cronometro, e l'ordine dei canali. Ogni parola pubblica parte da lì: scheda, sito, post e
+stampa dicono la stessa cosa.
+
+**Il sito: sì, subito, ma piccolo.** Privacy e assistenza sono obbligatorie per TestFlight
+esterno e per lo store (D50); la pagina vera, col video, dopo che il disegno è definitivo.
+
+**Notion e le altre integrazioni: non ancora.** "Manda a…" arriva già a Notion, Keep,
+Obsidian e Note attraverso il foglio di condivisione, perché quelle app ci stanno dentro.
+Un'integrazione vera (l'API di Notion) serve solo per l'invio **automatico**, ed è la
+ragione più forte per il Pro (D31, D47): si scrive quando i tester lo chiedono.
+
+**"Diventare ricchi": i numeri, detti onestamente.** Con l'acquisto singolo di D4 a 6,99 €,
+tolte IVA e la commissione di Apple del 15%, restano circa **4,90 € per vendita**. Per
+50.000 € l'anno servono circa **10.000 vendite**; se compra fra il 2% e il 4% di chi
+scarica, servono **250.000–500.000 download l'anno**. Si può, per un'app che finisce in
+vetrina, ma non è un piano. Il piano è un altro:
+
+1. **Fedeltà prima di tutto**: se la gente la usa ancora dopo trenta giorni, i download
+   arrivano (passaparola, recensioni, vetrina Apple). Se non la usa, nessun prezzo salva.
+2. **Un ricavo ricorrente** quando esiste un servizio che lo giustifica: invio automatico,
+   sincronizzazione fra iPhone, iPad e Mac, backup nostro (D4). Le app di note che hanno
+   costruito aziende vere (Bear, Drafts, Craft) vivono di abbonamenti, non di acquisti
+   singoli.
+3. **Il prezzo lo decidono i dati del test**, non l'intuito: la struttura di D4 si rivede
+   dopo i primi 30 giorni di utenti veri.
+
 ---
 
 ## 5. Struttura del repository
@@ -1820,6 +1868,7 @@ androidApp/      L'app Android: il foglio (cattura, D20), l'archivio (D39), il w
 tools/
   android-check/ Compilazione di controllo di :androidApp senza SDK (D44)
 codemagic.yaml   Il CI: test del core a ogni push, TestFlight e Play interno su tag (D53)
+lancio/          La storia del prodotto e i testi pubblici: STORIA.md (D60)
 design/
   mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato:
                  home iOS, cattura nuda, cattura con strumenti, Android da
@@ -2058,7 +2107,8 @@ il certificato di distribuzione del committente; non è ancora stata provata su 
   permette più (D26) e al primo sync la cancellazione vincerebbe comunque. Probabile
   soluzione: copiare la nota sotto un id nuovo, accettando di perdere lo storico.
 - **Se il giornale debba coprire anche l'audio** (D25 lo lascia fuori per ora).
-- **Il piano di lancio (D43) e la strategia di crescita (D47)**: da confermare.
+- **Il piano di lancio (D43), la strategia di crescita (D47) e la storia (D60)**: da
+  confermare.
 - **Le formule in LaTeX** (D51, D52): serve un motore di riconoscimento matematico a
   pagamento. Dopo D2, e solo se richiesto.
 - **Smistamento e riemersione su Android**: il core c'è, l'interfaccia no (D52).
