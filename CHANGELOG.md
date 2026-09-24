@@ -10,6 +10,14 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Cambiato — gli screenshot (D70)
+
+- **Una lista sola** di sei screenshot, in un ordine nuovo: la scrittura a mano per prima,
+  "manda dove tieni le note" fra i primi tre. Didascalie in sette lingue in
+  `lancio/STORE.md`, con un controllo sulla lunghezza; `STORIA.md` rimanda lì.
+- **GUIDA §0undecies**: come fare gli scatti grezzi, in inglese e in italiano, più tre
+  per iPad.
+
 ### Aggiunto — sette lingue (D69)
 
 - **L'app parla spagnolo, tedesco, francese, portoghese del Brasile e giapponese**, oltre a

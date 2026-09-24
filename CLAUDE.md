@@ -2271,6 +2271,53 @@ dentro (l'anello di D47).
 - **Le lingue successive** (coreano, cinese tradizionale, olandese) le decidono i dati di
   App Store Connect per paese, non l'intuito.
 
+### D70 — Gli screenshot: i primi tre sono tutto il messaggio, e c'è una lista sola
+**Data:** 2026-09-24 · **Stato:** attiva · **Supera la lista di `STORIA.md` §6**
+
+Il committente: *"qui ci giochiamo tutto."* È vero: nei risultati di ricerca dell'App
+Store, sotto nome e icona, si vedono **i primi tre screenshot affiancati**, e chi cerca
+decide lì, in un paio di secondi, senza aprire la scheda. C'erano due liste diverse
+(`STORIA.md` e `STORE.md`), e nessuna delle due metteva nei primi tre la risposta
+all'obiezione principale.
+
+**La sequenza**, con le didascalie in sette lingue in [`lancio/STORE.md`](lancio/STORE.md):
+
+1. **"Tap. Write. Done."** — il foglio con una nota scritta a mano, grande.
+2. **"One tap from your Home Screen"** — la Home col widget.
+3. **"Send it where your notes live"** — il foglio di condivisione su una nota.
+4. **"Sort new ideas in 10 seconds"** — lo smistamento a carte.
+5. **"Search your own handwriting"** — l'archivio con una ricerca trovata.
+6. **"Locked? Just ask Siri."** — la risposta di Siri sulla schermata di blocco.
+
+**Perché la scrittura per prima e non il widget.** Un widget bianco su una Home, in
+miniatura, sembra una schermata vuota; la calligrafia invece si riconosce anche piccola,
+ed è la sola cosa che le altre app non hanno (D1). Il primo screenshot mostra il risultato,
+il secondo come ci si arriva.
+
+**Perché "manda dove tieni le note" è il terzo.** È la risposta a "ho già Note" (D69), cioè
+al motivo principale per cui qualcuno non scarica. Al sesto posto non la vede quasi
+nessuno.
+
+**Regole della composizione:**
+
+- **Una sola idea per schermata**, didascalia di 2–5 parole in alto, grande, leggibile in
+  miniatura (lo script ferma le didascalie oltre i 32 caratteri), e una riga piccola sotto.
+- **Lo schermo è l'app vera** (linea guida 2.3.3 di Apple): niente interfacce inventate.
+  Fondo, didascalie, barra di stato pulita e il segno del tocco si aggiungono dopo.
+- **Niente dati personali** e **nessun marchio Apple usato come nostro**: "Note" si nomina
+  come destinazione nel foglio di condivisione del sistema, non nelle didascalie.
+- **Due serie di scatti**: telefono in inglese (serve per inglese, spagnolo, tedesco,
+  francese, portoghese e giapponese, con la didascalia tradotta) e telefono in italiano.
+  Rifarli nella lingua di ogni paese quando un madrelingua ci aiuta.
+- **Servono anche quelli per iPad** (13 pollici): l'app gira su iPad, e l'App Store li
+  chiede. Bastano tre.
+- **La composizione la fa uno script** a partire dagli scatti grezzi: sei per iPhone e tre per
+  iPad in sette lingue sono sessantatré immagini, e a mano non restano coerenti.
+
+**Il sesto ha un'alternativa.** Se la risposta di Siri sulla schermata di blocco non si
+riesce a catturare, al suo posto va il foglio scuro di notte, "Easy on your eyes at 2 a.m."
+(D52).
+
 ---
 
 ## 5. Struttura del repository
@@ -2535,6 +2582,8 @@ su Android (D64) compilano contro Android 15. Riconoscimento, voce e Siri **comp
 
 ## 10. Questioni ancora aperte
 
+- **Gli screenshot** (D70): scatti grezzi dal committente, poi la composizione con uno
+  script. Il video di 15 secondi (`STORIA.md` §6) dopo.
 - **Le traduzioni** (D69) vanno rilette da un madrelingua per lingua prima del lancio in
   quel paese; `DateHints` va esteso a spagnolo, tedesco, francese, portoghese e giapponese.
 - **Nome commerciale:** scelto, **Instink** (D55). Restano le verifiche: store, marchi,
