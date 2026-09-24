@@ -43,6 +43,11 @@ kinds = {}
 for f in glob.glob(res + '/values*/strings.xml'):
     for n in re.findall(r'<string name="([^"]+)"', open(f).read()):
         kinds.setdefault('string', set()).add(n)
+    for n in re.findall(r'<plurals name="([^"]+)"', open(f).read()):
+        kinds.setdefault('plurals', set()).add(n)
+for f in glob.glob(res + '/values*/colors.xml'):
+    for n in re.findall(r'<color name="([^"]+)"', open(f).read()):
+        kinds.setdefault('color', set()).add(n)
 for d in os.listdir(res):
     base = d.split('-')[0]
     if base in ('drawable', 'layout', 'xml', 'mipmap'):

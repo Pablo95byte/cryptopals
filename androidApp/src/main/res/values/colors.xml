@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    I colori dell'app (D46). Due famiglie, e non vanno mescolate:
+
+    - la **scrivania** (desk, text_*, chip, accent): lo sfondo e i testi dell'interfaccia,
+      che cambiano col tema scuro;
+    - la **carta** (paper, card, on_paper_*): i fogli e i bigliettini, che restano chiari
+      anche di notte. L'inchiostro è scuro, e un foglio scuro lo renderebbe invisibile:
+      di notte le note diventano bigliettini chiari su una scrivania scura.
+-->
 <resources>
-    <!-- Il bianco caldo della direzione visiva (D16). -->
     <color name="paper">#FBF8F1</color>
+    <color name="card">#FFFDF8</color>
+    <color name="on_paper">#1F2430</color>
+    <color name="on_paper_muted">#8B8374</color>
+
+    <color name="desk">#F3EFE7</color>
+    <color name="text_primary">#1F2430</color>
+    <color name="text_secondary">#7D7668</color>
+    <color name="chip">#E9E3D7</color>
+    <color name="outline">#E0D8C8</color>
+    <color name="accent">#1F2430</color>
+    <color name="on_accent">#FBF8F1</color>
+    <color name="danger">#B4402F</color>
+    <color name="ripple">#1F1F2430</color>
 </resources>

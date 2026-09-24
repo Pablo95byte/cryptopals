@@ -18,7 +18,6 @@
     <string name="no_camera">No camera app found</string>
     <string name="archive_title">Notes</string>
     <string name="search_hint">Search</string>
-    <string name="archive_empty">No notes yet.\nTap + or use the widget to write one.</string>
     <string name="search_empty">Nothing found.</string>
     <string name="new_note">New note</string>
     <string name="handwritten_note">Handwritten note</string>
@@ -31,4 +30,13 @@
     <string name="cancel">Cancel</string>
     <string name="torn_tail_notice">The last stroke before the app closed could not be saved.</string>
     <string name="shortcut_new_note">New note</string>
+    <string name="done">Done</string>
+    <string name="back">Back</string>
+    <string name="camera_denied">Without the camera permission, photos can\'t be taken from the sheet.</string>
+    <string name="archive_empty_title">Nothing here yet</string>
+    <string name="archive_empty_body">Tap Write, or add the widget to your home screen: an idea takes a second.</string>
+    <plurals name="note_count">
+        <item quantity="one">%d note</item>
+        <item quantity="other">%d notes</item>
+    </plurals>
 </resources>

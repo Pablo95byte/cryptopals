@@ -3,51 +3,61 @@ package app.inknote.android
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
+import android.text.format.DateUtils
 import android.util.LruCache
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.widget.AbsListView
 import android.widget.BaseAdapter
-import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.GridView
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import app.inknote.core.model.Note
-import java.text.DateFormat
-import java.util.Date
 
 /**
  * L'archivio: tutte le note, la ricerca, e il pulsante per scriverne una nuova (D39).
  *
  * È ciò che si apre toccando l'icona dell'app — "se apro l'app le ho tutte", dalla
- * richiesta iniziale. Il widget, il riquadro rapido e la scorciatoia aprono invece il
- * foglio: dalla home si aggiunge, non si rilegge (D30).
+ * richiesta iniziale. Il widget, il riquadro rapido e "Scrivi" aprono invece il foglio:
+ * dalla home si aggiunge, non si rilegge (D30).
  *
- * View di piattaforma e non Compose (D39): Compose porta con sé librerie che si
- * inizializzano con un `ContentProvider`, e nello stesso processo della cattura quel
- * costo lo pagherebbe anche il foglio (invariante 21).
+ * ## Il disegno (D46)
+ *
+ * Bigliettini di carta su una scrivania: una griglia che mette tante colonne quante ne
+ * stanno — due su un telefono, tre o quattro su un tablet o in orizzontale. Titolo grande,
+ * ricerca a pillola, e un solo pulsante pieno: "Scrivi". Di notte la scrivania si scurisce
+ * e i bigliettini restano carta, perché l'inchiostro è scuro.
  */
 class ArchiveActivity : Activity() {
 
     private val adapter by lazy { NotesAdapter(this) }
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var search: EditText
-    private lateinit var empty: TextView
+    private lateinit var clearSearch: View
+    private lateinit var subtitle: TextView
+    private lateinit var empty: View
+    private lateinit var emptyTitle: TextView
+    private lateinit var emptyBody: TextView
     private val reloadTask = Runnable { reload() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ProcessState.anyActivityCreated = true
         super.onCreate(savedInstanceState)
+        Ui.edgeToEdge(this)
         setContentView(buildLayout())
     }
 
@@ -64,105 +74,176 @@ class ArchiveActivity : Activity() {
     private fun reload() {
         val term = search.text.toString()
         Archive.run(this, { store ->
-            if (term.isBlank()) store.recentNotes(limit = 500) else store.search(term, limit = 200)
-        }) { notes ->
+            val notes = if (term.isBlank()) store.recentNotes(limit = 500) else store.search(term, limit = 200)
+            notes to store.liveNoteCount()
+        }) { (notes, total) ->
             adapter.submit(notes)
+            subtitle.text = resources.getQuantityString(R.plurals.note_count, total.toInt(), total.toInt())
+            subtitle.visibility = if (total > 0) View.VISIBLE else View.INVISIBLE
+            val searching = term.isNotBlank()
             empty.visibility = if (notes.isEmpty()) View.VISIBLE else View.GONE
-            empty.setText(if (term.isBlank()) R.string.archive_empty else R.string.search_empty)
+            emptyTitle.setText(if (searching) R.string.search_empty else R.string.archive_empty_title)
+            emptyBody.visibility = if (searching) View.GONE else View.VISIBLE
         }
     }
 
     private fun buildLayout(): View {
-        val root = FrameLayout(this).apply {
-            setBackgroundColor(InkPalette.PAPER)
-            // Da Android 15 le app disegnano sotto le barre di sistema: il contenuto va
-            // spostato dentro, o il titolo finisce sotto l'orologio.
-            fitsSystemWindows = true
+        val root = FrameLayout(this).apply { setBackgroundColor(getColor(R.color.desk)) }
+
+        val column = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        Ui.padForSystemBars(column, top = true, bottom = false)
+        column.addView(buildHeader(), Ui.matchWidth())
+
+        val grid = GridView(this).apply {
+            adapter = this@ArchiveActivity.adapter
+            numColumns = GridView.AUTO_FIT
+            columnWidth = dp(158)
+            stretchMode = GridView.STRETCH_COLUMN_WIDTH
+            horizontalSpacing = dp(12)
+            verticalSpacing = dp(12)
+            // Spazio in fondo per il pulsante "Scrivi", che galleggia sopra l'elenco.
+            setPadding(dp(16), dp(8), dp(16), dp(112))
+            clipToPadding = false
+            selector = ColorDrawable(Color.TRANSPARENT)
+            isVerticalScrollBarEnabled = false
+            overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS
+            setOnItemClickListener { _, _, position, _ ->
+                val note = this@ArchiveActivity.adapter.getItem(position)
+                startActivity(Intent(this@ArchiveActivity, NoteActivity::class.java).putExtra(NoteActivity.EXTRA_NOTE_ID, note.id.value))
+            }
+            // Scorrendo, la tastiera della ricerca si chiude: si stava guardando, non scrivendo.
+            setOnScrollListener(object : AbsListView.OnScrollListener {
+                override fun onScrollStateChanged(view: AbsListView, state: Int) {
+                    if (state == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) hideKeyboard()
+                }
+                override fun onScroll(view: AbsListView, first: Int, visible: Int, total: Int) = Unit
+            })
         }
-        val column = LinearLayout(this).apply {
+        Ui.padForSystemBars(grid, top = false, bottom = true, sides = false)
+        column.addView(grid, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        root.addView(column)
+
+        empty = buildEmptyState()
+        root.addView(empty, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER))
+
+        // Un solo pulsante pieno nella schermata: scrivere.
+        val write = Ui.pill(this, getString(R.string.capture_label), R.drawable.ic_pen, primary = true) {
+            startActivity(Intent(this, CaptureActivity::class.java))
+        }
+        val fabHolder = FrameLayout(this).apply { setPadding(0, 0, dp(20), dp(24)) }
+        Ui.padForSystemBars(fabHolder, top = false, bottom = true)
+        fabHolder.addView(write, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(56)))
+        root.addView(fabHolder, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.END))
+
+        return root
+    }
+
+    private fun buildHeader(): View {
+        val header = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), 0)
+            setPadding(dp(20), dp(20), dp(20), dp(8))
         }
-
-        column.addView(TextView(this).apply {
+        header.addView(Ui.text(this, Ui.TITLE, Ui.BOLD, getColor(R.color.text_primary)).apply {
             setText(R.string.archive_title)
-            textSize = 28f
-            setTextColor(InkPalette.INK)
-            setPadding(dp(4), dp(8), 0, dp(12))
+            letterSpacing = -0.02f
         })
+        subtitle = Ui.text(this, Ui.CAPTION + 1, Ui.MEDIUM, getColor(R.color.text_secondary)).apply {
+            visibility = View.INVISIBLE
+            setPadding(dp(2), dp(2), 0, dp(14))
+        }
+        header.addView(subtitle)
 
+        // La ricerca: una pillola, non una riga sottolineata.
+        val secondary = getColor(R.color.text_secondary)
+        val icon = ImageView(this).apply {
+            setImageResource(R.drawable.ic_search)
+            setColorFilter(secondary)
+        }
         search = EditText(this).apply {
             setHint(R.string.search_hint)
             isSingleLine = true
-            textSize = 16f
+            textSize = Ui.BODY
+            typeface = Ui.typeface(context, Ui.REGULAR)
+            setTextColor(getColor(R.color.text_primary))
+            setHintTextColor(secondary)
+            background = null
+            imeOptions = EditorInfo.IME_ACTION_SEARCH
+            setPadding(dp(10), 0, dp(4), 0)
             addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
                 override fun afterTextChanged(s: Editable?) {
-                    // Una ricerca a ogni tasto, ma non a ogni tasto di una parola scritta
-                    // in fretta: si aspetta che la mano si fermi un attimo.
+                    clearSearch.visibility = if (s.isNullOrEmpty()) View.GONE else View.VISIBLE
+                    // Una ricerca quando la mano si ferma, non a ogni tasto.
                     handler.removeCallbacks(reloadTask)
                     handler.postDelayed(reloadTask, SEARCH_DELAY_MS)
                 }
             })
         }
-        column.addView(search)
+        clearSearch = Ui.iconButton(this, R.drawable.ic_close, getString(R.string.cancel), secondary) {
+            search.setText("")
+            hideKeyboard()
+        }.apply { visibility = View.GONE }
 
-        val list = ListView(this).apply {
-            adapter = this@ArchiveActivity.adapter
-            divider = null
-            clipToPadding = false
-            setPadding(0, dp(8), 0, dp(96))
-            setOnItemClickListener { _, _, position, _ ->
-                val note = this@ArchiveActivity.adapter.getItem(position)
-                startActivity(Intent(this@ArchiveActivity, NoteActivity::class.java).putExtra(NoteActivity.EXTRA_NOTE_ID, note.id.value))
-            }
+        val pill = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(16), 0, dp(4), 0)
+            background = Ui.rounded(getColor(R.color.chip), dp(26).toFloat())
+            addView(icon, LinearLayout.LayoutParams(dp(20), dp(20)))
+            addView(search, LinearLayout.LayoutParams(0, dp(52), 1f))
+            addView(clearSearch)
         }
-        column.addView(list, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
-        root.addView(column)
-
-        empty = TextView(this).apply {
-            setText(R.string.archive_empty)
-            setTextColor(InkPalette.MUTED)
-            textSize = 16f
-            gravity = Gravity.CENTER
-            setPadding(dp(32), 0, dp(32), 0)
-            visibility = View.GONE
-        }
-        root.addView(empty, FrameLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER,
-        ))
-
-        // Il foglio, a un tocco anche da qui.
-        root.addView(Button(this).apply {
-            text = "+"
-            textSize = 28f
-            contentDescription = getString(R.string.new_note)
-            setOnClickListener { startActivity(Intent(this@ArchiveActivity, CaptureActivity::class.java)) }
-        }, FrameLayout.LayoutParams(dp(72), dp(72), Gravity.BOTTOM or Gravity.END).apply {
-            rightMargin = dp(20)
-            bottomMargin = dp(24)
-        })
-
-        return root
+        header.addView(pill, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)))
+        return header
     }
 
-    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+    private fun buildEmptyState(): View = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        gravity = Gravity.CENTER_HORIZONTAL
+        setPadding(dp(40), dp(80), dp(40), 0)
+        visibility = View.GONE
+        addView(ImageView(context).apply {
+            setImageResource(R.drawable.ic_scribble)
+            setColorFilter(getColor(R.color.text_secondary))
+            alpha = 0.6f
+        }, LinearLayout.LayoutParams(dp(72), dp(72)).apply { bottomMargin = dp(16) })
+        emptyTitle = Ui.text(context, Ui.HEADLINE, Ui.SEMIBOLD, getColor(R.color.text_primary)).apply {
+            gravity = Gravity.CENTER
+            setText(R.string.archive_empty_title)
+        }
+        addView(emptyTitle)
+        emptyBody = Ui.text(context, Ui.BODY - 1, Ui.REGULAR, getColor(R.color.text_secondary)).apply {
+            gravity = Gravity.CENTER
+            setText(R.string.archive_empty_body)
+            setPadding(0, dp(8), 0, 0)
+        }
+        addView(emptyBody)
+    }
+
+    private fun hideKeyboard() {
+        getSystemService(android.view.inputmethod.InputMethodManager::class.java)?.hideSoftInputFromWindow(search.windowToken, 0)
+        search.clearFocus()
+    }
+
+    private fun dp(value: Int): Int = Ui.dp(this, value.toFloat())
 
     private companion object {
         const val SEARCH_DELAY_MS = 200L
     }
 }
 
-/** Una riga per nota: l'anteprima a sinistra, le prime parole e la data a destra. */
+/**
+ * Un bigliettino per nota. Tre forme, secondo cosa c'è dentro: l'inchiostro inquadrato,
+ * la foto a tutta larghezza, o il testo digitato. Sotto, una riga e la data.
+ */
 private class NotesAdapter(private val context: Context) : BaseAdapter() {
 
     private var notes: List<Note> = emptyList()
-    private val dates = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
     private val density = context.resources.displayMetrics.density
 
     /** Miniature delle foto già lette, per non rileggerle a ogni scorrimento. */
-    private val thumbnails = LruCache<String, android.graphics.Bitmap>(40)
+    private val thumbnails = LruCache<String, Bitmap>(48)
 
     fun submit(newNotes: List<Note>) {
         notes = newNotes
@@ -174,75 +255,110 @@ private class NotesAdapter(private val context: Context) : BaseAdapter() {
     override fun getItemId(position: Int): Long = notes[position].id.value.hashCode().toLong()
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val holder = (convertView?.tag as? Holder) ?: Holder(context, density)
+        val holder = (convertView?.tag as? Holder) ?: Holder(context)
         val note = notes[position]
-
-        holder.ink.note = if (note.hasInk) note else null
-        holder.ink.visibility = if (note.hasInk) View.VISIBLE else View.GONE
-
         val firstPhoto = note.visiblePhotoClips.firstOrNull()
-        holder.photo.setImageDrawable(null)
-        holder.photo.visibility = if (!note.hasInk && firstPhoto != null) View.VISIBLE else View.GONE
-        if (!note.hasInk && firstPhoto != null) loadThumbnail(holder.photo, firstPhoto.path)
 
-        holder.snippet.text = snippetOf(note)
-        holder.date.text = dates.format(Date(note.updatedAt))
-        return holder.row
+        // Cosa va nella parte grande del bigliettino: prima l'inchiostro, che è ciò che
+        // si riconosce a colpo d'occhio (D1), poi la foto, poi il testo.
+        holder.ink.visibility = View.GONE
+        holder.photo.visibility = View.GONE
+        holder.body.visibility = View.GONE
+        holder.photo.setImageDrawable(null)
+        holder.photo.tag = null
+        when {
+            note.hasInk -> {
+                holder.ink.note = note
+                holder.ink.visibility = View.VISIBLE
+            }
+            firstPhoto != null -> {
+                holder.photo.visibility = View.VISIBLE
+                loadThumbnail(holder.photo, firstPhoto.path)
+            }
+            else -> {
+                holder.body.text = snippetOf(note) ?: ""
+                holder.body.visibility = View.VISIBLE
+            }
+        }
+
+        // La riga sotto: il testo, se la parte grande non lo mostra già.
+        val line = if (holder.body.visibility == View.VISIBLE) null else snippetOf(note)
+        holder.caption.text = line ?: ""
+        holder.caption.visibility = if (line == null) View.GONE else View.VISIBLE
+
+        holder.date.text = DateUtils.getRelativeTimeSpanString(
+            note.updatedAt, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE,
+        )
+        val photos = note.visiblePhotoClips.size
+        holder.photoBadge.visibility = if (photos > 0 && !(holder.photo.visibility == View.VISIBLE && photos == 1)) View.VISIBLE else View.GONE
+        holder.photoCount.text = if (photos > 1) photos.toString() else ""
+        return holder.card
     }
 
-    private fun snippetOf(note: Note): String =
-        note.typedText
-            ?: note.recognizedText
-            ?: note.visibleVoiceClips.firstNotNullOfOrNull { it.transcript }
-            ?: context.getString(if (note.hasInk) R.string.handwritten_note else R.string.photo_note)
+    private fun snippetOf(note: Note): String? =
+        note.typedText ?: note.recognizedText ?: note.visibleVoiceClips.firstNotNullOfOrNull { it.transcript }
 
     private fun loadThumbnail(view: ImageView, path: String) {
         view.tag = path
         thumbnails.get(path)?.let { view.setImageBitmap(it); return }
         val app = context.applicationContext
+        val target = (180 * density).toInt()
         Thread {
-            val bitmap = NoteFiles.resolve(app, path)?.let { NoteRenderer.decodeThumbnail(it, (96 * density).toInt()) }
+            val bitmap = NoteFiles.resolve(app, path)?.let { NoteRenderer.decodeThumbnail(it, target) }
             view.post {
                 if (bitmap != null) thumbnails.put(path, bitmap)
-                // La riga può essere già stata riusata per un'altra nota mentre si leggeva.
+                // La vista può essere già stata riusata per un'altra nota mentre si leggeva.
                 if (view.tag == path) view.setImageBitmap(bitmap)
             }
         }.start()
     }
 
-    private class Holder(context: Context, density: Float) {
-        val ink = InkPreviewView(context)
+    private class Holder(private val context: Context) {
+        private fun dp(value: Float) = Ui.dp(context, value)
+
+        val ink = InkPreviewView(context).apply { setPadding(dp(12f), dp(12f), dp(12f), dp(4f)) }
         val photo = ImageView(context).apply { scaleType = ImageView.ScaleType.CENTER_CROP }
-        val snippet = TextView(context).apply {
-            textSize = 16f
-            setTextColor(InkPalette.INK)
-            maxLines = 2
+        val body = Ui.text(context, 15f, Ui.MEDIUM, context.getColor(R.color.on_paper), maxLines = 7).apply {
+            setPadding(dp(16f), dp(16f), dp(16f), 0)
         }
-        val date = TextView(context).apply {
-            textSize = 12f
-            setTextColor(InkPalette.MUTED)
+        val caption = Ui.text(context, 13.5f, Ui.MEDIUM, context.getColor(R.color.on_paper), maxLines = 1)
+        val date = Ui.text(context, Ui.CAPTION, Ui.REGULAR, context.getColor(R.color.on_paper_muted), maxLines = 1)
+        val photoCount = Ui.text(context, Ui.CAPTION, Ui.MEDIUM, context.getColor(R.color.on_paper_muted))
+        val photoBadge = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            addView(ImageView(context).apply {
+                setImageResource(R.drawable.ic_camera)
+                setColorFilter(context.getColor(R.color.on_paper_muted))
+            }, LinearLayout.LayoutParams(dp(15f), dp(15f)).apply { rightMargin = dp(3f) })
+            addView(photoCount)
         }
-        val row: View
+        val card: View
 
         init {
-            fun dp(v: Int) = (v * density).toInt()
             val preview = FrameLayout(context).apply {
-                setBackgroundColor(Color.WHITE)
                 addView(ink, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
                 addView(photo, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+                addView(body, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
             }
-            val text = LinearLayout(context).apply {
+            val footer = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
-                setPadding(dp(14), 0, 0, 0)
-                gravity = Gravity.CENTER_VERTICAL
-                addView(snippet)
-                addView(date)
+                setPadding(dp(14f), dp(8f), dp(14f), dp(12f))
+                addView(caption)
+                addView(LinearLayout(context).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = Gravity.CENTER_VERTICAL
+                    addView(date, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                    addView(photoBadge)
+                })
             }
-            row = LinearLayout(context).apply {
-                orientation = LinearLayout.HORIZONTAL
-                setPadding(0, dp(6), 0, dp(6))
-                addView(preview, LinearLayout.LayoutParams(dp(120), dp(84)))
-                addView(text, LinearLayout.LayoutParams(0, dp(84), 1f))
+            card = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                Ui.card(this, context, elevationDp = 1.5f)
+                foreground = Ui.pressable(context, null, dp(Ui.RADIUS_CARD).toFloat())
+                addView(preview, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+                addView(footer)
+                layoutParams = AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(208f))
                 tag = this@Holder
             }
         }

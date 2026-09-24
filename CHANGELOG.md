@@ -12,6 +12,12 @@ solo cosa è cambiato nel codice.
 
 ### Aggiunto
 
+- **Disegno nuovo** su tutte le schermate (D46): bigliettini di carta su una scrivania,
+  Instrument Sans, tema scuro, da bordo a bordo, griglia che si adatta alla larghezza,
+  pulsanti a pillola. Kit condiviso in `Ui.kt`.
+- **Fotocamera dentro il foglio** (`InlineCamera`, Camera2): non si lascia più l'app per
+  scattare (D45).
+
 - **Archivio su Android** (`ArchiveActivity`, `NoteActivity`): l'icona dell'app apre
   l'elenco delle note con anteprima e ricerca; la nota aperta si manda ad altre app o si
   elimina. Il giornale entra in archivio all'apertura (D39).
@@ -209,6 +215,13 @@ solo cosa è cambiato nel codice.
 - **228 test** sul core.
 
 ### Corretto
+
+- **Scattare una foto dal foglio aperto al volo chiudeva il foglio e chiedeva lo
+  sblocco**: la fotocamera del sistema portava fuori dall'app. Ora la fotocamera è dentro
+  il foglio (D45).
+- **La scheda del testo in alto era coperta dal misuratore**: il misuratore ora è una
+  pillola piccola in basso, che un tocco nasconde; la scheda del testo sta sotto la barra
+  di stato.
 
 - **Due dita sul foglio tracciavano una retta**: il foglio seguiva l'indice 0 del
   `MotionEvent`, che passa al dito rimasto quando il primo si alza. Ora segue il dito

@@ -11,8 +11,8 @@ import java.io.File
 import java.io.FileNotFoundException
 
 /**
- * Consegna i file delle note ad altre app: alla fotocamera per scriverci la foto, alla
- * destinazione di una condivisione per leggerla (D40).
+ * Consegna i file delle note ad altre app: alla destinazione di una condivisione, per
+ * leggerli (D40).
  *
  * ## Perché non `FileProvider`, e perché un processo a parte
  *
@@ -24,28 +24,20 @@ import java.io.FileNotFoundException
  *
  * ## Cosa si può fare
  *
- * - leggere foto e immagini esportate;
- * - **scrivere solo** una foto nuova nell'area del dispositivo, cioè quello che fa la
- *   fotocamera. Nient'altro è scrivibile, e il provider non è esportato: si arriva qui
- *   solo con un permesso concesso da noi, indirizzo per indirizzo.
+ * Solo leggere: foto e immagini esportate, per le app a cui mandiamo una nota. Da D45 la
+ * fotocamera è dentro il foglio e scrive da sé: nessuno ha più bisogno di scrivere da qui,
+ * e una porta che non serve è una porta da chiudere. Il provider non è esportato: ci si
+ * arriva solo con un permesso concesso da noi, indirizzo per indirizzo.
  */
 class FilesProvider : ContentProvider() {
 
     override fun onCreate(): Boolean = true
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
-        val (root, file) = resolve(uri)
-        val writing = mode.contains('w')
-        if (writing) {
-            // Solo la fotocamera scrive, e solo una foto nuova nell'area del dispositivo.
-            if (root != NoteFiles.Root.DEVICE || !file.path.contains("/${NoteFiles.PHOTOS_DIR}/")) {
-                throw SecurityException("scrittura non permessa: $uri")
-            }
-            file.parentFile?.mkdirs()
-        } else if (!file.isFile) {
-            throw FileNotFoundException(uri.toString())
-        }
-        return ParcelFileDescriptor.open(file, ParcelFileDescriptor.parseMode(mode))
+        val (_, file) = resolve(uri)
+        if (mode.contains('w')) throw SecurityException("sola lettura: $uri")
+        if (!file.isFile) throw FileNotFoundException(uri.toString())
+        return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
     }
 
     override fun getType(uri: Uri): String = when (uri.lastPathSegment?.substringAfterLast('.')) {

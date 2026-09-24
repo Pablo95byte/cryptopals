@@ -94,7 +94,7 @@ posto solo invece che sparsi fra le decisioni.
 | Primo avvio | **Nessun account e nessun onboarding** (D12): all'apertura non c'è niente da configurare | deciso |
 | Sblocco + ricerca dell'ingresso | **"Scrivi" nell'elenco delle app**: nel dock, o sul tasto laterale dei Samsung (D39) | nel codice |
 | Scrittura | **Foglio senza righe e tratto da pennarello col dito**: si scrive grande, l'archivio rimpicciolisce (D42) | nel codice, da provare |
-| Mani occupate | **Tastiera e foto dal foglio**, a un tocco, anche a telefono bloccato (D38) | nel codice |
+| Mani occupate | **Tastiera e foto dal foglio**, a un tocco, anche a telefono bloccato; la fotocamera sta dentro il foglio (D38, D45) | nel codice |
 | Mani occupate | **Cattura a voce** (D18): l'unica strada senza sblocco su iPhone | modello fatto, cattura da scrivere |
 | Tutti | **I tetti: foglio pronto in 100 ms a caldo, 400 a freddo; tratto dietro al dito di al massimo 50 ms** (D19, D32, D36). Non sono funzionalità: impediscono alle altre di degradarsi | **tutti verdi** sul Samsung S8: 86 ms a caldo, 358–387 a freddo, tratto 13–14 ms a caldo e 30 a freddo |
 | Tutti | **Restare piccoli**: un processo leggero resta nella cache del sistema, e la seconda apertura della giornata è calda (D32) | nel codice, zero dipendenze |
@@ -1120,13 +1120,15 @@ fotocamera, perché mentre è aperta il sistema può uccidere il nostro processo
 scatto non arriva, se ne scrive il tombstone. Il formato del giornale passa alla
 versione 2, con un byte di tipo; la versione 1 si legge ancora.
 
-**La foto a telefono bloccato** usa la fotocamera in modalità sicura: si apre sopra il
-blocco senza chiedere il codice e senza dare accesso alla galleria. Nasce nell'area
+**La foto a telefono bloccato** ~~usa la fotocamera in modalità sicura: si apre sopra il
+blocco senza chiedere il codice e senza dare accesso alla galleria.~~ **Superato da D45:**
+la fotocamera del sistema, sul primo telefono vero, chiudeva il foglio e chiedeva lo
+sblocco; ora la fotocamera sta dentro il foglio. Nasce nell'area
 protetta dal dispositivo, come il giornale, e passa in quella protetta dalle credenziali
 quando la nota entra in archivio. Per questo il modello conosce solo percorsi relativi.
 
-**La fotocamera sospende D34.** Mentre la fotocamera aperta da noi copre il foglio,
-il foglio non si chiude: è coperto, non abbandonato.
+~~**La fotocamera sospende D34.**~~ Superato da D45: la fotocamera non copre più il
+foglio, ci sta dentro. Resta un'eccezione a D34 solo per il dialogo del permesso.
 
 **Cosa resta fuori.** Lo scanner di documenti (ritaglio e raddrizzamento automatico) è un
 miglioramento naturale della foto, ma su Android è una libreria di Google Play Services:
@@ -1181,8 +1183,9 @@ un indirizzo da cui leggerla. Li dà `FilesProvider`, nostro, nel processo `:fil
 foglio** (invariante 21). In un processo suo nasce solo quando un'altra app chiede un
 file: la cattura non lo vede mai. Scriverlo costa sessanta righe.
 
-**Cosa permette.** Leggere foto e immagini esportate; scrivere **solo** una foto nuova
-nell'area del dispositivo. Non è esportato: ci si arriva solo con un permesso concesso da
+**Cosa permette.** Leggere foto e immagini esportate. ~~Scrivere **solo** una foto nuova
+nell'area del dispositivo.~~ **Precisato da D45:** con la fotocamera dentro il foglio
+nessuno scrive più da qui, e la scrittura è stata tolta: sola lettura. Non è esportato: ci si arriva solo con un permesso concesso da
 noi per un singolo indirizzo. I percorsi con `..` sono rifiutati due volte, prima come
 testo e poi dopo averli risolti sul disco.
 
@@ -1253,6 +1256,68 @@ fotocamera e il provider dei file, e ha trovato due avvisi, corretti.
 
 **Cosa non controlla, e va detto:** risorse e manifest (serve `aapt2`), R8, lint, e il
 comportamento. Il primo build vero resta sulla macchina del committente.
+
+### D45 — La fotocamera sta dentro il foglio
+**Data:** 2026-09-24 · **Stato:** attiva · **Supera la parte fotocamera di D38**
+
+Toccando la fotocamera, il mirino si apre **sopra il foglio, nella stessa Activity**
+(Camera2, API di piattaforma). Si scatta, il mirino si chiude, la miniatura compare sul
+foglio.
+
+**Cosa era rotto.** Sul primo telefono vero, aprire la fotocamera del sistema dal foglio
+aperto al volo lo chiudeva, e chiedeva di sbloccare il telefono. Le cause possibili sono
+più d'una, e tutte vengono dal lasciare la nostra app: alcune fotocamere a telefono
+bloccato chiedono lo sblocco; alcune girano in un compito loro, e allora Android ci
+risponde subito "annullato" — il foglio crede di essere stato abbandonato e si chiude
+(D34), la foto va persa. Non serviva capire quale: la soluzione le toglie tutte.
+
+**Perché dentro il foglio.** Resta sopra il blocco come il foglio stesso (D17), non cambia
+app, non cambia compito, e la foto arriva a noi come byte. Niente libreria (CameraX è
+AndroidX), niente `ContentProvider` (invariante 21), e il provider dei file torna in sola
+lettura (D40).
+
+**Cosa costa.** Il permesso della fotocamera, chiesto al primo scatto. Se il primo scatto
+avviene a telefono bloccato, il sistema può chiedere lo sblocco per mostrare il dialogo
+del permesso: succede una volta sola. E un centinaio di righe di Camera2 nostre invece
+dell'app fotocamera del telefono: niente zoom, niente flash manuale. Per una lavagna o uno
+scontrino bastano messa a fuoco e esposizione automatiche.
+
+**L'ordine delle operazioni.** La foto entra nella nota subito, il file si scrive su un
+altro thread (invariante 20). Se il processo morisse fra le due cose, l'archivio troverebbe
+una foto senza file e non la mostrerebbe: meglio di una nota senza la foto nel giornale.
+
+### D46 — Il disegno: bigliettini di carta su una scrivania
+**Data:** 2026-09-24 · **Stato:** attiva · **Precisa D16**
+
+Il committente, vedendo l'app sul telefono: "graficamente sembra un'app degli anni '90".
+Aveva ragione: pulsanti di sistema, righe sottolineate, testo attaccato ai bordi. Il
+disegno nuovo, su tutte le schermate:
+
+- **Carta su scrivania.** Le note sono bigliettini chiari, angoli tondi e un'ombra leggera,
+  su uno sfondo appena più scuro. **Di notte la scrivania si scurisce e i bigliettini
+  restano carta**: l'inchiostro è scuro, e un foglio scuro lo renderebbe invisibile.
+- **Instrument Sans** (D16), incluso nell'app come font variabile, con pochi gradini di
+  scala e peso. **Non sul foglio**: leggere un font dai file costa millisecondi sul
+  percorso che misuriamo; i comandi del foglio usano il carattere di sistema.
+- **Da bordo a bordo.** Il contenuto passa sotto le barre di sistema trasparenti, e ogni
+  schermata sposta dentro solo ciò che deve restare leggibile. Da Android 15 è comunque
+  obbligatorio.
+- **Una griglia che si adatta.** L'archivio mette tante colonne quante ne stanno: due su
+  un telefono, di più su un tablet o in orizzontale. La nota aperta resta una colonna di
+  al massimo 680 dp, perché una riga lunga un metro non si legge.
+- **Un solo pulsante pieno per schermata**: "Scrivi" nell'archivio, "Manda a…" nella nota,
+  "Fatto" sul foglio. Il resto è tenue.
+- **Sul foglio, i comandi in basso**, dove arriva il pollice, e niente in alto: in alto si
+  scrive. Il testo digitato è una scheda sotto la barra di stato; il misuratore di debug
+  è una pillola piccola in basso, che un tocco nasconde.
+
+**Senza Material Components, di proposito.** Material e AppCompat si inizializzano con un
+`ContentProvider` (invariante 21). Il disegno moderno si ottiene con le View di sistema e
+un piccolo kit nostro (`Ui.kt`): raggi, ombre, pillole, margini sicuri, tipografia. È anche
+ciò che tiene l'app coerente: ogni schermata usa gli stessi pezzi.
+
+**Aperto:** il disegno è stato scritto senza vederlo su uno schermo — qui non c'è un
+emulatore. Il giudizio vero è quello del committente sul telefono.
 
 ---
 
@@ -1459,24 +1524,26 @@ costruiti con l'SDK né provati sul telefono.
 15. ~~Tastiera e fotocamera sul foglio~~ — pezzi immutabili della nota, nel giornale da
     subito, fotocamera sicura a telefono bloccato (D38).
 16. ~~Corsivo col dito, primo passo~~ — foglio senza righe, tratto da pennarello (D42).
+17. ~~Fotocamera dentro il foglio e disegno nuovo~~ — dopo il primo giro sul telefono
+    (D45, D46). **Da provare.**
 
 ### Prossimi, in ordine (D43)
 
-17. **Provare tutto sul telefono**, poi il **canale di test interno** del Play Store.
-18. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
+18. **Provare tutto sul telefono**, poi il **canale di test interno** del Play Store.
+19. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
     allora se il giornale debba coprire anche l'audio.
-19. **`core:ocr`** — riconoscimento della scrittura (D2). Su Android è ML Kit, che
+20. **`core:ocr`** — riconoscimento della scrittura (D2). Su Android è ML Kit, che
     registra un `ContentProvider`: va tolto dal manifest e inizializzato a mano
     (invariante 21).
-20. **"Condividi verso InkNote"** — da qualunque app, testo, link e foto diventano una
+21. **"Condividi verso InkNote"** — da qualunque app, testo, link e foto diventano una
     nota senza aprire niente.
-21. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
+22. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
     di blocco, Controllo e tasto Azione. **Serve un Mac con Xcode.**
-22. **`core:billing`** — il Pro (D4), quando sapremo cosa la gente usa (D43).
+23. **`core:billing`** — il Pro (D4), quando sapremo cosa la gente usa (D43).
 
 ### Prima di pubblicare
 
-23. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
+24. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
     privacy, etichette dell'esportazione tradotte (D41), firma di rilascio vera.
 
 ## 10. Questioni ancora aperte

@@ -1,28 +1,26 @@
 package app.inknote.android
 
+import android.Manifest
 import android.app.Activity
-import android.app.KeyguardManager
-import android.content.ActivityNotFoundException
-import android.content.ClipData
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Process
 import android.os.SystemClock
-import android.provider.MediaStore
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.ImageButton
+import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -35,18 +33,15 @@ import app.inknote.core.capture.InkJournal
 import app.inknote.core.capture.StartKind
 import app.inknote.core.model.CanvasSize
 import app.inknote.core.model.Clock
-import app.inknote.core.model.NoteId
-import app.inknote.core.model.PhotoClip
 import app.inknote.core.model.PhotoClipId
+import java.io.FileOutputStream
 
 /**
  * Il foglio.
  *
- * Questa è la **prova di velocità** di D19: un'Activity di piattaforma, nessuna
- * libreria, nessun database, nessuna iniezione di dipendenze, nessuna animazione di
- * apertura. Serve a misurare il pavimento dell'attrito su un telefono vero, e allo
- * stesso tempo è la base su cui crescerà la cattura definitiva — non codice da
- * buttare.
+ * Un'Activity di piattaforma, nessuna libreria, nessun database, nessuna iniezione di
+ * dipendenze, nessuna animazione di apertura (D19, D20). È anche la prova di velocità:
+ * nelle build di debug il misuratore dice quanto ci ha messo.
  *
  * La stessa Activity serve tutti gli ingressi: aperta dal launcher o dal widget si
  * sovrappone alla home, aperta dal riquadro delle impostazioni rapide a telefono
@@ -54,9 +49,13 @@ import app.inknote.core.model.PhotoClipId
  * Il foglio è cieco in tutti i casi: non mostra nessuna nota già scritta.
  *
  * **Un foglio vive finché è sullo schermo** (D34). Quando esce — tasto home, schermo
- * spento, una chiamata — la nota è chiusa, e l'Activity con lei. Altrimenti il foglio
- * con la nota di prima riapparirebbe sopra il blocco alla prima accensione, leggibile
- * da chiunque, e il tocco successivo sul widget non troverebbe un foglio bianco.
+ * spento, una chiamata — la nota è chiusa, e l'Activity con lei.
+ *
+ * ## Il disegno (D46)
+ *
+ * Il foglio è tutto lo schermo, anche sotto le barre di sistema. I comandi galleggiano
+ * in basso, dove arriva il pollice: a sinistra una pillola tenue con tastiera e
+ * fotocamera, a destra "Fatto". Nient'altro, e niente in alto: in alto si scrive.
  */
 class CaptureActivity : Activity() {
 
@@ -65,22 +64,28 @@ class CaptureActivity : Activity() {
     private lateinit var journalSink: AndroidInkJournalSink
     private lateinit var inkView: InkCanvasView
     private lateinit var warning: TextView
-    private var meter: TextView? = null
+    private lateinit var textCard: LinearLayout
     private lateinit var textField: EditText
     private lateinit var photoStrip: LinearLayout
+    private lateinit var root: FrameLayout
+    private var meter: TextView? = null
+    private var camera: InlineCamera? = null
 
-    /**
-     * La foto in attesa della fotocamera. Finché è qui il foglio **non** si chiude quando
-     * esce dallo schermo: a coprirlo è la fotocamera che abbiamo aperto noi (D34, D38).
-     */
-    private var pendingPhoto: PhotoClip? = null
-    private val commitTextTask = Runnable { session.commitText(textField.text.toString()) }
-
-    /** Uno solo: `removeCallbacks` toglie solo ciò che è stato messo in coda dallo stesso Handler. */
-    private val mainHandler = Handler(Looper.getMainLooper())
+    /** Il dialogo del permesso copre il foglio senza abbandonarlo: non va chiuso. */
+    private var awaitingPermission = false
 
     /** Il contatore è del processo: conta solo quello che è fallito da quando questo foglio è aperto. */
     private var failuresAtOpen = 0
+
+    /** Uno solo: `removeCallbacks` toglie solo ciò che è stato messo in coda dallo stesso Handler. */
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val commitTextTask = Runnable { session.commitText(textField.text.toString()) }
+
+    /**
+     * Il carattere dei comandi del foglio è quello di sistema, non Instrument Sans:
+     * leggere un font dai file costa millisecondi sul percorso che misuriamo (D19).
+     */
+    private val controlsFont: Typeface by lazy { Typeface.create("sans-serif-medium", Typeface.NORMAL) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Due orologi, ognuno corretto per il suo scopo. Le durate si misurano su un
@@ -88,17 +93,9 @@ class CaptureActivity : Activity() {
         // delle note sono ora di parete, perché devono avere senso fra dispositivi.
         val processStart = Process.getStartElapsedRealtime()
         val sinceProcessStart = SystemClock.elapsedRealtime() - processStart
-        // A freddo il processo è nato per questo foglio; a caldo era già vivo. Sono due
-        // fenomeni fisici diversi e hanno due tetti diversi (D32).
-        //
-        // Il tempo dall'avvio del processo da solo non basta: un secondo foglio aperto
-        // pochi secondi dopo il primo trova il processo giovane, e verrebbe misurato
-        // dall'avvio del processo di prima — migliaia di millisecondi, in rosso, falsi.
-        // È freddo solo il **primo** foglio del processo, e solo se il processo è nato
-        // da poco: un processo avviato ore prima dal widget non lo è.
-        //
-        // "Primo" vuol dire prima Activity del processo, non primo foglio: se il processo
-        // l'ha avviato l'archivio, il foglio lo trova già caldo.
+        // A freddo il processo è nato per questo foglio; a caldo era già vivo (D32).
+        // "Primo" vuol dire prima Activity del processo: se il processo l'ha avviato
+        // l'archivio, il foglio lo trova già caldo.
         val firstInProcess = !ProcessState.anyActivityCreated
         ProcessState.anyActivityCreated = true
         val startKind = if (firstInProcess && sinceProcessStart in 0..MAX_COLD_START_MS) {
@@ -108,51 +105,38 @@ class CaptureActivity : Activity() {
         }
 
         trace = FrictionTrace(Clock { SystemClock.elapsedRealtime() }, startKind)
-        // A caldo il momento del tocco non si vede da qui: si parte da `onCreate`, e
-        // il numero non conta i millisecondi che il sistema spende prima di chiamarci.
-        // È ottimista, e lo dice la guida: la misura esterna è `am start -W`.
+        // A caldo il momento del tocco non si vede da qui: si parte da `onCreate`, e il
+        // numero non conta i millisecondi che il sistema spende prima (D32).
         trace.markAt(
             CaptureMilestone.INTENT,
             atMillis = if (startKind == StartKind.COLD) processStart else SystemClock.elapsedRealtime(),
         )
 
         super.onCreate(savedInstanceState)
-        // Per sicurezza, oltre al tema: nessuna transizione da aspettare.
         @Suppress("DEPRECATION") // la sostituta esiste solo da Android 14; questa funziona ovunque
         overridePendingTransition(0, 0)
+        // Il foglio arriva sotto le barre di sistema: è carta fino al bordo. Barre con
+        // icone scure, perché la carta è chiara anche di notte.
+        Ui.edgeToEdge(this, lightBars = true)
 
         journalSink = AndroidInkJournalSink.open(this)
         failuresAtOpen = AndroidInkJournalSink.failures.get()
-        val wallClock = Clock { System.currentTimeMillis() }
-        // Se il sistema ha ucciso il processo mentre la fotocamera era aperta, il foglio
-        // rinasce qui: con lo stesso id, i pezzi nuovi finiscono nella stessa nota di
-        // quelli già nel giornale, invece di spezzarla in due.
-        val restoredId = savedInstanceState?.getString(STATE_NOTE_ID)
         session = CaptureSession(
             canvas = screenCanvasSize(),
             journal = InkJournal(journalSink),
-            clock = wallClock,
-            noteId = restoredId?.let(::NoteId) ?: NoteId.random(),
-            createdAt = savedInstanceState?.getLong(STATE_CREATED_AT) ?: wallClock.nowMillis(),
+            clock = Clock { System.currentTimeMillis() },
         )
-        pendingPhoto = savedInstanceState?.let { state ->
-            val id = state.getString(STATE_PHOTO_ID) ?: return@let null
-            PhotoClip(PhotoClipId(id), state.getLong(STATE_PHOTO_AT), state.getString(STATE_PHOTO_PATH) ?: return@let null)
-        }
 
         inkView = InkCanvasView(this).apply {
             onFirstFrame = { trace.mark(CaptureMilestone.FIRST_FRAME) }
             onTouch = { eventUptime ->
-                // L'evento porta l'istante dell'hardware sull'orologio `uptimeMillis`;
-                // la misura sta su `elapsedRealtime`. Da svegli la differenza fra i due
-                // è costante, quindi basta spostarlo.
+                // L'evento porta l'istante dell'hardware sull'orologio `uptimeMillis`; la
+                // misura sta su `elapsedRealtime`. Da svegli la differenza è costante.
                 val offset = SystemClock.elapsedRealtime() - SystemClock.uptimeMillis()
                 trace.markAt(CaptureMilestone.TOUCH, atMillis = eventUptime + offset)
             }
             onInkAccepted = {
                 trace.mark(CaptureMilestone.INK_ACCEPTED)
-                // L'aggiornamento dell'interfaccia sì, al giro successivo: la tappa è
-                // già stata marcata, e qui siamo dentro la gestione di un tocco.
                 post { showMeasurement() }
             }
             onInkDrawn = {
@@ -171,22 +155,14 @@ class CaptureActivity : Activity() {
 
     override fun onPause() {
         // Se si esce col dito ancora sul vetro, quel tratto va chiuso e messo al
-        // sicuro: il salvataggio non dipende dalla conferma (D5, D20). Lo stesso vale
-        // per il testo a metà.
+        // sicuro: il salvataggio non dipende dalla conferma (D5, D20). Lo stesso per il
+        // testo a metà.
         inkView.commitIfDrawing()
         commitTextNow()
+        // La fotocamera si libera sempre quando il foglio non è in primo piano: la
+        // tiene un'app sola alla volta.
+        closeCamera()
         super.onPause()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(STATE_NOTE_ID, session.noteId.value)
-        outState.putLong(STATE_CREATED_AT, session.createdAt)
-        pendingPhoto?.let {
-            outState.putString(STATE_PHOTO_ID, it.id.value)
-            outState.putLong(STATE_PHOTO_AT, it.takenAt)
-            outState.putString(STATE_PHOTO_PATH, it.path)
-        }
     }
 
     override fun onStop() {
@@ -194,98 +170,67 @@ class CaptureActivity : Activity() {
         // Il sistema può uccidere un processo in secondo piano quando vuole: le
         // scritture in coda vanno su disco adesso, non "fra poco".
         journalSink.awaitWrites()
-        // Il foglio è uscito dallo schermo, e con lui la nota (D34). Il manifest
-        // dichiara i cambi di configurazione, quindi ruotare il telefono non arriva
-        // qui e non spezza la nota in due.
-        //
-        // L'unica eccezione è la fotocamera aperta da qui: il foglio è coperto, non
-        // abbandonato, e la foto deve tornare nella nota.
-        if (!isChangingConfigurations && pendingPhoto == null) finish()
-    }
-
-    /** Il testo digitato va nel giornale adesso, non fra un momento (D5, D38). */
-    private fun commitTextNow() {
-        if (!::textField.isInitialized) return
-        mainHandler.removeCallbacks(commitTextTask)
-        session.commitText(textField.text.toString())
-    }
-
-    private fun openKeyboard() {
-        textField.visibility = View.VISIBLE
-        textField.requestFocus()
-        getSystemService(InputMethodManager::class.java)?.showSoftInput(textField, InputMethodManager.SHOW_IMPLICIT)
-    }
-
-    /**
-     * Apre la fotocamera del sistema, che scrive la foto direttamente nei nostri file (D38).
-     *
-     * A telefono bloccato si usa la variante sicura: la fotocamera si apre sopra il blocco
-     * senza chiedere il codice, come il foglio, e senza dare accesso alla galleria.
-     */
-    private fun takePhoto() {
-        val id = PhotoClipId.random()
-        val path = NoteFiles.newPhotoPath(id.value)
-        val uri = NoteFiles.uri(NoteFiles.Root.DEVICE, path)
-        val locked = getSystemService(KeyguardManager::class.java)?.isKeyguardLocked == true
-        val intent = Intent(if (locked) MediaStore.ACTION_IMAGE_CAPTURE_SECURE else MediaStore.ACTION_IMAGE_CAPTURE)
-            .putExtra(MediaStore.EXTRA_OUTPUT, uri)
-            .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        intent.clipData = ClipData.newRawUri(null, uri)
-
-        // Nel giornale **prima** di aprire la fotocamera: mentre è aperta il sistema può
-        // uccidere il nostro processo, e la foto deve comunque ritrovare la sua nota.
-        val clip = session.addPhoto(path, id)
-        pendingPhoto = clip
-        try {
-            startActivityForResult(intent, REQUEST_PHOTO)
-        } catch (e: ActivityNotFoundException) {
-            pendingPhoto = null
-            session.discardPhoto(clip)
-            Toast.makeText(this, R.string.no_camera, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != REQUEST_PHOTO) return
-        val clip = pendingPhoto ?: return
-        pendingPhoto = null
-        if (resultCode == RESULT_OK) showPhoto(clip) else session.discardPhoto(clip)
-    }
-
-    /** Una miniatura sul foglio: la foto c'è, ed è in questa nota. Letta fuori dal thread dell'interfaccia. */
-    private fun showPhoto(clip: PhotoClip) {
-        val size = dp(56)
-        val view = ImageView(this).apply { scaleType = ImageView.ScaleType.CENTER_CROP }
-        photoStrip.addView(view, LinearLayout.LayoutParams(size, size).apply { rightMargin = dp(8) })
-        val app = applicationContext
-        Thread {
-            val bitmap = NoteFiles.resolve(app, clip.path)?.let { NoteRenderer.decodeThumbnail(it, size) }
-            view.post { view.setImageBitmap(bitmap) }
-        }.start()
+        // Il foglio è uscito dallo schermo, e con lui la nota (D34). Ruotare il telefono
+        // non arriva qui (il manifest dichiara i cambi di configurazione), e il dialogo
+        // del permesso della fotocamera copre il foglio senza abbandonarlo.
+        if (!isChangingConfigurations && !awaitingPermission) finish()
     }
 
     private fun buildLayout(): View {
-        val root = FrameLayout(this)
-        root.addView(
-            inkView,
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT,
-            ),
-        )
+        root = FrameLayout(this)
+        root.addView(inkView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
 
-        // Il campo di testo, nascosto finché non si tocca la tastiera (D38).
+        // I comandi stanno in uno strato sopra il foglio, spostato dentro le barre di
+        // sistema. Lo strato non prende i tocchi: quelli fuori dai comandi arrivano al
+        // foglio sotto.
+        val overlay = FrameLayout(this)
+        val gap = dp(12)
+        overlay.setPadding(gap, gap, gap, dp(16))
+        Ui.padForSystemBars(overlay, top = true, bottom = true)
+
+        overlay.addView(buildTop(), FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP,
+        ))
+        overlay.addView(buildBottom(), FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM,
+        ))
+        root.addView(overlay, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
+        return root
+    }
+
+    /** In alto solo ciò che l'utente ha chiesto: il testo digitato, e l'avviso se il disco è pieno. */
+    private fun buildTop(): View {
+        val column = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+
+        // Invisibile finché va tutto bene, cioè quasi sempre: se il disco è pieno
+        // l'utente deve saperlo adesso e non quando cercherà la nota (D5).
+        warning = TextView(this).apply {
+            text = getString(R.string.journal_failed)
+            setTextColor(Color.WHITE)
+            typeface = controlsFont
+            textSize = 14f
+            setPadding(dp(16), dp(12), dp(16), dp(12))
+            background = Ui.rounded(getColor(R.color.danger), dp(16).toFloat())
+            visibility = View.GONE
+        }
+        column.addView(warning, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            bottomMargin = dp(8)
+        })
+
+        // Il testo digitato (D38): una scheda in alto, sotto la barra di stato, che non
+        // copre niente e non è coperta da niente.
         textField = EditText(this).apply {
             setHint(R.string.text_hint)
-            textSize = 20f
-            setTextColor(InkPalette.INK)
-            setBackgroundColor(0xF2FFFFFF.toInt())
-            setPadding(dp(20), dp(16), dp(20), dp(16))
+            textSize = 18f
+            setTextColor(getColor(R.color.on_paper))
+            setHintTextColor(getColor(R.color.on_paper_muted))
+            background = null
+            setPadding(dp(4), dp(4), dp(4), dp(4))
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or
                 InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-            minLines = 3
-            visibility = View.GONE
+            minLines = 2
+            maxLines = 7
+            isVerticalScrollBarEnabled = true
             addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
@@ -297,102 +242,89 @@ class CaptureActivity : Activity() {
                 }
             })
         }
-        root.addView(textField, FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT,
-        ).apply { gravity = Gravity.TOP })
+        val hide = Ui.iconButton(this, R.drawable.ic_close, getString(R.string.cancel), getColor(R.color.on_paper_muted)) {
+            closeKeyboard()
+        }
+        textCard = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.TOP
+            setPadding(dp(14), dp(10), dp(4), dp(10))
+            Ui.card(this, context, elevationDp = 6f)
+            visibility = View.GONE
+            addView(textField, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(hide)
+        }
+        column.addView(textCard, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+        return column
+    }
 
-        // Tastiera e fotocamera, piccole e tenui (D38). Non sono decisioni da prendere:
-        // chi vuole scrivere a mano scrive e basta, e le icone non gli costano niente.
-        val tools = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        tools.addView(toolButton(R.drawable.ic_keyboard, R.string.keyboard) { openKeyboard() })
-        tools.addView(toolButton(R.drawable.ic_camera, R.string.camera) { takePhoto() })
-        root.addView(tools, FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT,
+    /** In basso, dove arriva il pollice: le miniature delle foto, poi i comandi. */
+    private fun buildBottom(): View {
+        val column = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+
+        if (isDebuggable()) column.addView(debugMeter(), LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT,
         ).apply {
-            gravity = Gravity.BOTTOM or Gravity.START
-            leftMargin = dp(8)
-            bottomMargin = dp(28)
+            gravity = Gravity.CENTER_HORIZONTAL
+            bottomMargin = dp(8)
         })
 
         photoStrip = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        root.addView(photoStrip, FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT,
-        ).apply {
-            gravity = Gravity.BOTTOM or Gravity.START
-            leftMargin = dp(20)
-            bottomMargin = dp(92)
+        column.addView(HorizontalScrollView(this).apply {
+            isHorizontalScrollBarEnabled = false
+            addView(photoStrip)
+        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            bottomMargin = dp(10)
         })
 
-        // L'uscita (D5, D21). Non salva: è già tutto nel giornale.
-        root.addView(
-            Button(this).apply {
-                text = getString(R.string.ok)
-                setOnClickListener {
-                    commitTextNow()
-                    finish()
-                }
-            },
-            FrameLayout.LayoutParams(dp(96), dp(56)).apply {
-                gravity = Gravity.BOTTOM or Gravity.END
-                rightMargin = dp(20)
-                bottomMargin = dp(28)
-            },
-        )
-
-        // Invisibile finché va tutto bene, cioè quasi sempre: non è un comando e non
-        // chiede niente, ma se il disco è pieno l'utente deve saperlo adesso e non
-        // quando cercherà la nota (D5).
-        warning = TextView(this).apply {
-            text = getString(R.string.journal_failed)
-            setTextColor(Color.parseColor("#B4402F"))
-            textSize = 13f
-            visibility = View.GONE
+        // Tastiera e fotocamera, tenui (D38): non sono decisioni da prendere, chi vuole
+        // scrivere a mano scrive e basta.
+        val muted = getColor(R.color.on_paper_muted)
+        val tools = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(4), dp(2), dp(4), dp(2))
+            background = Ui.rounded(getColor(R.color.card), dp(28).toFloat())
+            elevation = dp(3).toFloat()
+            addView(Ui.iconButton(this@CaptureActivity, R.drawable.ic_keyboard, getString(R.string.keyboard), muted) { openKeyboard() })
+            addView(Ui.iconButton(this@CaptureActivity, R.drawable.ic_camera, getString(R.string.camera), muted) { takePhoto() })
         }
-        root.addView(
-            warning,
-            // In alto e a tutta larghezza: in basso finirebbe sotto il pulsante OK sugli
-            // schermi stretti, e sotto il misuratore nelle build di debug.
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-            ).apply {
-                gravity = Gravity.TOP or Gravity.START
-                leftMargin = dp(20)
-                rightMargin = dp(20)
-                topMargin = dp(80)
-            },
-        )
 
-        if (isDebuggable()) root.addView(debugOverlay(), debugOverlayParams())
+        // L'uscita (D5, D21). Non salva: è già tutto nel giornale.
+        val done = Ui.pill(this, getString(R.string.done), R.drawable.ic_check, primary = true, font = controlsFont) {
+            commitTextNow()
+            finish()
+        }.apply {
+            // Colori fissi: il foglio è carta anche di notte, e il pulsante resta inchiostro.
+            background = Ui.pressable(context, Ui.rounded(getColor(R.color.on_paper), dp(28).toFloat()), dp(28).toFloat())
+            setTextColor(getColor(R.color.paper))
+            compoundDrawablesRelative[0]?.setTint(getColor(R.color.paper))
+        }
 
-        return root
+        column.addView(Ui.row(this, tools, Ui.spacer(this), done))
+        return column
     }
 
     /**
-     * Il misuratore e la scorciatoia all'elenco esistono **solo** nelle build di
-     * debug: all'apertura il foglio deve essere nudo (D21). Qui servono a leggere il
-     * numero di D19 sul telefono senza collegare strumenti.
+     * Il misuratore esiste **solo** nelle build di debug: all'apertura il foglio deve
+     * essere nudo (D21). Sta in basso, piccolo, e un tocco lo nasconde; tenerlo premuto
+     * apre il giornale.
      */
-    private fun debugOverlay(): View {
+    private fun debugMeter(): View {
         val view = TextView(this).apply {
-            setTextColor(InkPalette.MUTED)
             textSize = 11f
+            typeface = controlsFont
+            setTextColor(getColor(R.color.on_paper_muted))
             text = "attrito: in misura…"
-            setOnClickListener {
+            setPadding(dp(12), dp(6), dp(12), dp(6))
+            background = Ui.rounded(0xE6FFFDF8.toInt(), dp(14).toFloat())
+            setOnClickListener { visibility = View.GONE }
+            setOnLongClickListener {
                 startActivity(Intent(this@CaptureActivity, RecoveredNotesActivity::class.java))
+                true
             }
         }
         meter = view
         return view
-    }
-
-    private fun debugOverlayParams() = FrameLayout.LayoutParams(
-        FrameLayout.LayoutParams.WRAP_CONTENT,
-        FrameLayout.LayoutParams.WRAP_CONTENT,
-    ).apply {
-        gravity = Gravity.TOP or Gravity.START
-        leftMargin = dp(20)
-        topMargin = dp(52)
     }
 
     private fun showMeasurement() {
@@ -401,27 +333,126 @@ class CaptureActivity : Activity() {
         meter.setTextColor(
             // Rosso se una delle due sfora: il foglio lento ad aprirsi o il tratto che
             // resta indietro rispetto al dito (D36).
-            if (trace.verdict() == FrictionVerdict.OVER_BUDGET ||
-                trace.touchVerdict() == FrictionVerdict.OVER_BUDGET
-            ) {
-                Color.parseColor("#B4402F")
+            if (trace.verdict() == FrictionVerdict.OVER_BUDGET || trace.touchVerdict() == FrictionVerdict.OVER_BUDGET) {
+                getColor(R.color.danger)
             } else {
                 Color.parseColor("#2F6B3A")
             },
         )
     }
 
-    private fun toolButton(icon: Int, label: Int, onClick: () -> Unit) = ImageButton(this).apply {
-        setImageResource(icon)
-        setColorFilter(InkPalette.MUTED)
-        background = null
-        contentDescription = getString(label)
-        // 48 dp: il bersaglio minimo per un pollice, anche se l'icona è piccola (D16).
-        minimumWidth = dp(48)
-        minimumHeight = dp(48)
-        setPadding(dp(12), dp(12), dp(12), dp(12))
-        setOnClickListener { onClick() }
+    // --- Testo (D38) ---
+
+    /** Il testo digitato va nel giornale adesso, non fra un momento (D5, D38). */
+    private fun commitTextNow() {
+        if (!::textField.isInitialized) return
+        mainHandler.removeCallbacks(commitTextTask)
+        session.commitText(textField.text.toString())
     }
+
+    private fun openKeyboard() {
+        textCard.visibility = View.VISIBLE
+        textField.requestFocus()
+        getSystemService(InputMethodManager::class.java)?.showSoftInput(textField, InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    private fun closeKeyboard() {
+        getSystemService(InputMethodManager::class.java)?.hideSoftInputFromWindow(textField.windowToken, 0)
+        textField.clearFocus()
+        commitTextNow()
+        // La scheda resta se c'è del testo: è parte della nota, e deve vedersi.
+        if (textField.text.isBlank()) textCard.visibility = View.GONE
+    }
+
+    // --- Foto (D38, D45) ---
+
+    private fun takePhoto() {
+        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            awaitingPermission = true
+            requestPermissions(arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA)
+            return
+        }
+        openCamera()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != REQUEST_CAMERA) return
+        awaitingPermission = false
+        if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+            openCamera()
+        } else {
+            Toast.makeText(this, R.string.camera_denied, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun openCamera() {
+        if (camera != null) return
+        getSystemService(InputMethodManager::class.java)?.hideSoftInputFromWindow(root.windowToken, 0)
+        val inline = InlineCamera(
+            activity = this,
+            onPhoto = { bytes -> onPhotoTaken(bytes) },
+            onClose = { closeCamera() },
+            onFailure = {
+                closeCamera()
+                Toast.makeText(this, R.string.no_camera, Toast.LENGTH_SHORT).show()
+            },
+        )
+        camera = inline
+        root.addView(inline.view, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
+        inline.start()
+    }
+
+    private fun closeCamera() {
+        val inline = camera ?: return
+        camera = null
+        inline.stop()
+        root.removeView(inline.view)
+    }
+
+    /**
+     * La foto entra nella nota subito, e il file si scrive su un altro thread (invariante
+     * 20). Se il processo morisse fra le due cose, l'archivio troverebbe una foto senza
+     * file e semplicemente non la mostrerebbe.
+     */
+    private fun onPhotoTaken(bytes: ByteArray) {
+        closeCamera()
+        val id = PhotoClipId.random()
+        val path = NoteFiles.newPhotoPath(id.value)
+        session.addPhoto(path, id)
+
+        val size = dp(64)
+        val radius = dp(Ui.RADIUS_THUMB.toInt()).toFloat()
+        val thumbnail = ImageView(this).apply {
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            background = Ui.rounded(getColor(R.color.card), radius)
+            elevation = dp(2).toFloat()
+            Ui.clipRounded(this, radius)
+        }
+        photoStrip.addView(thumbnail, LinearLayout.LayoutParams(size, size).apply { rightMargin = dp(8) })
+
+        val app = applicationContext
+        Thread({
+            val written = runCatching {
+                FileOutputStream(NoteFiles.captureFile(app, path)).use { out ->
+                    out.write(bytes)
+                    out.flush()
+                    out.fd.sync()
+                }
+            }.isSuccess
+            val bitmap = if (written) NoteFiles.resolve(app, path)?.let { NoteRenderer.decodeThumbnail(it, size) } else null
+            runOnUiThread {
+                if (bitmap != null) {
+                    thumbnail.setImageBitmap(bitmap)
+                } else {
+                    photoStrip.removeView(thumbnail)
+                    Toast.makeText(app, R.string.journal_failed, Toast.LENGTH_LONG).show()
+                }
+            }
+        }, "inknote-foto").start()
+    }
+
+    // --- Varie ---
 
     private fun showJournalWarningIfNeeded() {
         val failed = session.journalFailures > 0 || AndroidInkJournalSink.failures.get() > failuresAtOpen
@@ -443,21 +474,12 @@ class CaptureActivity : Activity() {
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private companion object {
-
-        const val REQUEST_PHOTO = 1
+        const val REQUEST_CAMERA = 1
         const val TEXT_COMMIT_DELAY_MS = 1_200L
-        const val STATE_NOTE_ID = "note_id"
-        const val STATE_CREATED_AT = "created_at"
-        const val STATE_PHOTO_ID = "photo_id"
-        const val STATE_PHOTO_AT = "photo_at"
-        const val STATE_PHOTO_PATH = "photo_path"
 
         /**
-         * Soglia che distingue un'apertura a freddo da una a caldo.
-         *
-         * Se dall'avvio del processo è passato meno di questo, il processo è nato per
-         * questa apertura: è freddo, e il tetto è quello più largo. Oltre, il processo
-         * era già vivo per altri motivi e il tetto è quello severo (D32).
+         * Soglia che distingue un'apertura a freddo da una a caldo: se dall'avvio del
+         * processo è passato meno di questo, il processo è nato per questa apertura (D32).
          */
         const val MAX_COLD_START_MS = 10_000L
 

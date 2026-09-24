@@ -159,6 +159,24 @@ che questo codice viene compilato**: se il build si lamenta, mandami l'errore co
    Doppia pressione → Apri app → **Scrivi**. Poi, a telefono in tasca: doppio clic,
    scrivi.
 
+## 1ter. Il giro di prova del disegno nuovo (D45, D46)
+
+1. **L'archivio**: griglia di bigliettini, titolo grande, ricerca a pillola, "Scrivi" in
+   basso a destra. Prova anche col **tema scuro** del telefono: la scrivania diventa
+   scura, i bigliettini restano chiari.
+2. **Il foglio**: in basso a sinistra tastiera e fotocamera, a destra "Fatto". Il
+   misuratore è una pillola piccola in basso: **un tocco lo nasconde**, tenendolo premuto
+   apre il giornale.
+3. **La tastiera**: la scheda del testo compare in alto, sotto l'orologio, e non è più
+   coperta da niente. La X la chiude.
+4. **La fotocamera**: si apre **dentro il foglio**. La prima volta chiede il permesso —
+   **fai il primo scatto a telefono sbloccato**, così il permesso lo dai una volta per
+   tutte. Poi prova a telefono bloccato dal riquadro rapido: scatto, la miniatura compare
+   sul foglio, il foglio **non si chiude** e non chiede il codice.
+5. **Dimmi cosa non ti piace**, anche a sensazione: colori, dimensioni, cosa manca.
+   Il disegno è stato scritto senza vederlo su uno schermo, quindi il tuo occhio è la
+   prova vera.
+
 ## 2. Le altre due verifiche, mentre hai il telefono in mano
 
 **Il tratto.** Scrivi una riga col dito e guarda se lo spessore vive: più sottile nei

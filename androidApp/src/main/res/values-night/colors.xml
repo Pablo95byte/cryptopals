@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Solo la scrivania cambia di notte: la carta resta carta (vedi values/colors.xml). -->
+<resources>
+    <color name="desk">#141311</color>
+    <color name="text_primary">#F1ECE2</color>
+    <color name="text_secondary">#9D968A</color>
+    <color name="chip">#26241F</color>
+    <color name="outline">#33302A</color>
+    <color name="accent">#F1ECE2</color>
+    <color name="on_accent">#141311</color>
+    <color name="danger">#E07A66</color>
+    <color name="ripple">#29F1ECE2</color>
+</resources>

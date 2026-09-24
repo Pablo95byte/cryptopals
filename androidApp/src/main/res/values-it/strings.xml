@@ -14,7 +14,6 @@
     <string name="no_camera">Nessuna app fotocamera trovata</string>
     <string name="archive_title">Note</string>
     <string name="search_hint">Cerca</string>
-    <string name="archive_empty">Ancora nessuna nota.\nTocca + o usa il widget per scriverne una.</string>
     <string name="search_empty">Nessun risultato.</string>
     <string name="new_note">Nuova nota</string>
     <string name="handwritten_note">Nota scritta a mano</string>
@@ -27,4 +26,13 @@
     <string name="cancel">Annulla</string>
     <string name="torn_tail_notice">L\'ultimo tratto prima della chiusura dell\'app non si è potuto salvare.</string>
     <string name="shortcut_new_note">Nuova nota</string>
+    <string name="done">Fatto</string>
+    <string name="back">Indietro</string>
+    <string name="camera_denied">Senza il permesso della fotocamera, dal foglio non si possono scattare foto.</string>
+    <string name="archive_empty_title">Ancora niente</string>
+    <string name="archive_empty_body">Tocca Scrivi, o metti il widget sulla home: un\'idea prende un secondo.</string>
+    <plurals name="note_count">
+        <item quantity="one">%d nota</item>
+        <item quantity="other">%d note</item>
+    </plurals>
 </resources>
