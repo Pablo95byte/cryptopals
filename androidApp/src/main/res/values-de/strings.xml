@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generato da tools/i18n/apply.py (D69): le traduzioni si cambiano in
+     tools/i18n/translations.py, non qui. -->
+<resources>
+    <string name="capture_label">Schreiben</string>
+    <string name="ok">OK</string>
+    <string name="recovered_title">Notizen im Journal</string>
+    <string name="clear_journal">Journal leeren</string>
+    <string name="journal_failed">Speicher voll: Diese Notiz wird nicht gespeichert</string>
+    <string name="widget_description">Ein leeres Blatt: antippen und schreiben</string>
+    <string name="tile_label">Notiz schreiben</string>
+    <string name="keyboard">Tippen</string>
+    <string name="camera">Foto</string>
+    <string name="text_hint">Hier tippen…</string>
+    <string name="no_camera">Keine Kamera-App gefunden</string>
+    <string name="archive_title">Notizen</string>
+    <string name="search_hint">Suchen</string>
+    <string name="search_empty">Nichts gefunden.</string>
+    <string name="new_note">Neue Notiz</string>
+    <string name="handwritten_note">Handschriftliche Notiz</string>
+    <string name="photo_note">Foto</string>
+    <string name="share">Senden an …</string>
+    <string name="share_title">Notiz senden an</string>
+    <string name="share_nothing">Diese Notiz ist leer</string>
+    <string name="delete">Löschen</string>
+    <string name="delete_confirm">Diese Notiz löschen?</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="torn_tail_notice">Der letzte Strich vor dem Schließen der App konnte nicht gespeichert werden.</string>
+    <string name="shortcut_new_note">Neue Notiz</string>
+    <string name="done">Fertig</string>
+    <string name="back">Zurück</string>
+    <string name="camera_denied">Ohne Kameraberechtigung können auf dem Blatt keine Fotos aufgenommen werden.</string>
+    <string name="archive_empty_title">Noch nichts hier</string>
+    <string name="archive_empty_body">Tippe auf Schreiben oder füge das Widget zum Startbildschirm hinzu: Eine Idee dauert eine Sekunde.</string>
+    <string name="sort_button">%d sortieren</string>
+    <string name="keep">Behalten</string>
+    <string name="send">Senden</string>
+    <string name="close">Schließen</string>
+    <string name="all_sorted">Alles sortiert</string>
+    <string name="all_sorted_body">Neue Notizen warten hier, bis du eine Minute Zeit hast.</string>
+    <string name="resurface_year">Heute vor einem Jahr</string>
+    <string name="resurface_quarter">Heute vor drei Monaten</string>
+    <string name="resurface_month">Heute vor einem Monat</string>
+    <string name="resurface_week">Heute vor einer Woche</string>
+    <string name="resurface_days">Vor %d Tagen</string>
+    <string name="resurface_hide">Für heute ausblenden</string>
+    <string name="share_signature">Geschrieben mit Instink · instink.app</string>
+    <plurals name="note_count">
+        <item quantity="one">%d Notiz</item>
+        <item quantity="other">%d Notizen</item>
+    </plurals>
+    <plurals name="to_sort">
+        <item quantity="one">%d zu sortieren</item>
+        <item quantity="other">%d zu sortieren</item>
+    </plurals>
+</resources>

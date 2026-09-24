@@ -132,7 +132,7 @@ class NoteExportTest {
     fun `senza testo il nome del file ripiega sull'identificativo`() {
         val content = NoteExport.prepare(note(id = "abcdef1234567890", recognized = null, withInk = true))!!
 
-        assertEquals("nota-abcdef12", content.fileBaseName)
+        assertEquals("instink-abcdef12", content.fileBaseName)
     }
 
     @Test
