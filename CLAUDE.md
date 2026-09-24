@@ -10,9 +10,9 @@
 > si marca `SUPERATA da Dn`, con la ragione. Lo storico serve proprio a ricordare
 > perché una strada era stata scartata.
 
-Nome `InkNote`: **provvisorio**, è solo l'identificativo tecnico dei package
-(`app.inknote`). Il nome commerciale si decide più avanti, con criteri di
-posizionamento nello store, e non deve costare una rinomina dei package.
+Nome commerciale: **Instink** (D55). `InkNote` resta l'identificativo tecnico: package
+(`app.inknote`), bundle ID, moduli e nomi nel codice. Cambiare il nome commerciale non
+costa una rinomina dei package.
 
 ---
 
@@ -1663,6 +1663,36 @@ quanto costa. **Il criterio che decide, e costa zero:** dire i tre nomi a dieci 
 e il giorno dopo chiedere quale ricordano e come lo scriverebbero. Vince quello ricordato
 e scritto giusto, non quello che piace di più sul momento.
 
+
+### D55 — Il nome è Instink
+**Data:** 2026-09-24 · **Stato:** attiva, **scelta dal committente** · **Chiude D54** ·
+da verificare nello store, nei marchi e dal registrar
+
+"Instinct" + "ink": scrivere d'istinto, senza pensarci. È la missione (§1) detta in una
+parola, e ha una storia che si racconta in una frase.
+
+**Dove si vede e dove no.** È il nome sotto l'icona, nel widget, nelle impostazioni e nei
+testi: `CFBundleDisplayName` su iOS, `app_name` su Android, la riga "Da una nota scritta
+con Instink". **Non** cambiano i package `app.inknote`, i bundle ID già registrati, i
+moduli e i nomi nel codice: un identificativo tecnico non si vede, e cambiarlo dopo la
+registrazione su Apple costerebbe un'app nuova nello store.
+
+**Il rischio dichiarato, e come lo si riduce.** Sentito a voce, "Instink" si scrive
+"instinct". Tre contromisure che non costano niente:
+
+1. **"instinct" nel campo parole chiave** dell'App Store (100 caratteri, invisibile): chi
+   cerca la parola giusta trova comunque l'app.
+2. **Il nome si mostra sempre scritto**, con il segno dell'inchiostro: sul sito, negli
+   screenshot, in fondo alle note mandate fuori (D47).
+3. **Un dominio di riserva** che reindirizza, se il `.com` resta non disponibile
+   (per esempio `getinstink.com`).
+
+**Ancora da verificare**, nell'ordine di D54: scheda in App Store Connect, Play Console,
+marchi EUIPO e USPTO in classe 9 (attenzione a "Instinct", marchio di altri in altre
+categorie: conta la somiglianza nella stessa classe), dominio `instink.app` dal registrar.
+Se una di queste verifiche cade, si torna alla rosa di D54 e si cambiano solo le righe
+elencate sopra.
+
 ---
 
 ## 5. Struttura del repository
@@ -1902,13 +1932,13 @@ Codemagic (D53).
 
 ### Prima di pubblicare
 
-26. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
+26. **Schede degli store** per Instink (D55), screenshot, testi, informativa sulla
     privacy, etichette dell'esportazione tradotte (D41), firma di rilascio vera.
 
 ## 10. Questioni ancora aperte
 
-- **Nome commerciale e posizionamento nello store.** Contano più del codice per la
-  scoperta. Criteri, rosa e modo di verificarlo in D54: la proposta è Quicknib.
+- **Nome commerciale:** scelto, **Instink** (D55). Restano le verifiche: store, marchi,
+  dominio.
 - **Quanti widget nel livello gratuito.** Uno è la proposta; va verificato che non
   renda il livello gratuito inutile e quindi l'app non recensita.
 - **Prezzo effettivo del Pro**, per mercato.

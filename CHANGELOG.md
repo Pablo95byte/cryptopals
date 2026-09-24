@@ -10,6 +10,11 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Cambiato
+
+- **Il nome visibile è Instink** (D55): sotto l'icona su iOS e Android, nel widget e nei
+  testi. Package e bundle ID restano `app.inknote`.
+
 ### Aggiunto
 
 - **Smistamento a carte** (D52): `Note.sortedAt` con migrazione 5 → 6, la coda

@@ -4,7 +4,7 @@
     traduzione. L'italiano sta in values-it.
 -->
 <resources>
-    <string name="app_name">InkNote</string>
+    <string name="app_name">Instink</string>
     <string name="capture_label">Write</string>
     <string name="ok">OK</string>
     <string name="recovered_title">Notes in the journal</string>

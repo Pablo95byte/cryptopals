@@ -30,7 +30,7 @@ targets:
     info:
       path: InkNote/Info.plist
       properties:
-        CFBundleDisplayName: InkNote
+        CFBundleDisplayName: Instink
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleLocalizations: [en, it]
@@ -84,7 +84,7 @@ targets:
     info:
       path: InkNoteWidgets/Info.plist
       properties:
-        CFBundleDisplayName: InkNote
+        CFBundleDisplayName: Instink
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleLocalizations: [en, it]
