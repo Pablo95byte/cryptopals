@@ -117,6 +117,16 @@ class InkSheet(
         session.addPhoto(relativePath)
     }
 
+    /**
+     * Una registrazione finita, già su disco (D63).
+     *
+     * @param relativePath percorso relativo del file audio.
+     * @param durationMs quanto è durata: l'istante della registrazione è il suo inizio.
+     */
+    fun addVoice(relativePath: String, durationMs: Int) {
+        session.addVoice(path = relativePath, durationMs = durationMs)
+    }
+
     companion object {
         /** L'inchiostro della direzione visiva (D16), come su Android. */
         const val INK: Int = 0xFF1F2430.toInt()

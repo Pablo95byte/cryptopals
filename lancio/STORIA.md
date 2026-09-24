@@ -115,7 +115,7 @@ Il cronometro è la storia: non si dice "veloce", si fa vedere.
 
 ## 8. Cosa serve prima di tutto questo
 
-- **La pagina della privacy e quella di assistenza** (D50): obbligatorie per TestFlight
-  esterno e per lo store. Una pagina di testo ciascuna.
+- ~~La pagina della privacy e quella di assistenza~~: scritte, in `site/` (D61). Vanno
+  messe in rete (GUIDA §0quater).
 - **Il dominio** `instink.app` (D55).
 - **Il video e i sei screenshot**, girati sull'app vera quando il disegno è definitivo.

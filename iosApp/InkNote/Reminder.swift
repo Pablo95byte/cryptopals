@@ -13,11 +13,12 @@ struct ReminderSuggestion: Identifiable {
     let hasTime: Bool
     let title: String
 
-    init(hint: DateHint, note: Note) {
+    init(hint: DateHint, caption: String?) {
         date = Date(timeIntervalSince1970: TimeInterval(hint.atMillis) / 1000)
         hasTime = hint.hasTime
-        // Il titolo è la prima riga del testo: la nota stessa, non un nome inventato.
-        let text = note.typedText ?? note.recognizedText ?? ""
+        // Il titolo è la prima riga del testo: la nota stessa, non un nome inventato. Può
+        // venire dalla tastiera, dalla scrittura letta o da una registrazione (D62, D63).
+        let text = caption ?? ""
         let firstLine = text.split(whereSeparator: \.isNewline).first.map(String.init) ?? ""
         title = firstLine.isEmpty ? "Instink" : String(firstLine.prefix(80))
     }

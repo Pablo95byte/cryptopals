@@ -13,5 +13,16 @@ struct InkNoteShortcuts: AppShortcutsProvider {
             shortTitle: "Write",
             systemImageName: "scribble.variable"
         )
+        // Si detta senza sbloccare (D63): la sola cattura sopra il blocco su iPhone.
+        AppShortcut(
+            intent: AddNoteIntent(),
+            phrases: [
+                "Add a note to \(.applicationName)",
+                "Add an \(.applicationName) note",
+                "Take a note in \(.applicationName)",
+            ],
+            shortTitle: "Dictate",
+            systemImageName: "mic"
+        )
     }
 }

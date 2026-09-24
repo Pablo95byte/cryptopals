@@ -5,6 +5,7 @@ import app.inknote.core.model.NoteId
 import app.inknote.core.model.orderPhotoClips
 import app.inknote.core.model.orderStrokes
 import app.inknote.core.model.orderTextClips
+import app.inknote.core.model.orderVoiceClips
 
 /**
  * Il giornale di scrittura dell'inchiostro.
@@ -68,18 +69,32 @@ class InkJournal(private val sink: InkJournalSink) {
         val photos = records.mapNotNull { (it.item as? JournalItem.Photo)?.clip }
             .groupBy { it.id }
             .map { (_, copies) -> copies.firstOrNull { it.isDeleted } ?: copies.first() }
+        // Una registrazione può arrivare più volte (una trascrizione aggiunta dopo, un
+        // tombstone): si fondono i campi, e fra "c'è" e "non c'è ancora" vince "c'è" (D26).
+        val voices = records.mapNotNull { (it.item as? JournalItem.Voice)?.clip }
+            .groupBy { it.id }
+            .map { (_, copies) ->
+                copies.first().copy(
+                    durationMs = copies.maxOf { it.durationMs },
+                    transcript = copies.firstNotNullOfOrNull { it.transcript },
+                    audioPath = copies.firstNotNullOfOrNull { it.audioPath },
+                    deletedAt = copies.mapNotNull { it.deletedAt }.minOrNull(),
+                )
+            }
 
-        val parts = strokes.size + texts.size + photos.size
+        val parts = strokes.size + texts.size + photos.size + voices.size
         val latest = listOfNotNull(
             strokes.maxOfOrNull { it.createdAt },
             texts.maxOfOrNull { it.deletedAt ?: it.writtenAt },
             photos.maxOfOrNull { it.deletedAt ?: it.takenAt },
+            voices.maxOfOrNull { it.deletedAt ?: it.recordedAt },
         ).maxOrNull()
 
         return Note(
             id = noteId,
             canvas = first.canvas,
             strokes = strokes,
+            voiceClips = orderVoiceClips(voices),
             textClips = orderTextClips(texts),
             photoClips = orderPhotoClips(photos),
             createdAt = first.noteCreatedAt,

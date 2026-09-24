@@ -11,6 +11,8 @@ import app.inknote.core.model.PhotoClip
 import app.inknote.core.model.PhotoClipId
 import app.inknote.core.model.TextClip
 import app.inknote.core.model.TextClipId
+import app.inknote.core.model.VoiceClip
+import app.inknote.core.model.VoiceClipId
 
 /**
  * Un tratto e il contesto minimo per ricostruire la nota che lo contiene.
@@ -35,7 +37,8 @@ data class JournalRecord(
 }
 
 /**
- * Cosa può finire nel giornale: un tratto, un testo digitato, una foto (D38).
+ * Cosa può finire nel giornale: un tratto, un testo digitato, una foto (D38), una
+ * registrazione (D63).
  *
  * Testo e foto passano dal giornale per la stessa ragione dei tratti: sono al sicuro
  * da quando esistono, non da quando l'utente conferma (D5, D20). Un testo corretto
@@ -46,6 +49,7 @@ sealed interface JournalItem {
     data class Ink(val stroke: Stroke) : JournalItem
     data class Text(val clip: TextClip) : JournalItem
     data class Photo(val clip: PhotoClip) : JournalItem
+    data class Voice(val clip: VoiceClip) : JournalItem
 }
 
 /**
@@ -65,14 +69,25 @@ internal object JournalCodec {
 
     /**
      * La versione più alta che questo codice sa leggere. La 1 portava solo tratti; la 2
-     * aggiunge un byte di tipo davanti al contenuto (D38). Si scrive sempre la più alta,
-     * e si continuano a leggere tutte le precedenti.
+     * aggiunge un byte di tipo davanti al contenuto (D38); la 3 aggiunge le registrazioni
+     * (D63). Si continuano a leggere tutte le precedenti.
+     *
+     * Ogni record si scrive con la versione **più bassa che lo sa esprimere**: tratti,
+     * testi e foto restano alla 2, solo le registrazioni vanno alla 3. Così un'app più
+     * vecchia — un ripristino, un ritorno a una build precedente di TestFlight — legge
+     * tutto ciò che capisce, e davanti a una registrazione si ferma senza consumarla.
+     * Un tipo nuovo dentro la versione 2, invece, per lei sarebbe spazzatura: lo
+     * salterebbe, e lo svuotamento lo cancellerebbe.
      */
-    const val VERSION: Int = 2
+    const val VERSION: Int = 3
+
+    private const val VERSION_VOICE = 3
+    private const val VERSION_BASE = 2
 
     private const val KIND_INK = 1
     private const val KIND_TEXT = 2
     private const val KIND_PHOTO = 3
+    private const val KIND_VOICE = 4
     private const val HEADER_BYTES = 9 // versione (1) + lunghezza (4) + checksum (4)
 
     fun encode(record: JournalRecord): ByteArray {
@@ -100,11 +115,21 @@ internal object JournalCodec {
                 payload.putString(item.clip.path)
                 payload.putLong(item.clip.deletedAt ?: NO_TIME)
             }
+            is JournalItem.Voice -> {
+                payload.putByte(KIND_VOICE)
+                payload.putString(item.clip.id.value)
+                payload.putLong(item.clip.recordedAt)
+                payload.putInt(item.clip.durationMs)
+                payload.putString(item.clip.audioPath ?: "")
+                payload.putString(item.clip.transcript ?: "")
+                payload.putByte(if (item.clip.transcript != null) 1 else 0)
+                payload.putLong(item.clip.deletedAt ?: NO_TIME)
+            }
         }
         val body = payload.toByteArray()
 
         val out = ByteWriter()
-        out.putByte(VERSION)
+        out.putByte(if (record.item is JournalItem.Voice) VERSION_VOICE else VERSION_BASE)
         out.putInt(body.size)
         out.putInt(checksum(body))
         out.putRaw(body)
@@ -205,6 +230,25 @@ internal object JournalCodec {
                     deletedAt = reader.long().takeIf { it != NO_TIME },
                 ),
             )
+            KIND_VOICE -> {
+                require(version >= VERSION_VOICE) { "registrazione in un record di versione $version" }
+                val id = VoiceClipId(reader.string())
+                val recordedAt = reader.long()
+                val durationMs = reader.int()
+                val audioPath = reader.string().ifEmpty { null }
+                val transcriptText = reader.string()
+                val hasTranscript = reader.byte() == 1
+                JournalItem.Voice(
+                    VoiceClip(
+                        id = id,
+                        recordedAt = recordedAt,
+                        durationMs = durationMs,
+                        transcript = transcriptText.takeIf { hasTranscript },
+                        audioPath = audioPath,
+                        deletedAt = reader.long().takeIf { it != NO_TIME },
+                    ),
+                )
+            }
             else -> error("tipo di record sconosciuto: $kind")
         }
         return JournalRecord(noteId, noteCreatedAt, canvas, item)

@@ -4,6 +4,7 @@ import app.inknote.core.model.ExportTarget
 import app.inknote.core.model.Note
 import app.inknote.core.model.NoteId
 import app.inknote.core.model.VoiceClip
+import app.inknote.core.model.VoiceClipId
 
 /**
  * L'archivio locale delle note.
@@ -58,6 +59,27 @@ interface NoteStore {
 
     /** Le registrazioni vocali ancora da trascrivere, dalla più vecchia. */
     fun clipsNeedingTranscription(limit: Int = 20): List<VoiceClip>
+
+    /**
+     * Scrive il testo riconosciuto sull'inchiostro (D2, D62), **solo** se la nota è
+     * ancora alla revisione [forRevision], quella su cui il riconoscimento è stato fatto.
+     *
+     * Il riconoscimento dura secondi, fuori da ogni transazione: se intanto la nota è
+     * cresciuta, il testo descrive un inchiostro che non c'è più, e scriverlo la
+     * toglierebbe dalla coda con un indice incompleto.
+     *
+     * @return `true` se il testo è stato scritto.
+     */
+    fun setRecognizedText(id: NoteId, text: String, forRevision: Long): Boolean
+
+    /**
+     * Scrive la trascrizione di una registrazione (D25, D63). Una trascrizione già
+     * presente non si sovrascrive: una registrazione non cambia, e la sua trascrizione è
+     * definitiva.
+     *
+     * @return `true` se la trascrizione è stata scritta.
+     */
+    fun setTranscript(clipId: VoiceClipId, transcript: String): Boolean
 
     /**
      * Le note il cui indice di ricerca è stato calcolato da una normalizzazione
@@ -118,8 +140,9 @@ interface NoteStore {
      * abbondante: un tombstone eliminato prima che tutti i dispositivi l'abbiano
      * visto fa riapparire la nota al sync successivo.
      *
-     * @return i percorsi relativi delle foto delle note eliminate: i file stanno su
-     *   disco e non nel database, e toccherà alla piattaforma cancellarli (D38).
+     * @return i percorsi relativi dei file delle note eliminate — foto e registrazioni: i
+     *   file stanno su disco e non nel database, e toccherà alla piattaforma cancellarli
+     *   (D38, D63).
      */
     fun purgeDeleted(before: Long): List<String>
 }

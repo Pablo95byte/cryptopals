@@ -16,6 +16,9 @@ import app.inknote.core.model.TextClip
 import app.inknote.core.model.TextClipId
 import app.inknote.core.model.orderPhotoClips
 import app.inknote.core.model.orderTextClips
+import app.inknote.core.model.VoiceClip
+import app.inknote.core.model.VoiceClipId
+import app.inknote.core.model.orderVoiceClips
 
 /**
  * Una sessione di scrittura: dall'apertura del foglio alla conferma.
@@ -40,6 +43,7 @@ class CaptureSession(
     private val strokes = ArrayList<Stroke>()
     private val textClips = ArrayList<TextClip>()
     private val photoClips = ArrayList<PhotoClip>()
+    private val voiceClips = ArrayList<VoiceClip>()
 
     /** Il testo digitato in questo foglio, nella sua ultima versione salvata. */
     private var currentText: TextClip? = null
@@ -57,7 +61,8 @@ class CaptureSession(
 
     val strokeCount: Int get() = strokes.size
 
-    val isEmpty: Boolean get() = strokes.isEmpty() && currentText == null && photoClips.none { !it.isDeleted }
+    val isEmpty: Boolean get() = strokes.isEmpty() && currentText == null &&
+        photoClips.none { !it.isDeleted } && voiceClips.none { !it.isDeleted }
 
     val isDrawing: Boolean get() = active != null
 
@@ -167,6 +172,27 @@ class CaptureSession(
         journalItem(JournalItem.Photo(deleted))
     }
 
+    /**
+     * Aggiunge una registrazione finita, già salvata su disco (D63).
+     *
+     * Entra nel giornale a registrazione chiusa, non all'inizio: un file audio
+     * interrotto a metà non si riascolta, quindi non c'è niente da proteggere prima
+     * (D25). La trascrizione arriva dopo, nell'archivio, fuori dal foglio.
+     *
+     * @param path percorso relativo del file, come lo leggerà l'archivio.
+     */
+    fun addVoice(
+        path: String,
+        durationMs: Int,
+        recordedAt: Long = clock.nowMillis() - durationMs,
+        id: VoiceClipId = VoiceClipId.random(),
+    ): VoiceClip {
+        val clip = VoiceClip(id = id, recordedAt = recordedAt, durationMs = durationMs.coerceAtLeast(0), audioPath = path)
+        voiceClips += clip
+        journalItem(JournalItem.Voice(clip))
+        return clip
+    }
+
     private fun journalItem(item: JournalItem) {
         runCatching {
             journal.record(JournalRecord(noteId, createdAt, canvas, item))
@@ -185,16 +211,18 @@ class CaptureSession(
             ordered.maxOfOrNull { it.createdAt },
             textClips.maxOfOrNull { it.deletedAt ?: it.writtenAt },
             photoClips.maxOfOrNull { it.takenAt },
+            voiceClips.maxOfOrNull { it.recordedAt },
         ).maxOrNull()
         return Note(
             id = noteId,
             canvas = canvas,
             strokes = ordered,
+            voiceClips = orderVoiceClips(voiceClips),
             textClips = orderTextClips(textClips),
             photoClips = orderPhotoClips(photoClips),
             createdAt = createdAt,
             updatedAt = latest ?: createdAt,
-            revision = ordered.size + textClips.size + photoClips.size + 1L,
+            revision = ordered.size + textClips.size + photoClips.size + voiceClips.size + 1L,
         )
     }
 }

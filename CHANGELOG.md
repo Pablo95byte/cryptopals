@@ -10,8 +10,28 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Aggiunto — il sito, la lettura della scrittura, la voce (D61–D64)
+
+- **Il sito** in `site/`: home, informativa sulla privacy e assistenza, in inglese e in
+  italiano. Nessuno script, nessun carattere da server altrui, nessun tracciamento (D61).
+- **iOS, la scrittura si legge** con Vision, sul dispositivo, quando si apre l'archivio:
+  didascalie, ricerca, promemoria dalle date scritte a mano e testo in "Manda a…" (D62).
+- **iOS, il microfono sul foglio**: registrazione con contatore, riascolto e trascrizione
+  sul dispositivo nella nota aperta, l'audio allegato a "Manda a…" (D63).
+- **iOS, "Ehi Siri, aggiungi una nota a Instink"**: si detta a telefono bloccato, senza
+  aprire l'app (D63).
+- **Android, smistamento a carte e riemersione** nell'archivio (D64).
+- **Core**: le registrazioni nel giornale (versione 3, solo per loro), `addVoice` sulla
+  sessione di cattura, `setRecognizedText` e `setTranscript` nell'archivio, i file audio
+  nell'eliminazione definitiva; nella facciata per Swift `toRecognize`, `setRecognized`,
+  `toTranscribe`, `setTranscript`, `voiceItems`, `captionOf`, `InkSheet.addVoice`.
+
 ### Corretto
 
+- **Un salvataggio da una copia vecchia avrebbe cancellato il testo riconosciuto**:
+  `recognized_text` si assegnava secco, e col riconoscimento che arriva in ritardo (D62)
+  sarebbe bastato tenere una nota letta un attimo prima. Ora il testo si
+  sostituisce solo con uno di una revisione pari o più recente (D62).
 - **Gradle si fermava su `BaseVariant` dove c'è l'SDK Android**: il plugin Android ora sta
   nel classpath della radice, solo quando `:androidApp` entra nel build (D58). Correggeva
   un errore introdotto da D57.

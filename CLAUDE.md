@@ -95,13 +95,14 @@ posto solo invece che sparsi fra le decisioni.
 | Sblocco + ricerca dell'ingresso | **"Scrivi" nell'elenco delle app**: nel dock, o sul tasto laterale dei Samsung (D39) | nel codice |
 | Scrittura | **Foglio senza righe e tratto da pennarello col dito**: si scrive grande, l'archivio rimpicciolisce (D42) | nel codice, da provare |
 | Mani occupate | **Tastiera e foto dal foglio**, a un tocco, anche a telefono bloccato; la fotocamera sta dentro il foglio (D38, D45) | nel codice |
-| Mani occupate | **Cattura a voce** (D18): l'unica strada senza sblocco su iPhone | modello fatto, cattura da scrivere |
+| Mani occupate | **Cattura a voce** (D18): il microfono sul foglio, trascrizione sul dispositivo (D63) | iOS nel codice, Android no (D65) |
+| Sblocco, su iPhone | **"Ehi Siri, aggiungi una nota a Instink"**: si detta a telefono bloccato, senza aprire l'app (D63) | iOS nel codice |
 | Scrittura, di notte | **Il foglio si scurisce col tema scuro**: a letto al buio non acceca (D52) | nel codice, Android e iOS |
 | Ritorno | **Una vibrazione breve su "Fatto"**: la nota è al sicuro, senza guardare (D52) | nel codice, Android e iOS |
 | Tutti | **I tetti: foglio pronto in 100 ms a caldo, 400 a freddo; tratto dietro al dito di al massimo 50 ms** (D19, D32, D36). Non sono funzionalità: impediscono alle altre di degradarsi | **tutti verdi** sul Samsung S8: 86 ms a caldo, 358–387 a freddo, tratto 13–14 ms a caldo e 30 a freddo |
 | Tutti | **Restare piccoli**: un processo leggero resta nella cache del sistema, e la seconda apertura della giornata è calda (D32) | nel codice, zero dipendenze |
 
-**Fuori da questa catena** sta la ricerca (OCR e trascrizioni, D2 e D25): riduce
+**Fuori da questa catena** sta la ricerca (OCR e trascrizioni, D2 e D25; su iOS D62 e D63): riduce
 l'attrito del *ritrovare*, non dello scrivere. È la seconda metà della promessa, e non
 va confusa con la prima — è esattamente l'errore che D30 ha corretto, quando il widget
 mostrava le vecchie note.
@@ -132,7 +133,7 @@ calligrafia resta l'identità del prodotto, ma si vede dentro l'app e negli scre
 dello store, non sulla home dell'utente.
 
 ### D2 — Le note diventano cercabili con l'OCR della scrittura
-**Data:** 2026-09-12 · **Stato:** attiva, da implementare
+**Data:** 2026-09-12 · **Stato:** attiva · **iOS in D62**, Android da fare (D65)
 
 Un riconoscimento del testo scritto a mano gira in sottofondo e rende le note
 cercabili, senza mai sostituire l'inchiostro mostrato.
@@ -1559,7 +1560,7 @@ né Vision né ML Kit danno. Esistono motori commerciali (MyScript) con licenze 
 Si decide dopo il riconoscimento normale (D2), e solo se gli studenti lo chiedono.
 
 **Su Android**, per ora, solo foglio di notte e vibrazione: smistamento e riemersione sono
-nel core e aspettano l'interfaccia, dopo iOS (D48).
+nel core e aspettano l'interfaccia, dopo iOS (D48). **Arrivate con D64.**
 
 ### D53 — Il CI è Codemagic, con tre workflow
 **Data:** 2026-09-24 · **Stato:** attiva, **provata per iOS**: il 2026-09-24 la build 5
@@ -1845,6 +1846,173 @@ vetrina, ma non è un piano. Il piano è un altro:
 3. **Il prezzo lo decidono i dati del test**, non l'intuito: la struttura di D4 si rivede
    dopo i primi 30 giorni di utenti veri.
 
+
+### D61 — Il sito: tre pagine statiche, due lingue, zero richieste a terzi
+**Data:** 2026-09-24 · **Stato:** attiva · **Attua la parte urgente di D50**
+
+`site/` contiene la home piccola, l'**informativa sulla privacy** e l'**assistenza**, in
+inglese alla radice e in italiano in `site/it/`. HTML e un foglio di stile, nient'altro.
+
+**Perché adesso.** L'URL della privacy è obbligatorio per il test esterno di TestFlight e
+per lo store; quello dell'assistenza per la prima versione nello store (D60).
+
+**Nessuna richiesta a terzi, nemmeno per il carattere.** Instrument Sans è servito dal
+sito stesso (lo stesso file dell'app Android, licenza OFL accanto): Google Fonts
+registra l'indirizzo di chi visita, e in Europa è già stato giudicato un trasferimento di
+dati personali. Una pagina che dice "nessun tracciamento" non può farlo alla prima riga.
+Nessuno script: il segno che si disegna è un'animazione CSS, spenta per chi ha chiesto
+meno movimento.
+
+**L'informativa dice solo cose vere, e anche quelle scomode.** Nessun dato raccolto, ma:
+le richieste a Siri le elabora Apple; chi prova con TestFlight ci manda la sua email
+insieme ai commenti; Apple e Google possono mandarci rapporti anonimi sugli arresti se
+l'utente lo ha permesso; su Android le foto restano fuori dal backup nel cloud (D49); una
+nota eliminata non si recupera dall'app (D26). Copre anche le funzioni di D62 e D63
+(riconoscimento e voce), che rispettano la stessa promessa: tutto sul dispositivo.
+**Ogni funzione nuova che tocca dati va confrontata con questa pagina prima di uscire.**
+
+**Dove si ospita: Cloudflare Pages**, non GitHub Pages. Funziona col repository privato
+senza un piano a pagamento, dà un indirizzo decente subito (`instink.pages.dev`), e lo
+stesso posto vende il dominio al prezzo di costo e inoltra la posta di `instink.app`
+alla casella del committente, che così non compare mai in pubblico.
+
+**L'indirizzo di contatto è `hello@instink.app`** in tutte le pagine: funziona quando il
+dominio è comprato e l'inoltro è acceso (GUIDA §0quater). L'indirizzo personale del
+committente non si pubblica.
+
+
+### D62 — La scrittura si legge su iOS con Vision, dopo, e il testo non può tornare indietro
+**Data:** 2026-09-24 · **Stato:** attiva, **da compilare e provare** · **Attua D2 su iOS**
+
+Quando si apre l'archivio, dopo l'assorbimento del giornale, le note con inchiostro non
+ancora letto (`notesNeedingRecognition`) passano da **Vision** (`VNRecognizeTextRequest`,
+modo accurato, correzione della lingua, le lingue del telefono): l'inchiostro si disegna su
+carta chiara a 1400 pixel — lo stesso disegno di "Manda a…" — e il testo torna riga per
+riga, dall'alto in basso. Diventa la didascalia nell'elenco, la ricerca lo trova, le date
+scritte a mano diventano promemoria (D52), e "Manda a…" lo mette nel testo (D31).
+
+**Perché dopo e non sul foglio.** Leggere costa secondi; sul foglio non entra niente che
+non serva a scrivere (D20). E chi scrive non ha bisogno del testo: ne ha bisogno chi cerca,
+dopo.
+
+**Perché Vision e non un modello nostro.** Sta nel sistema, gira sul dispositivo (D12,
+D61), legge anche la scrittura a mano, e non pesa niente nell'app. Il corsivo stretto lo
+legge male: è il limite già dichiarato in D2, e l'interfaccia non lo mostra come un errore —
+senza testo la nota resta la sua calligrafia.
+
+**Due regole nell'archivio, perché il testo arriva da fuori e in ritardo:**
+
+1. **Si scrive solo sulla revisione letta** (`setRecognizedText`, con lettura e scrittura
+   nella stessa transazione). Se mentre Vision lavora la nota cresce, il testo descrive un
+   inchiostro che non c'è più: non si scrive, la nota resta in coda e la prossima passata
+   la rilegge intera.
+2. **Un salvataggio vecchio non lo cancella.** `updateNote` assegnava `recognized_text`
+   secco: finché il testo non esisteva non importava, ma con il riconoscimento che arriva
+   in ritardo sarebbe bastato tenere una nota letta un attimo prima per **cancellare il
+   testo**, e la nota sarebbe sparita dalla ricerca. Ora il
+   testo si sostituisce solo con uno calcolato su una revisione pari o più recente — la
+   stessa forma monotona di revisione e tombstone (D26, D31). Test di regressione.
+
+**Un esito vuoto è un esito.** Uno scarabocchio senza parole riceve un testo vuoto e
+**esce dalla coda**: altrimenti ci si rigirerebbe sopra a ogni apertura.
+
+**Limite di lavoro:** quaranta note per apertura, a lotti di otto. Un archivio grande
+arrivato da un aggiornamento si recupera in qualche apertura, senza scaldare il telefono.
+
+**Android: non ancora** (D65).
+
+### D63 — La voce su iPhone: un microfono sul foglio, e Siri a telefono bloccato
+**Data:** 2026-09-24 · **Stato:** attiva, **da compilare e provare** · **Attua D18 su iOS,
+chiude la questione aperta di D25 sul giornale**
+
+**Sul foglio, il terzo strumento è il microfono**, accanto a tastiera e fotocamera (D38):
+un tocco comincia, una pillola rossa col contatore dice che si sta registrando e, toccata,
+ferma. La registrazione è un `VoiceClip` della nota, accanto all'inchiostro (D25), e sul
+foglio compare come una piccola forma d'onda con la durata. AAC mono a 22 kHz: la voce
+resta chiara e un minuto pesa meno di mezzo megabyte nel backup (D49).
+
+**La trascrizione arriva dopo, nell'archivio, e solo sul dispositivo**
+(`requiresOnDeviceRecognition`). Se il telefono non sa riconoscere il parlato senza rete,
+la registrazione aspetta con l'audio intatto: **nessun audio lascia il telefono** (D12,
+D61). "Nessun parlato" è un esito, e toglie la registrazione dalla coda; ogni altro errore
+la lascia per la prossima volta. Nella nota aperta la registrazione si riascolta, e sotto
+c'è ciò che è stato capito; "Manda a…" allega il file audio.
+
+**"Ehi Siri, aggiungi una nota a Instink".** Un'azione che **non apre l'app** e **funziona
+a telefono bloccato** (`authenticationPolicy = .alwaysAllowed`): Siri chiede "Qual è la
+nota?", si detta, e il testo va nel giornale come testo digitato. È l'unica cattura sopra
+il blocco che Apple concede (D17), quindi su iPhone è **il percorso più corto che
+esista**. Rispetta l'invariante 11: si aggiunge, non si legge — Siri risponde "Salvata" e
+non ripete nemmeno il testo. È anche l'unico punto in cui il riconoscimento non è nostro:
+la dettatura la fa Siri, e l'informativa lo dice (D61).
+
+**Il giornale porta le registrazioni: versione 3.** Un record nuovo, `KIND_VOICE`, scritto
+**a registrazione chiusa**: un file AAC interrotto a metà non si riascolta, quindi prima
+non c'è niente da proteggere. Si perde solo una registrazione in corso quando il processo
+muore — ma il foglio chiude e salva la registrazione appena perde lo schermo (D34), e a
+foglio aperto il processo non muore. **Ogni record si scrive con la versione più bassa che
+lo sa esprimere**: tratti, testi e foto restano alla 2. Così una build precedente — un
+ritorno indietro su TestFlight — legge tutto ciò che capisce e si ferma davanti a una
+registrazione senza consumarla (D13, D35). Un tipo nuovo dentro la versione 2, per lei,
+sarebbe stato spazzatura da saltare, cioè da cancellare.
+
+**La trascrizione è definitiva** (D25): `setTranscript` scrive una volta e non
+sovrascrive. L'eliminazione definitiva dopo trenta giorni riporta anche i file audio, oltre
+alle foto.
+
+**I permessi si chiedono al primo tocco sul microfono**, non all'apertura: microfono e
+riconoscimento vocale insieme, una volta sola. Senza il secondo, l'audio si registra e non
+si trascrive.
+
+**Android: non ancora** (D65).
+
+### D64 — Smistamento e riemersione anche su Android
+**Data:** 2026-09-24 · **Stato:** attiva, **compila contro Android 15 (D44), da provare** ·
+**Completa D52**
+
+Le stesse due cose di iOS, con le View di piattaforma (D39):
+
+- **"Smista N"** nell'intestazione dell'archivio, tenue — il solo pulsante pieno resta
+  "Scrivi" (D46) — e **solo se c'è qualcosa da smistare**. Apre `TriageActivity`: una carta
+  alla volta, trascinata a destra si manda, a sinistra si tiene, in basso si butta; gli
+  stessi tre gesti come pulsanti rotondi per chi non trascina e per TalkBack. Mentre si
+  trascina, la parola sopra la carta dice cosa succederà lasciando andare.
+- **La riemersione** in cima all'archivio, sotto la ricerca: un bigliettino piccolo con
+  l'inchiostro e "una settimana fa, oggi"; tocco per aprire, crocetta per toglierla per
+  oggi. Il giorno tolto sta nelle preferenze di chi guarda, non in archivio (D52). Mai
+  durante una ricerca.
+
+**"Manda" non toglie la nota dalla coda da solo.** Il foglio di condivisione registra
+l'invio solo a destinazione scelta (invariante 18): se l'utente lo chiude, la carta esce
+dallo schermo ma la nota è ancora da smistare alla prossima apertura. È giusto: non è
+arrivata da nessuna parte.
+
+**"Tieni" rilegge la nota prima di salvarla**, invece di salvare la copia in mano: il
+salvataggio unisce comunque (D14), ma una copia vecchia non ha motivo di viaggiare.
+
+### D65 — Cosa resta fuori da questo giro, e cosa serve per farlo
+**Data:** 2026-09-24 · **Stato:** attiva
+
+1. **"Condividi verso Instink" su iOS** (D47, punto 5). Un'estensione di condivisione è un
+   processo a parte, e per scrivere dove l'app legge serve un **App Group**. Tocca al
+   committente, prima di una riga di codice: registrare `group.app.inknote`, aggiungere
+   la capacità App Groups a `app.inknote.ios`, registrare `app.inknote.ios.share` con la
+   stessa capacità, rigenerare i profili App Store e caricarli su Codemagic (GUIDA
+   §0quinquies). **Scrivere il target prima rompe la firma di ogni build su TestFlight**,
+   perché `ios_signing` cerca un profilo per ogni estensione. Il disegno è deciso:
+   l'estensione scrive in un **giornale suo** nel contenitore condiviso, con lo stesso
+   formato, e l'app lo assorbe insieme al proprio. Nessun cambio al giornale di oggi.
+2. **Riconoscimento della scrittura su Android.** ML Kit Digital Ink sta sul Maven di
+   Google, che qui è bloccato: il codice non si potrebbe nemmeno compilare per controllo
+   (D44). E registra un `ContentProvider` per inizializzarsi (invariante 21), da togliere
+   dal manifest e sostituire con un'inizializzazione a mano nel processo dell'archivio.
+   Si fa sulla macchina del committente, con l'SDK.
+3. **Voce su Android.** Il riconoscimento del parlato sul dispositivo da un file registrato
+   non esiste come API pubblica prima di Android 13, e con limiti dopo; il riconoscimento
+   dal vivo va scritto registrando e riconoscendo insieme. È un lavoro a sé, e su Android
+   la cattura a telefono bloccato c'è già (D17, D33): la voce è meno urgente che su iPhone.
+4. **Le formule** restano dove le ha messe D52.
+
 ---
 
 ## 5. Struttura del repository
@@ -1856,7 +2024,8 @@ core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
   ink/           StrokeBuilder, CatmullRom, WidthProfile, StrokeSimplifier, InkConfig
   geometry/      StrokeGeometry (la facciata per i renderer), StrokeOutliner, Outline,
                  Bounds, NoteFraming (inquadrare una nota in un riquadro, dentro l'app)
-  capture/       CaptureSession, InkJournal, FrictionTrace — non vede l'archivio
+  capture/       CaptureSession, InkJournal (tratti, testo, foto, voce), FrictionTrace — non
+                 vede l'archivio
   store/         NoteStore, JournalIngest, schema SQLDelight e schema versionato
 shared/          Il core in un framework per iOS, InkNoteKit, più la facciata per Swift
                  (InkSheet, InkArchive, InkPreview) con i suoi test (D48)
@@ -1869,6 +2038,7 @@ tools/
   android-check/ Compilazione di controllo di :androidApp senza SDK (D44)
 codemagic.yaml   Il CI: test del core a ogni push, TestFlight e Play interno su tag (D53)
 lancio/          La storia del prodotto e i testi pubblici: STORIA.md (D60)
+site/            Il sito statico: home, privacy, assistenza, in inglese e italiano (D61)
 design/
   mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato:
                  home iOS, cattura nuda, cattura con strumenti, Android da
@@ -1996,7 +2166,10 @@ condivisione (D38–D40) **compilano contro Android 15** (D44) ma non sono ancor
 costruiti con l'SDK né provati sul telefono. L'app iOS (D48, D52) **compila**, app e widget
 insieme al core Kotlin/Native: primo giro verde di `ios-check` su Codemagic, 2026-09-24,
 dopo la correzione di Gradle (D57). **È su TestFlight** (build 5, 2026-09-24), firmata con
-il certificato di distribuzione del committente; non è ancora stata provata su un iPhone.
+il certificato di distribuzione del committente, e **provata su iPhone**: il foglio si apre
+subito, i widget funzionano (D59). Riconoscimento della scrittura, voce e Siri (D62, D63)
+**non sono ancora compilati**: li compila il prossimo `ios-check`. Smistamento e riemersione
+su Android (D64) compilano contro Android 15. 318 test.
 
 ---
 
@@ -2076,14 +2249,15 @@ il certificato di distribuzione del committente; non è ancora stata provata su 
     smistamento, riemersione, promemoria dalle date, foglio di notte, vibrazione (D52).
     Scritta, **da compilare** insieme alla prima.
 20. **Test chiuso del Play Store in parallelo** — i 14 giorni corrono mentre si fa iOS (D48).
-21. **`core:ocr`** — riconoscimento della scrittura (D2): Vision su iOS, ML Kit su
-    Android, che registra un `ContentProvider` da togliere (invariante 21).
-22. ~~Smistamento a carte e riemersione~~ — core e iOS fatti (D52). **Su Android manca
-    l'interfaccia.**
+21. ~~Riconoscimento della scrittura su iOS~~ (D62). **Android** con ML Kit, sulla
+    macchina del committente (D65).
+22. ~~Smistamento a carte e riemersione~~ — core, iOS (D52) e Android (D64).
 22bis. ~~Codemagic al primo giro~~ (D53): iOS arriva su TestFlight. Restano da provare i
     workflow Android.
-23. **`core:voice`** (D18), **"Condividi verso InkNote"**.
-24. **Il sito** (D50): privacy e assistenza subito, la pagina vera dopo il nome.
+23. ~~Voce su iOS~~ — microfono sul foglio e Siri a telefono bloccato (D63). **"Condividi
+    verso Instink"** aspetta l'App Group (D65); la voce su Android dopo.
+24. ~~Il sito, privacy e assistenza~~ (D61): scritti, da mettere in rete. La pagina vera,
+    col video, dopo il disegno definitivo (D50).
 25. **`core:billing`** — il Pro (D4), dopo il lancio (D43, D47).
 
 ### Prima di pubblicare
@@ -2106,12 +2280,12 @@ il certificato di distribuzione del committente; non è ancora stata provata su 
 - **Il recupero dal cestino.** Azzerare `deletedAt` non funziona: l'archivio non lo
   permette più (D26) e al primo sync la cancellazione vincerebbe comunque. Probabile
   soluzione: copiare la nota sotto un id nuovo, accettando di perdere lo storico.
-- **Se il giornale debba coprire anche l'audio** (D25 lo lascia fuori per ora).
+- ~~Se il giornale debba coprire anche l'audio~~ — sì, a registrazione chiusa (D63).
 - **Il piano di lancio (D43), la strategia di crescita (D47) e la storia (D60)**: da
   confermare.
 - **Le formule in LaTeX** (D51, D52): serve un motore di riconoscimento matematico a
   pagamento. Dopo D2, e solo se richiesto.
-- **Smistamento e riemersione su Android**: il core c'è, l'interfaccia no (D52).
+- ~~Smistamento e riemersione su Android~~ — fatti (D64).
 - ~~Il backup è spento~~ — acceso, sull'account dell'utente (D49).
 - **La fascia di scrittura ingrandita** per il corsivo col dito (D42): dopo aver provato
   foglio senza righe e tratto più spesso.

@@ -108,13 +108,20 @@ private struct NoteCard: View {
             Group {
                 if item.note.hasInk {
                     InkThumbnail(note: item.note)
-                } else {
-                    Text(item.caption ?? "")
+                } else if let caption = item.caption {
+                    Text(caption)
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(Brand.ink)
                         .lineLimit(7)
                         .padding(16)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                } else {
+                    // Una registrazione non ancora trascritta, o solo una foto: un segno
+                    // tenue invece di un bigliettino vuoto che sembra rotto.
+                    Image(systemName: item.note.hasVoice ? "waveform" : "photo")
+                        .font(.system(size: 28, weight: .light))
+                        .foregroundStyle(Brand.inkMuted)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
             .frame(height: 150)

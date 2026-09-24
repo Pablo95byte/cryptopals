@@ -1,0 +1,207 @@
+/*
+ * Il sito di Instink (D50, D61): carta su una scrivania, come l'app (D46).
+ * Nessuno script, nessun font da server altrui, nessun tracciamento (D12).
+ */
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("fonts/InstrumentSans.ttf") format("truetype");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+:root {
+  --desk: #F3EFE7;
+  --card: #FFFDF8;
+  --ink: #1F2430;
+  --muted: #6F685B;
+  --outline: #E0D8C8;
+  --accent: #1F2430;
+  --on-accent: #FFFDF8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #141311;
+    --card: #1D1C19;
+    --ink: #ECE5D6;
+    --muted: #A39C8E;
+    --outline: #33302A;
+    --accent: #ECE5D6;
+    --on-accent: #141311;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--ink);
+  font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+a { color: inherit; text-underline-offset: 3px; }
+
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+header.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 19px;
+  text-decoration: none;
+}
+
+.brand svg { width: 28px; height: 28px; }
+
+.lang {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.hero {
+  padding: 56px 0 40px;
+}
+
+.hero h1 {
+  font-size: clamp(40px, 9vw, 72px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0 0 18px;
+}
+
+.hero p {
+  font-size: 20px;
+  color: var(--muted);
+  margin: 0;
+  max-width: 34em;
+}
+
+.scribble {
+  display: block;
+  width: 120px;
+  height: 120px;
+  margin: 0 0 28px;
+}
+
+.scribble path {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: write 1.4s ease-out 0.2s forwards;
+}
+
+@keyframes write { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .scribble path { animation: none; stroke-dashoffset: 0; }
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--outline);
+  border-radius: 22px;
+  padding: 24px;
+  margin: 0 0 16px;
+}
+
+.card h2, .card h3 { margin-top: 0; }
+
+.steps {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+  margin: 8px 0 40px;
+}
+
+@media (min-width: 640px) {
+  .steps { grid-template-columns: repeat(3, 1fr); }
+}
+
+.steps .card { margin: 0; }
+
+.steps strong {
+  display: block;
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.steps span { color: var(--muted); }
+
+.pill {
+  display: inline-block;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+article h1 {
+  font-size: clamp(32px, 7vw, 44px);
+  line-height: 1.1;
+  margin: 32px 0 8px;
+}
+
+article .updated {
+  color: var(--muted);
+  margin: 0 0 28px;
+}
+
+article h2 {
+  font-size: 22px;
+  margin: 36px 0 8px;
+}
+
+article ul { padding-left: 1.2em; }
+
+article li { margin: 6px 0; }
+
+.promise {
+  font-size: 19px;
+}
+
+details {
+  background: var(--card);
+  border: 1px solid var(--outline);
+  border-radius: 18px;
+  padding: 16px 20px;
+  margin: 0 0 12px;
+}
+
+details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+details[open] summary { margin-bottom: 8px; }
+
+footer {
+  color: var(--muted);
+  font-size: 15px;
+  padding: 48px 0 40px;
+}
+
+footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-bottom: 8px;
+}

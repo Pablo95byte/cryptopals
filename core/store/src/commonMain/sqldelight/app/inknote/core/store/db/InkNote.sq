@@ -219,9 +219,25 @@ UPDATE note SET
     -- della nota non deve poter cancellare un tombstone già in archivio, o la nota
     -- resusciterebbe (invariante 2).
     deleted_at = coalesce(deleted_at, :deletedAt),
-    recognized_text = :recognizedText,
-    recognized_from_revision = :recognizedFromRevision,
-    recognized_text_normalized = :recognizedTextNormalized,
+    -- Il testo riconosciuto si sostituisce solo con uno calcolato su una revisione pari o
+    -- più recente (D62). Un salvataggio partito da una copia letta prima che il
+    -- riconoscimento finisse non lo porta più via: senza questa condizione la nota
+    -- tornava in coda al riconoscimento, e intanto spariva dalla ricerca.
+    recognized_text = CASE
+        WHEN :recognizedFromRevision IS NOT NULL
+         AND (recognized_from_revision IS NULL OR :recognizedFromRevision >= recognized_from_revision)
+        THEN :recognizedText ELSE recognized_text
+    END,
+    recognized_text_normalized = CASE
+        WHEN :recognizedFromRevision IS NOT NULL
+         AND (recognized_from_revision IS NULL OR :recognizedFromRevision >= recognized_from_revision)
+        THEN :recognizedTextNormalized ELSE recognized_text_normalized
+    END,
+    recognized_from_revision = CASE
+        WHEN :recognizedFromRevision IS NOT NULL
+         AND (recognized_from_revision IS NULL OR :recognizedFromRevision >= recognized_from_revision)
+        THEN :recognizedFromRevision ELSE recognized_from_revision
+    END,
     search_version = :searchVersion,
     -- Smistata resta smistata, e vale il primo istante: come il tombstone (D26, D52).
     sorted_at = CASE
@@ -230,6 +246,19 @@ UPDATE note SET
         ELSE min(sorted_at, :sortedAt)
     END
 WHERE id = :id;
+
+-- Il testo riconosciuto arriva da fuori dopo secondi di lavoro (D62), e nel frattempo la
+-- nota può essere cresciuta: si scrive solo se la revisione è ancora quella letta. Se
+-- non lo è, la nota resta in coda e verrà riletta per intero, inchiostro nuovo compreso.
+selectRevision:
+SELECT revision FROM note WHERE id = ?;
+
+setRecognizedText:
+UPDATE note SET
+    recognized_text = :recognizedText,
+    recognized_text_normalized = :recognizedTextNormalized,
+    recognized_from_revision = :revision
+WHERE id = :id AND revision = :revision;
 
 markNoteDeleted:
 UPDATE note SET deleted_at = :deletedAt, updated_at = :updatedAt, revision = revision + 1
@@ -272,6 +301,11 @@ DELETE FROM photo_clip WHERE note_id IN (
 -- **prima** di purgare le righe: dopo non si saprebbe più quali file erano.
 selectPhotoPathsOfPurgeableNotes:
 SELECT path FROM photo_clip WHERE note_id IN (
+    SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
+);
+
+selectAudioPathsOfPurgeableNotes:
+SELECT audio_path FROM voice_clip WHERE audio_path IS NOT NULL AND note_id IN (
     SELECT id FROM note WHERE deleted_at IS NOT NULL AND deleted_at < :before
 );
 
@@ -321,6 +355,16 @@ UPDATE voice_clip SET
     audio_path = coalesce(:audioPath, audio_path),
     deleted_at = coalesce(deleted_at, :deletedAt)
 WHERE id = :id;
+
+-- La trascrizione è definitiva (D25): si scrive una volta, e non si sovrascrive.
+selectTranscriptPending:
+SELECT transcript IS NULL FROM voice_clip WHERE id = ?;
+
+setTranscript:
+UPDATE voice_clip SET
+    transcript = :transcript,
+    transcript_normalized = :transcriptNormalized
+WHERE id = :id AND transcript IS NULL;
 
 selectExports:
 SELECT * FROM note_export WHERE note_id = ? ORDER BY target ASC;

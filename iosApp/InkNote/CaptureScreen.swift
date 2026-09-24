@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 
 /// Il foglio (D20, D46): tutta la carta dello schermo, in basso a destra "Fatto", in basso a
-/// sinistra tastiera e fotocamera, tenui (D38).
+/// sinistra tastiera, fotocamera e microfono, tenui (D38, D63).
 ///
 /// **Un foglio vive finché è sullo schermo** (D34): se l'app va in secondo piano il foglio
 /// si chiude, e prima ancora si copre, così l'istantanea che iOS mostra nel selettore
@@ -24,8 +24,14 @@ final class CaptureViewController: UIViewController, UITextViewDelegate,
     private let textView = UITextView()
     private var textCommit: DispatchWorkItem?
 
-    /// Le miniature delle foto scattate, sopra gli strumenti.
+    /// Le miniature delle foto scattate e delle registrazioni, sopra gli strumenti.
     private let photoStrip = UIStackView()
+
+    /// La voce (D63): un tocco sul microfono comincia, un tocco sulla pillola finisce.
+    private let recorder = VoiceRecorder()
+    private var recordingPill: UIButton?
+    private var recordingTimer: Timer?
+    private var startingRecording = false
 
     init(requestedAt: Date) {
         self.requestedAt = requestedAt
@@ -83,7 +89,8 @@ final class CaptureViewController: UIViewController, UITextViewDelegate,
         // ignorare senza pensarci, quindi non sono una decisione (D21).
         let keyboard = toolButton("keyboard", label: String(localized: "Type")) { [weak self] in self?.showTextCard() }
         let camera = toolButton("camera", label: String(localized: "Photo")) { [weak self] in self?.takePhoto() }
-        let tools = UIStackView(arrangedSubviews: [keyboard, camera])
+        let microphone = toolButton("mic", label: String(localized: "Record")) { [weak self] in self?.toggleRecording() }
+        let tools = UIStackView(arrangedSubviews: [keyboard, camera, microphone])
         tools.spacing = 4
         tools.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tools)
@@ -94,7 +101,13 @@ final class CaptureViewController: UIViewController, UITextViewDelegate,
 
         installTextCard()
 
+        let pill = recordingButton()
+        view.addSubview(pill)
+        recordingPill = pill
+
         NSLayoutConstraint.activate([
+            pill.trailingAnchor.constraint(equalTo: done.trailingAnchor),
+            pill.bottomAnchor.constraint(equalTo: done.topAnchor, constant: -14),
             done.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
             done.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -12),
             tools.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
@@ -131,6 +144,7 @@ final class CaptureViewController: UIViewController, UITextViewDelegate,
     private func finish() {
         canvas?.commitIfDrawing()
         commitTextNow()
+        keepRecordingNow()
         // Un tocco breve: la nota è al sicuro, senza bisogno di guardare (D52).
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         onDone()
@@ -238,12 +252,122 @@ final class CaptureViewController: UIViewController, UITextViewDelegate,
         photoStrip.addArrangedSubview(thumb)
     }
 
+    // MARK: Voce (D18, D63)
+
+    /// La pillola che dice "si sta registrando" e che, toccata, ferma. Piena, perché mentre
+    /// il microfono è acceso deve essere la cosa più evidente del foglio.
+    private func recordingButton() -> UIButton {
+        var config = UIButton.Configuration.filled()
+        config.image = UIImage(systemName: "stop.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .bold))
+        config.imagePadding = 8
+        config.cornerStyle = .capsule
+        config.baseBackgroundColor = .systemRed
+        config.baseForegroundColor = .white
+        config.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 18, bottom: 12, trailing: 18)
+        let button = UIButton(configuration: config, primaryAction: UIAction { [weak self] _ in self?.stopRecording() })
+        button.accessibilityLabel = String(localized: "Stop recording")
+        button.isHidden = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }
+
+    private func toggleRecording() {
+        if recorder.isRecording { stopRecording(); return }
+        guard !startingRecording else { return }
+        startingRecording = true
+        VoiceRecorder.requestAccess { [weak self] granted in
+            guard let self else { return }
+            guard granted else {
+                self.startingRecording = false
+                self.explainMicrophoneOff()
+                return
+            }
+            self.recorder.start { started in
+                self.startingRecording = false
+                guard started else { return }
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                self.recordingPill?.isHidden = false
+                self.updateRecordingPill()
+                self.recordingTimer = Timer.scheduledTimer(
+                    timeInterval: 0.5,
+                    target: self,
+                    selector: #selector(self.updateRecordingPill),
+                    userInfo: nil,
+                    repeats: true
+                )
+            }
+        }
+    }
+
+    @objc private func updateRecordingPill() {
+        let seconds = Int(Date().timeIntervalSince(recorder.startedAt ?? Date()))
+        recordingPill?.configuration?.title = String(format: "%d:%02d", seconds / 60, seconds % 60)
+    }
+
+    private func hideRecordingPill() {
+        recordingTimer?.invalidate()
+        recordingTimer = nil
+        recordingPill?.isHidden = true
+    }
+
+    private func stopRecording() {
+        hideRecordingPill()
+        // Il foglio del core si tiene forte: se il foglio si chiude mentre il file si chiude,
+        // la registrazione entra nel giornale lo stesso.
+        guard let sheet = canvas?.sheet else { return }
+        recorder.stop { [weak self] result in
+            guard let result else { return }
+            sheet.addVoice(relativePath: result.path, durationMs: Int32(result.durationMs))
+            self?.addVoiceChip(durationMs: result.durationMs)
+        }
+    }
+
+    /// Il foglio sta per chiudersi: la registrazione in corso finisce qui, ed entra nel
+    /// giornale prima che il sistema possa chiudere l'app (D34).
+    private func keepRecordingNow() {
+        guard recorder.isRecording else { return }
+        hideRecordingPill()
+        guard let result = recorder.stopNow(), let sheet = canvas?.sheet else { return }
+        sheet.addVoice(relativePath: result.path, durationMs: Int32(result.durationMs))
+        addVoiceChip(durationMs: result.durationMs)
+    }
+
+    private func addVoiceChip(durationMs: Int) {
+        let seconds = max(1, durationMs / 1000)
+        var config = UIButton.Configuration.plain()
+        config.image = UIImage(systemName: "waveform", withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .medium))
+        config.title = String(format: "%d:%02d", seconds / 60, seconds % 60)
+        config.imagePadding = 6
+        config.baseForegroundColor = Brand.sheetInk
+        config.background.backgroundColor = Brand.sheetMuted.withAlphaComponent(0.16)
+        config.cornerStyle = .capsule
+        let chip = UIButton(configuration: config)
+        chip.isUserInteractionEnabled = false
+        chip.accessibilityLabel = String(localized: "Voice note")
+        photoStrip.addArrangedSubview(chip)
+    }
+
+    private func explainMicrophoneOff() {
+        let alert = UIAlertController(
+            title: String(localized: "Microphone is off"),
+            message: String(localized: "To record voice notes, allow Instink to use the microphone in Settings."),
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: String(localized: "Settings"), style: .default) { _ in
+            if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+        })
+        alert.addAction(UIAlertAction(title: String(localized: "Not now"), style: .cancel))
+        present(alert, animated: true)
+    }
+
     // MARK: Ciclo di vita (D34)
 
     @objc private func willResignActive() {
         // Prima dell'istantanea del selettore delle app: carta, non la nota.
         canvas?.commitIfDrawing()
         commitTextNow()
+        // Una chiamata, il Centro di Controllo: la registrazione si ferma e resta.
+        keepRecordingNow()
         cover.isHidden = false
     }
 

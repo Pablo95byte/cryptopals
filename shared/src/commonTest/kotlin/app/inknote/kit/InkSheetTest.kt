@@ -186,3 +186,50 @@ class InkArchiveSortingTest {
         assertNull(archive.note(sheet.noteId))
     }
 }
+
+/** Riconoscimento e voce visti da Swift (D62, D63). */
+class InkArchiveRecognitionTest {
+
+    private val driver = app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver(
+        app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver.IN_MEMORY,
+    ).also { app.inknote.core.store.InkNoteStore.schema.create(it) }
+    private val archive = InkArchive(app.inknote.core.store.InkNoteStore.open(driver))
+
+    @Test
+    fun `l'inchiostro letto diventa la didascalia e si trova con la ricerca`() {
+        val sink = InMemoryInkJournalSink()
+        val sheet = InkSheet(390f, 844f, sink, Clock { 1_000L })
+        sheet.begin(pencil = false, timestampMs = 0L)
+        sheet.add(20f, 20f, -1f, 0L)
+        sheet.add(80f, 40f, -1f, 16L)
+        sheet.add(140f, 30f, -1f, 32L)
+        sheet.end()
+        archive.ingest(sink)
+
+        val pending = archive.toRecognize(10).single()
+        assertTrue(archive.setRecognized(archive.idOf(pending), "comprare il latte", pending.revision))
+
+        assertTrue(archive.toRecognize(10).isEmpty())
+        val found = archive.search("latte", 10).single()
+        assertEquals("comprare il latte", archive.captionOf(found))
+    }
+
+    @Test
+    fun `una registrazione dal foglio si trascrive dopo, nell'archivio`() {
+        val sink = InMemoryInkJournalSink()
+        val sheet = InkSheet(390f, 844f, sink, Clock { 10_000L })
+        sheet.addVoice("voice/a.m4a", durationMs = 2_500)
+        assertTrue(!sheet.isEmpty)
+        archive.ingest(sink)
+
+        val clip = archive.toTranscribe(10).single()
+        assertEquals("voice/a.m4a", clip.path)
+        assertEquals(2_500, clip.durationMs)
+        assertTrue(archive.setTranscript(clip.id, "chiamare Anna"))
+
+        val note = archive.note(sheet.noteId)!!
+        assertEquals("chiamare Anna", archive.captionOf(note))
+        assertEquals(listOf("chiamare Anna"), archive.voiceItems(note).map { it.transcript })
+        assertTrue(archive.toTranscribe(10).isEmpty())
+    }
+}

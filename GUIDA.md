@@ -2,8 +2,8 @@
 
 Questo file dice cosa tocca a te, in ordine. Tutto il resto lo faccio io.
 
-Se leggi solo una cosa: **adesso tocca a iOS** (§0 e §0bis). Il resto aspetta che l'app
-giri sul tuo iPhone.
+Se leggi solo una cosa: **metti in rete il sito** (§0quater, dieci minuti) e **manda una
+build nuova su TestFlight** per provare scrittura letta, voce e Siri (§0quinquies).
 
 ---
 
@@ -215,6 +215,82 @@ TestFlight: *Start new build* → workflow **iOS — TestFlight**, oppure un tag
 **Il primo giro iOS dura di più** (una ventina di minuti): scarica il compilatore di
 Kotlin/Native. Dal secondo è in cache.
 
+## 0quater. Il sito: privacy e assistenza (D61)
+
+Le pagine sono pronte in `site/`: una home piccola, **privacy** e **assistenza**, in
+inglese e in italiano. Nessuno script, nessun tracciamento. Per metterle in rete, gratis:
+
+1. **Cloudflare Pages** (consigliato: funziona anche col repository privato). Su
+   dash.cloudflare.com → Workers & Pages → Create → **Pages** → Connect to Git → scegli
+   `cryptopals`. Branch di produzione: `master` (dopo aver unito la PR) oppure
+   `claude/notes-homescreen-app-drbsfv`. **Build command: vuoto. Output directory:
+   `site`.** Nome del progetto: `instink`. Dopo un minuto il sito è su
+   `https://instink.pages.dev`, e si aggiorna da solo a ogni push.
+2. **Il dominio**, adesso che il nome è deciso: Cloudflare → Domain registration →
+   `instink.app` (al prezzo di costo, una quindicina di euro l'anno). Poi nel progetto
+   Pages → Custom domains → `instink.app`.
+3. **L'email di assistenza**: Cloudflare → il dominio → Email → **Email Routing** →
+   `hello@instink.app` inoltrata alla tua casella. Gratis, e il tuo indirizzo vero non
+   compare da nessuna parte. Se preferisci un altro indirizzo, dimmelo: si cambia in un
+   colpo solo.
+4. **App Store Connect**:
+   - Informazioni sull'app → **URL della privacy**: `https://instink.app/privacy.html`
+     (oppure `https://instink.pages.dev/privacy.html` finché il dominio non c'è);
+   - **Privacy dell'app** → Inizia → *No, non raccogliamo dati*. È vero, ed è la dicitura
+     "Nessun dato raccolto" che compare nella scheda;
+   - TestFlight → Informazioni sul test → URL della privacy e email per i commenti: servono
+     per il **test esterno**;
+   - alla prima versione per lo store → **URL di assistenza**:
+     `https://instink.app/support.html`.
+
+## 0quinquies. Cosa provare: scrittura letta, voce, Siri (D62–D64)
+
+Prima una build nuova: Codemagic → **iOS — TestFlight** (il controllo `ios-check` parte da
+solo a ogni push; se è rosso, copiami il blocco "ERRORI").
+
+1. **La scrittura letta.** Scrivi a mano "latte pane" sul foglio, Fatto, apri l'app.
+   Dopo qualche secondo il bigliettino ha sotto la didascalia "latte pane", e cercando
+   "pane" la nota si trova. Prova anche corsivo e stampatello: dimmi quale legge male.
+2. **Una data scritta a mano.** "Dentista domani alle 10", a mano. Aprendo la nota compare
+   "Ricordamelo".
+3. **Il microfono.** Sul foglio, terza icona in basso. La prima volta chiede microfono e
+   riconoscimento vocale. Parla qualche secondo, tocca la pillola rossa: sul foglio compare
+   la forma d'onda con la durata. Fatto. Nell'app, la nota ha il tasto ▶ e, dopo qualche
+   secondo, il testo. Se il testo non arriva mai: Impostazioni → Generali → Tastiera →
+   Dettatura, controlla che la lingua sia scaricata (serve per il riconoscimento senza rete).
+4. **Siri a telefono bloccato.** Blocca l'iPhone e di' **"Ehi Siri, aggiungi una nota a
+   Instink"**, poi detta. Siri risponde "Salvata" senza chiederti di sbloccare. Sblocca,
+   apri l'app: la nota c'è. Se Siri non riconosce la frase, apri Comandi rapidi una volta:
+   le frasi di un'app nuova a volte compaiono solo dopo.
+5. **"Manda a…" di una nota vocale**: nel foglio di condivisione, oltre al testo, c'è il
+   file audio.
+6. **Android** (quando rifai il build): nell'archivio, "Smista N" in alto a destra e, se
+   hai note di più di una settimana, la nota riemersa sotto la ricerca.
+
+Dimmi cosa non torna, anche le sensazioni: "la pillola rossa è troppo", "il testo letto è
+sbagliato", "Siri non capisce il nome".
+
+## 0sexies. Per "Condividi verso Instink": l'App Group (D65)
+
+Da qualunque app — Safari, Messaggi, Foto — "Condividi → Instink" per farne una nota. Serve
+un'estensione, e un'estensione può scrivere dove l'app legge solo con un **App Group**. È
+configurazione tua, sul portale Apple, e va fatta **prima** che io scriva l'estensione: se la
+scrivo prima, ogni build su TestFlight si ferma sulla firma.
+
+Su developer.apple.com → Certificates, IDs & Profiles:
+
+1. **Identifiers → + → App Groups** → `group.app.inknote`.
+2. **Identifiers → `app.inknote.ios`** → spunta **App Groups** → Configure → scegli
+   `group.app.inknote` → Save.
+3. **Identifiers → + → App IDs → App** → Bundle ID `app.inknote.ios.share`, descrizione
+   "Instink Share", spunta **App Groups** con `group.app.inknote`.
+4. **Profiles**: rigenera il profilo App Store di `app.inknote.ios` (è cambiato al punto 2)
+   e creane uno nuovo App Store per `app.inknote.ios.share`.
+5. **Codemagic** → Code signing identities → iOS provisioning profiles → Fetch profiles, e
+   prendi i due.
+
+Poi dimmi "fatto" e scrivo l'estensione.
+
 ## 1bis. Il giro di prova dell'app intera (D38–D42)
 
 Dopo `git pull`, reinstalla (`./gradlew :androidApp:installDebug`). **È la prima volta
@@ -325,8 +401,8 @@ Ti risparmia soldi e tempo:
   testi vanno scritti quando l'app è finita, non prima.
 - **Non aprire l'account RevenueCat** e non configurare prodotti in-app. Serve quando il
   paywall esiste davvero, ed è gratuito fino a 2500 $ al mese di ricavi: non c'è fretta.
-- **Non comprare domini a caso** né aprire profili social prima di aver scelto il nome:
-  il dominio si compra il giorno in cui il nome è deciso, non prima (D54).
+- ~~Non comprare domini prima di aver scelto il nome~~: il nome è Instink, e `instink.app`
+  va comprato adesso (§0quater).
 
 ---
 
@@ -335,10 +411,12 @@ Ti risparmia soldi e tempo:
 Il **core condiviso è scritto e verificato**: modello dati pronto per il sync, motore
 d'inchiostro, archivio SQLite con cinque migrazioni provate, giornale che mette
 l'inchiostro al sicuro dal primo tratto, ricerca, uscita verso altre app, smistamento,
-riemersione e date. **302 test, tutti verdi, su qualunque macchina.**
+riemersione e date, lettura della scrittura e voce. **318 test, tutti verdi, su qualunque
+macchina.**
 
-L'**app Android compila e gira** sul tuo S8, con le misure tutte verdi. L'**app iOS è
-scritta** — le due tappe — e **aspetta la prima compilazione**, sul tuo Mac o su Codemagic.
+L'**app Android compila e gira** sul tuo S8, con le misure tutte verdi. L'**app iOS è su
+TestFlight** e funziona sul tuo iPhone; la scrittura letta, la voce e Siri (D62, D63)
+aspettano la prossima build.
 
 Le ragioni di ogni scelta stanno in [`CLAUDE.md`](CLAUDE.md), che è la memoria del
 progetto: se una decisione ti sembra sbagliata, lì c'è scritto perché era stata presa e

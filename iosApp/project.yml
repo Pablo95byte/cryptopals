@@ -42,6 +42,10 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         # La fotocamera del foglio (D38): chiesta al primo scatto, non all'apertura.
         NSCameraUsageDescription: "To add a photo of a whiteboard, a receipt or a page to your note."
+        # La voce (D63): chiesti al primo tocco sul microfono. La trascrizione avviene solo sul
+        # dispositivo, e il testo lo dice perché è la promessa della privacy (D61).
+        NSMicrophoneUsageDescription: "To record voice notes when your hands are busy."
+        NSSpeechRecognitionUsageDescription: "To turn your voice notes into searchable text, on your iPhone. Nothing is sent anywhere."
         CFBundleURLTypes:
           - CFBundleURLName: app.inknote.capture
             CFBundleURLSchemes: [inknote]
