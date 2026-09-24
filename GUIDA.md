@@ -138,6 +138,15 @@ subito dopo la tua misura.
 
 ---
 
+## 0. iOS, la prima tappa (D48)
+
+Tutto sta in [`iosApp/README.md`](iosApp/README.md): installare XcodeGen, generare il
+progetto, scegliere la tua squadra, eseguire sul tuo iPhone. **È codice mai compilato**:
+se Xcode si lamenta, mandami gli errori così come li vedi (anche uno screenshot va bene).
+
+E in parallelo, se riesci: **trova le 12 persone per il test chiuso Android**. I 14 giorni
+del Play Store corrono mentre io scrivo iOS, e alla fine usciamo su tutti e due insieme.
+
 ## 1bis. Il giro di prova dell'app intera (D38–D42)
 
 Dopo `git pull`, reinstalla (`./gradlew :androidApp:installDebug`). **È la prima volta

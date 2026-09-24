@@ -12,6 +12,15 @@ solo cosa è cambiato nel codice.
 
 ### Aggiunto
 
+- **App iOS, prima tappa** (`iosApp/`, D48): progetto XcodeGen, archivio in SwiftUI,
+  foglio in UIKit con Apple Pencil e campioni intermedi, giornale con `fsync`, widget per
+  home e schermata di blocco, pulsante del Centro di Controllo (iOS 18), azione per il
+  tasto Azione e Comandi rapidi, icona. Non ancora compilata.
+- **`:shared`**: il core in un framework per iOS (`InkNoteKit`) e una facciata per Swift
+  (`InkSheet`, `InkArchive`, `InkPreview`), con 9 test.
+- **Backup acceso su Android** (D49): archivio e giornale nel Google Drive dell'utente;
+  foto solo nel passaggio diretto da telefono a telefono, per il limite di 25 MB.
+
 - **Disegno nuovo** su tutte le schermate (D46): bigliettini di carta su una scrivania,
   Instrument Sans, tema scuro, da bordo a bordo, griglia che si adatta alla larghezza,
   pulsanti a pillola. Kit condiviso in `Ui.kt`.

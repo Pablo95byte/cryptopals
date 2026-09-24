@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Backup automatico fino ad Android 11 (D49). Va nel Google Drive dell'utente, cifrato,
+    e torna da sé sul telefono nuovo.
+
+    Il sistema lascia 25 MB per app, e **oltre quel limite non fa nessun backup**, nemmeno
+    delle note. Le foto quindi restano fuori, e dentro vanno le cose piccole e preziose:
+    l'archivio e il giornale. Meglio note senza foto che niente note.
+-->
+<full-backup-content>
+    <include domain="database" path="." />
+    <include domain="device_file" path="ink-journal.bin" />
+    <exclude domain="file" path="photos/" />
+    <exclude domain="device_file" path="photos/" />
+</full-backup-content>

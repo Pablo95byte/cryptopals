@@ -1377,6 +1377,123 @@ store. Aggiungere funzioni prima di sapere se la gente torna è lavoro alla ciec
    parte con iOS. Se no, si lavora sulla cattura e non si aggiungono funzioni.
 5. Il Pro arriva dopo il lancio, con i dati di chi la usa davvero.
 
+### D48 — iOS prima di Android per il lancio, e l'app iOS parla col core attraverso una facciata
+**Data:** 2026-09-24 · **Stato:** attiva, decisa dal committente · **Cambia l'ordine di D43**
+
+Il committente: **prima iOS**. Ha un Mac, Xcode e l'account sviluppatore Apple. E su
+iOS non c'è l'obbligo del Play Store di un test chiuso con almeno 12 persone per 14 giorni:
+TestFlight permette di far provare l'app senza un numero minimo.
+
+**Il consiglio che resta, e va detto:** il test chiuso del Play Store costa solo di
+trovare le persone, e **i 14 giorni corrono mentre si scrive iOS**. Farlo partire subito
+vuol dire avere Android pronto a uscire quando iOS esce, invece che due settimane dopo.
+
+**Come è fatta l'app iOS:**
+
+- **`:shared`**, un modulo Kotlin nuovo che mette tutto il core in un framework,
+  `InkNoteKit`, più una **facciata** pensata per Swift: `InkSheet` (tocco, movimento,
+  sollevamento, contorni da riempire), `InkArchive` e `InkPreview`. Swift non deve
+  conoscere `CaptureSession` né i tipi valore di Kotlin, che da Swift sono scomodi. La
+  facciata sta in `commonMain` e **ha i suoi test su qualunque macchina**: la parte
+  delicata della cattura iOS si verifica qui, senza Mac.
+- **L'app in SwiftUI**, col foglio in una `UIView` di UIKit perché servono i campioni
+  intermedi dell'Apple Pencil e il controllo del palmo, che SwiftUI non dà. Il giornale
+  su disco è in Swift (`FileJournalSink`: una coda sola, `fsync`, come D35).
+- **Il progetto Xcode si genera** da `iosApp/project.yml` con XcodeGen: il file di Xcode
+  non si scrive a mano senza un Mac, e nel repository si rompe a ogni fusione.
+- **Tutti gli ingressi di §2**: widget della home, widget della schermata di blocco,
+  pulsante del Centro di Controllo (iOS 18), azione per il tasto Azione e Comandi rapidi
+  (che copre anche il doppio tocco sul retro). Tutti portano a "sblocca e scrivi": sopra il
+  blocco su iPhone non si può (D17).
+- **D34 su iOS:** quando l'app perde il primo piano il foglio si copre di carta bianca —
+  così l'istantanea del selettore delle app non mostra la nota — e poi si chiude.
+
+**Rischio dichiarato:** la parte Swift non l'ha compilata nessuno. La parte Kotlin sì,
+con 9 test.
+
+### D49 — Il backup è acceso, sull'account dell'utente
+**Data:** 2026-09-24 · **Stato:** attiva, decisa dal committente · **Precisa D12**
+
+Su Android il backup automatico va nel Google Drive dell'utente, cifrato. Su iOS è il
+backup di iCloud, che copre già il contenitore dell'app.
+
+**Perché, rispetto a D12.** "Le note non escono dal telefono" voleva dire: non passano da
+un server nostro. Il backup va sull'account dell'utente, come l'esportazione di D31, ed è
+ciò che impedisce di perdere tutte le note cambiando telefono.
+
+**Il limite di Android, e come lo si rispetta.** Il backup nel cloud ha 25 MB per app, e
+**oltre non fa nessun backup, nemmeno delle note**. Quindi nel cloud vanno archivio e
+giornale, e le foto restano fuori. Nel passaggio diretto da telefono a telefono, dove il
+limite non c'è, va tutto. Un backup nostro, con le foto, è il servizio che giustificherà
+l'abbonamento (D4).
+
+### D50 — Il sito: una pagina sola, bellissima, dopo il nome
+**Data:** 2026-09-24 · **Stato:** proposta
+
+**Serve?** Sì, ma non per il motivo che sembra.
+
+- **È obbligatorio.** L'App Store chiede un indirizzo per l'informativa sulla privacy e
+  uno per l'assistenza. Il Play Store la privacy.
+- **Il traffico vero di un'app arriva dallo store**, dalla ricerca e dalle classifiche, non
+  dal sito. Il sito serve a chi arriva da fuori — un articolo, un video, un messaggio — e
+  deve convertire in un tocco: "scarica".
+- **È la destinazione dell'anello di crescita** (D47): la riga "scritta con InkNote" in
+  fondo alle note mandate fuori porta lì.
+
+**Come:** una pagina sola in stile Apple — una frase grande, la scrittura che si disegna
+da sola mentre si scorre, la sequenza tocco → scrivi → fatto, la promessa sulla privacy,
+i due pulsanti degli store. Più le pagine di privacy e assistenza. Statico, senza
+framework, ospitato gratis (GitHub Pages o Cloudflare Pages). **Nessun tracciamento**:
+sarebbe incoerente con D12.
+
+**Dopo il nome commerciale**, perché il dominio e il titolo della pagina sono il nome. Le
+pagine di privacy e assistenza servono prima, per TestFlight esterno: si possono
+pubblicare subito con l'indirizzo provvisorio.
+
+### D51 — Cosa aggiungere, e cosa no
+**Data:** 2026-09-24 · **Stato:** proposta · **Il metro è §1: nessuno sforzo**
+
+Il committente chiede cosa aggiungerebbe un genio che deve fermare un'idea al volo. La
+regola per rispondere è sempre la stessa: **una funzione entra se toglie sforzo, o se
+lavora quando l'utente non sta scrivendo.** Tutto ciò che chiede una decisione mentre si
+scrive, perde.
+
+**Sì, in quest'ordine:**
+
+1. **Lo smistamento a carte.** Una volta al giorno o alla settimana, le note nuove una alla
+   volta, a tutto schermo: a destra "manda" (Notion, Keep, dove si è scelto una volta), a
+   sinistra "tieni", in basso "butta". Cattura adesso, smista quando hai un minuto (D31)
+   diventa un gesto da dieci secondi. È anche il miglior argomento per il Pro: la
+   destinazione automatica.
+2. **La riemersione.** Un'idea non persa ma mai più riletta è persa lo stesso. Nell'archivio,
+   in cima, "una settimana fa hai scritto…": una nota vecchia alla volta, senza notifiche.
+   È ciò che nessuna app di note fa, ed è la seconda metà della promessa "non perdere
+   l'idea".
+3. **Il foglio di notte.** Chi scrive un'idea a letto al buio viene accecato da un foglio
+   bianco. Di notte il foglio si scurisce e l'inchiostro diventa chiaro; la nota salvata
+   resta la stessa, perché il colore si decide al disegno (D7).
+4. **Un tocco di conferma.** Una vibrazione breve a "Fatto": la nota è al sicuro, senza
+   guardare.
+5. **Le formule**, per studenti e ricercatori: scrivi a mano, esporta come LaTeX. Un
+   pubblico piccolo che paga, ma il riconoscimento delle formule è un motore a parte:
+   dopo la scrittura normale.
+6. **Date riconosciute**: "domani alle 9" scritto a mano diventa, **nell'archivio**, un
+   suggerimento di promemoria. Mai sul foglio.
+
+**No, e perché:**
+
+- **Cartelle, etichette, titoli al momento della cattura**: sono decisioni, e D21 le toglie.
+  L'ordine lo mette lo smistamento, dopo.
+- **Una chat con l'intelligenza artificiale, riassunti nel cloud**: le note uscirebbero dal
+  telefono (D12), e trasformerebbero un'app di cattura in un'app di chiacchiere. Se un
+  giorno, sul dispositivo.
+- **Collaborazione, condivisione di quaderni, profili**: ci farebbero diventare un archivio
+  che compete con Notion, cioè la posizione che D31 ha scartato.
+- **Serie di giorni consecutivi, badge, notifiche "non hai scritto oggi"**: un'app di
+  cattura si usa quando arriva l'idea, non per tenere viva una serie. Metterci ansia è il
+  modo di farla disinstallare.
+- **Formattazione, modelli, pagine**: sforzo, per definizione.
+
 ---
 
 ## 5. Struttura del repository
@@ -1390,6 +1507,10 @@ core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
                  Bounds, NoteFraming (inquadrare una nota in un riquadro, dentro l'app)
   capture/       CaptureSession, InkJournal, FrictionTrace — non vede l'archivio
   store/         NoteStore, JournalIngest, schema SQLDelight e schema versionato
+shared/          Il core in un framework per iOS, InkNoteKit, più la facciata per Swift
+                 (InkSheet, InkArchive, InkPreview) con i suoi test (D48)
+iosApp/          L'app iOS: project.yml per XcodeGen, SwiftUI, il foglio in UIKit,
+                 widget, Controllo, azione per il tasto Azione (D48)
 androidApp/      L'app Android: il foglio (cattura, D20), l'archivio (D39), il widget
                  e il riquadro rapido (D33), il provider dei file (D40). View di
                  piattaforma; una sola dipendenza esterna, il driver SQLite.
@@ -1402,8 +1523,9 @@ design/
                  widget, paywall, direzione alternativa
 ```
 
-Ancora da creare: `core/ocr` (Vision / ML Kit), `core/billing` (RevenueCat),
-`iosApp`, `iosWidget`. Il widget Android non avrà un modulo suo (D33).
+Ancora da creare: `core/ocr` (Vision / ML Kit), `core/billing` (RevenueCat). I widget
+non hanno un modulo loro: su Android stanno in `:androidApp` (D33), su iOS
+nell'estensione `InkNoteWidgets` del progetto iOS.
 
 **Regola di dipendenza da non rompere:** il core non dipende dalla UI né dalla rete.
 Le dipendenze vanno in una sola direzione: `geometry → ink → model`,
@@ -1495,7 +1617,8 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
 - **Per l'app Android serve Android Studio.** `:androidApp` entra nel build da sé
   quando l'SDK c'è (D23): `./gradlew :androidApp:installDebug`. Senza SDK il modulo
   resta fuori e il core si compila e si testa comunque — è voluto.
-- Per l'app iOS serve un Mac con Xcode.
+- **Per l'app iOS serve un Mac con Xcode e XcodeGen** (`iosApp/README.md`). Qui si
+  compila e si testa la facciata (`./gradlew :shared:jvmTest`), non il framework né Swift.
 - **Il dominio di Google è bloccato** nell'ambiente in cui questo repository viene
   sviluppato: qui l'APK non si compila e la misura di D19 non si può prendere. Va
   fatta sulla macchina del committente.
@@ -1585,23 +1708,22 @@ costruiti con l'SDK né provati sul telefono.
 17. ~~Fotocamera dentro il foglio e disegno nuovo~~ — dopo il primo giro sul telefono
     (D45, D46). **Da provare.**
 
-### Prossimi, in ordine (D43)
+### Prossimi, in ordine (D48, D51)
 
-18. **Provare tutto sul telefono**, poi il **canale di test interno** del Play Store.
-19. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
-    allora se il giornale debba coprire anche l'audio.
-20. **`core:ocr`** — riconoscimento della scrittura (D2). Su Android è ML Kit, che
-    registra un `ContentProvider`: va tolto dal manifest e inizializzato a mano
-    (invariante 21).
-21. **"Condividi verso InkNote"** — da qualunque app, testo, link e foto diventano una
-    nota senza aprire niente.
-22. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
-    di blocco, Controllo e tasto Azione. **Serve un Mac con Xcode.**
-23. **`core:billing`** — il Pro (D4), quando sapremo cosa la gente usa (D43).
+18. **iOS, prima tappa** — foglio, giornale, archivio, widget, Controllo, tasto Azione:
+    scritta (D48), **da compilare e provare sul Mac del committente**.
+19. **iOS, seconda tappa** — tastiera e foto sul foglio, nota aperta, "Manda a…".
+20. **Test chiuso del Play Store in parallelo** — i 14 giorni corrono mentre si fa iOS (D48).
+21. **`core:ocr`** — riconoscimento della scrittura (D2): Vision su iOS, ML Kit su
+    Android, che registra un `ContentProvider` da togliere (invariante 21).
+22. **Smistamento a carte e riemersione** (D51).
+23. **`core:voice`** (D18), **"Condividi verso InkNote"**.
+24. **Il sito** (D50): privacy e assistenza subito, la pagina vera dopo il nome.
+25. **`core:billing`** — il Pro (D4), dopo il lancio (D43, D47).
 
 ### Prima di pubblicare
 
-24. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
+26. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
     privacy, etichette dell'esportazione tradotte (D41), firma di rilascio vera.
 
 ## 10. Questioni ancora aperte

@@ -28,3 +28,9 @@ Pods/
 
 # Il canvas seminato è un prodotto di build: le sorgenti sono i .dc.html
 design/mockups/inknote-schermate.html
+
+# iOS: il progetto Xcode si genera da iosApp/project.yml (D48), non si versiona.
+iosApp/*.xcodeproj/
+iosApp/DerivedData/
+xcuserdata/
+.DS_Store

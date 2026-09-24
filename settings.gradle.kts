@@ -26,6 +26,11 @@ include(":core:geometry")
 include(":core:capture")
 include(":core:store")
 
+// Il ponte fra il core e l'app iOS: tutto il core in un framework, InkNoteKit, più una
+// facciata comoda da chiamare da Swift (D48). Su Linux si compila e si testa la parte
+// comune; il framework si costruisce solo su un Mac.
+include(":shared")
+
 /**
  * `:androidApp` entra nel build solo dove c'è l'SDK Android.
  *

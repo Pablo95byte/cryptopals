@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Backup e trasferimento da Android 12 in poi (D49).
+
+    Nel cloud valgono le regole di backup_rules.xml: le foto no, per il limite di 25 MB.
+    Nel passaggio diretto da telefono a telefono — cavo o Wi-Fi, all'accensione del
+    telefono nuovo — quel limite non c'è, e va tutto, foto comprese.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="database" path="." />
+        <include domain="device_file" path="ink-journal.bin" />
+        <exclude domain="file" path="photos/" />
+        <exclude domain="device_file" path="photos/" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="database" path="." />
+        <include domain="file" path="." />
+        <include domain="device_file" path="." />
+    </device-transfer>
+</data-extraction-rules>
