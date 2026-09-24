@@ -73,9 +73,12 @@ struct ArchiveScreen: View {
                 if model.toSortCount > 0 {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button { sorting = true } label: {
-                            Label("Sort \(model.toSortCount)", systemImage: "rectangle.stack")
-                                .labelStyle(.titleAndIcon)
-                                .font(.subheadline.weight(.semibold))
+                            // La stessa goccia dei bigliettini: il pulsante dice dove vanno (D72).
+                            HStack(spacing: 7) {
+                                Circle().fill(Brand.spark).frame(width: 8, height: 8)
+                                Text("Sort \(model.toSortCount)")
+                            }
+                            .font(.subheadline.weight(.semibold))
                         }
                     }
                 }
@@ -159,6 +162,17 @@ private struct NoteCard: View {
         .background(Brand.card)
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Brand.outline, lineWidth: 1))
+        .overlay(alignment: .topTrailing) {
+            // La goccia dell'icona, con un significato solo: da smistare (D72). Sparisce
+            // quando la nota è tenuta o mandata fuori, e dice le stesse note della coda.
+            if item.note.awaitsSorting {
+                Circle()
+                    .fill(Brand.spark)
+                    .frame(width: 9, height: 9)
+                    .padding(13)
+                    .accessibilityLabel(Text("To sort"))
+            }
+        }
     }
 }
 

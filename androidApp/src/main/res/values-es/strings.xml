@@ -45,6 +45,7 @@
     <string name="resurface_days">Hace %d días</string>
     <string name="resurface_hide">Ocultar por hoy</string>
     <string name="share_signature">Escrita con Instink · instink.app</string>
+    <string name="awaits_sorting">Por ordenar</string>
     <plurals name="note_count">
         <item quantity="one">%d nota</item>
         <item quantity="other">%d notas</item>

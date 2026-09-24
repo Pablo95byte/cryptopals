@@ -53,4 +53,5 @@
     <string name="resurface_days">%d giorni fa</string>
     <string name="resurface_hide">Nascondi per oggi</string>
     <string name="share_signature">Scritta con Instink · instink.app</string>
+    <string name="awaits_sorting">Da smistare</string>
 </resources>

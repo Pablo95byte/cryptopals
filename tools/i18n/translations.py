@@ -85,6 +85,7 @@ T = {
     "Settings": ["Ajustes", "Einstellungen", "Réglages", "Ajustes", "設定"],
     "Sort %lld": ["Ordenar %lld", "%lld sortieren", "Trier %lld", "Organizar %lld", "整理 %lld"],
     "Stop recording": ["Detener grabación", "Aufnahme stoppen", "Arrêter l’enregistrement", "Parar gravação", "録音を停止"],
+    "To sort": ["Por ordenar", "Zu sortieren", "À trier", "Para organizar", "未整理"],
     "Tap Write, or add the widget to your Home Screen: an idea takes a second.": [
         "Toca Escribir o añade el widget a tu pantalla de inicio: una idea lleva un segundo.",
         "Tippe auf Schreiben oder füge das Widget zum Home-Bildschirm hinzu: Eine Idee dauert eine Sekunde.",
@@ -191,6 +192,7 @@ PLURALS = {
 
 # Dalle stringhe iOS a quelle Android con lo stesso testo inglese.
 ANDROID_FROM_SHARED = {
+    "awaits_sorting": "To sort",
     "capture_label": "Write", "ok": "OK", "tile_label": "Write a note", "keyboard": "Type",
     "camera": "Photo", "archive_title": "Notes", "search_hint": "Search", "search_empty": "Nothing found.",
     "photo_note": "Photo", "share": "Send to…", "delete": "Delete", "delete_confirm": "Delete this note?",

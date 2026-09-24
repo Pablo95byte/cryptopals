@@ -149,6 +149,20 @@ class InkArchiveSortingTest {
     }
 
     @Test
+    fun `la goccia dice le stesse note della coda di smistamento`() {
+        val kept = capture("tenuta", 1_000L)
+        val waiting = capture("da smistare", 1_100L)
+        archive.keep(kept, 2_000L)
+
+        // La goccia si decide sulla nota, la coda con una query: devono dire la stessa cosa
+        // (D72).
+        val drops = archive.recent(10).filter { it.awaitsSorting }.map { it.id.value }
+        val queue = archive.toSort(10).map { it.id.value }
+        assertEquals(listOf(waiting), drops)
+        assertEquals(queue, drops)
+    }
+
+    @Test
     fun `la data scritta nella nota diventa un suggerimento`() {
         val id = capture("dentista domani alle 10", 1_000L)
         val note = archive.note(id)!!

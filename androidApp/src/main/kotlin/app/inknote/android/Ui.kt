@@ -105,6 +105,15 @@ object Ui {
      * Pulsante a pillola: icona e parola. [primary] è l'azione della schermata, piena;
      * le altre sono tenui.
      */
+    /**
+     * La goccia vermiglia (D66, D71): dentro l'app vuol dire solo "da smistare" (D72).
+     * Non va usata per decorare, o smette di dire qualcosa.
+     */
+    fun drop(context: Context): GradientDrawable = GradientDrawable().apply {
+        shape = GradientDrawable.OVAL
+        setColor(color(context, R.color.spark))
+    }
+
     fun pill(
         context: Context,
         label: String,

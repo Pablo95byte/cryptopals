@@ -186,9 +186,13 @@ class ArchiveActivity : Activity() {
             setPadding(dp(2), dp(2), 0, 0)
         }
         // Tenue: il solo pulsante pieno della schermata resta "Scrivi" (D46).
-        sortButton = Ui.pill(this, "", R.drawable.ic_keep, primary = false) {
+        // La stessa goccia dei bigliettini, senza tinta: il pulsante dice dove vanno (D72).
+        sortButton = Ui.pill(this, "", null, primary = false) {
             startActivity(Intent(this, TriageActivity::class.java))
         }.apply {
+            val drop = Ui.drop(this@ArchiveActivity).apply { setBounds(0, 0, dp(8), dp(8)) }
+            setCompoundDrawablesRelative(drop, null, null, null)
+            compoundDrawablePadding = dp(8)
             visibility = View.GONE
             minHeight = dp(40)
             setPadding(dp(16), 0, dp(16), 0)
@@ -442,6 +446,9 @@ private class NotesAdapter(private val context: Context) : BaseAdapter() {
         holder.caption.text = line ?: ""
         holder.caption.visibility = if (line == null) View.GONE else View.VISIBLE
 
+        // La goccia dell'icona, con un significato solo: da smistare (D72).
+        holder.drop.visibility = if (note.awaitsSorting) View.VISIBLE else View.GONE
+
         holder.date.text = DateUtils.getRelativeTimeSpanString(
             note.updatedAt, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE,
         )
@@ -489,6 +496,11 @@ private class NotesAdapter(private val context: Context) : BaseAdapter() {
             }, LinearLayout.LayoutParams(dp(15f), dp(15f)).apply { rightMargin = dp(3f) })
             addView(photoCount)
         }
+        val drop = View(context).apply {
+            background = Ui.drop(context)
+            contentDescription = context.getString(R.string.awaits_sorting)
+            visibility = View.GONE
+        }
         val card: View
 
         init {
@@ -496,6 +508,10 @@ private class NotesAdapter(private val context: Context) : BaseAdapter() {
                 addView(ink, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
                 addView(photo, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
                 addView(body, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+                addView(drop, FrameLayout.LayoutParams(dp(9f), dp(9f), Gravity.TOP or Gravity.END).apply {
+                    topMargin = dp(13f)
+                    rightMargin = dp(13f)
+                })
             }
             val footer = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL

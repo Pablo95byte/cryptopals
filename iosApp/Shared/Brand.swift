@@ -12,6 +12,10 @@ enum Brand {
     static let inkMuted = Color(red: 0x8B / 255, green: 0x83 / 255, blue: 0x74 / 255)
     static let scribbleTint = Color(red: 0xD9 / 255, green: 0xCE / 255, blue: 0xB8 / 255)
 
+    /// La goccia vermiglia del marchio (D66, D71). Dentro l'app ha un solo significato:
+    /// "questa nota aspetta lo smistamento" (D72). Non è un colore da decorazione.
+    static let spark = Color(red: 0xE4 / 255, green: 0x57 / 255, blue: 0x2E / 255)
+
     /// La scrivania: chiara di giorno, scura di notte.
     static let desk = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark

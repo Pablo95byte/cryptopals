@@ -45,6 +45,7 @@
     <string name="resurface_days">%d日前</string>
     <string name="resurface_hide">今日は非表示</string>
     <string name="share_signature">Instinkで書きました · instink.app</string>
+    <string name="awaits_sorting">未整理</string>
     <plurals name="note_count">
         <item quantity="other">%d件のメモ</item>
     </plurals>

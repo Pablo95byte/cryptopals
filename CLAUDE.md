@@ -2380,6 +2380,28 @@ dicono la stessa cosa.
 vera (D50) si rifà quando ci sono gli screenshot composti e il video, e riusa questi pezzi:
 rifarla adesso vorrebbe dire rifarla due volte.
 
+### D72 — Dentro l'app il vermiglio vuol dire una cosa sola: "da smistare"
+**Data:** 2026-09-24 · **Stato:** attiva, chiesta dal committente · **Attua la proposta di
+D71**, **precisa D46 e D52**
+
+Un bigliettino che aspetta lo smistamento porta, in alto a destra, **la goccia vermiglia
+dell'icona**. La stessa goccia sta davanti a "Smista N" nell'intestazione dell'archivio. Su
+iOS e su Android.
+
+**Perché un colore con un significato e non una decorazione.** D46 vuole la gerarchia fatta
+da inchiostro e carta, e resta vero: il vermiglio entra solo come segnale. Chi apre
+l'archivio vede a colpo d'occhio cosa è nuovo, e l'icona sulla Home e le gocce nell'app
+dicono la stessa cosa. Usarlo per altro, anche una volta, gli toglierebbe il significato.
+
+**La regola sta nel modello, e dice le stesse note della coda.** `Note.awaitsSorting`: viva,
+non vuota, né tenuta né mandata fuori. La coda dello smistamento la decide invece una query
+dell'archivio (`notesToSort`). Se le due regole divergessero, comparirebbe una goccia su una
+nota che lo smistamento non mostra: un compito che non si può finire, cioè il contrario di
+D51. Un test della facciata controlla che dicano le stesse note.
+
+**Niente conteggi rossi e niente notifiche** (D51): la goccia non è un "badge" da azzerare,
+è un segno sulla carta. Quando la nota è tenuta, mandata o buttata, sparisce.
+
 ---
 
 ## 5. Struttura del repository

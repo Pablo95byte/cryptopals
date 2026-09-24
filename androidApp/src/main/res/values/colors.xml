@@ -14,6 +14,8 @@
 <resources>
     <!-- Il campo dell'icona (D71): solo nell'icona, mai nell'interfaccia. -->
     <color name="brand_field">#E2532B</color>
+    <!-- La goccia (D72): nell'interfaccia vuol dire solo "da smistare". -->
+    <color name="spark">#E4572E</color>
 
     <color name="paper">#FBF8F1</color>
     <color name="card">#FFFDF8</color>

@@ -10,6 +10,13 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Aggiunto — la goccia "da smistare" (D72)
+
+- Nell'archivio, su iOS e Android, i bigliettini che aspettano lo smistamento portano la
+  goccia vermiglia dell'icona; la stessa goccia sta su "Smista N".
+- `Note.awaitsSorting` nel modello, con i test, e un test che la confronta con la coda
+  dello smistamento.
+
 ### Cambiato — l'icona (D71)
 
 - **L'icona è un foglio bianco inclinato su un campo vermiglio**, col ricciolo e la goccia:

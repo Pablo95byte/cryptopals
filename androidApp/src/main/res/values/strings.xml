@@ -57,4 +57,5 @@
     <string name="resurface_days">%d days ago</string>
     <string name="resurface_hide">Hide for today</string>
     <string name="share_signature">Written with Instink · instink.app</string>
+    <string name="awaits_sorting">To sort</string>
 </resources>
