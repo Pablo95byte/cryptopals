@@ -1,3 +1,4 @@
+
 # Codemagic (D53): tre workflow, uno per ogni cosa che si vuole sapere o consegnare.
 #
 #   core-tests       Ogni push: i test del core e le migrazioni. Linux, pochi minuti.
