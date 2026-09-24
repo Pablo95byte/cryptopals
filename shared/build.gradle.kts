@@ -46,6 +46,10 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
         }
+        // Un archivio vero in memoria, per provare la facciata sull'SQL che userà l'iPhone.
+        jvmTest.dependencies {
+            implementation(libs.sqldelight.sqlite.driver)
+        }
         iosMain.dependencies {
             implementation(libs.sqldelight.native.driver)
         }

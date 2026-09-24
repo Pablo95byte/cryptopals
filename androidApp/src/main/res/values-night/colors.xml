@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Solo la scrivania cambia di notte: la carta resta carta (vedi values/colors.xml). -->
+<!-- Di notte cambiano la scrivania e il foglio di scrittura; i bigliettini restano carta
+     (vedi values/colors.xml). -->
 <resources>
+    <color name="sheet_paper">#1B1A17</color>
+    <color name="sheet_card">#26241F</color>
+    <color name="sheet_ink">#ECE5D6</color>
+    <color name="sheet_muted">#8F887A</color>
+
     <color name="desk">#141311</color>
     <color name="text_primary">#F1ECE2</color>
     <color name="text_secondary">#9D968A</color>

@@ -2,26 +2,14 @@ import InkNoteKit
 import SwiftUI
 import UIKit
 
-/// Il foglio in SwiftUI: un involucro sottile attorno al controller UIKit.
-struct CaptureScreen: UIViewControllerRepresentable {
-    let requestedAt: Date
-    let onDone: () -> Void
-
-    func makeUIViewController(context: Context) -> CaptureViewController {
-        let controller = CaptureViewController(requestedAt: requestedAt)
-        controller.onDone = onDone
-        return controller
-    }
-
-    func updateUIViewController(_ controller: CaptureViewController, context: Context) {}
-}
-
-/// Il foglio (D20, D46): tutta la carta dello schermo, e in basso a destra "Fatto".
+/// Il foglio (D20, D46): tutta la carta dello schermo, in basso a destra "Fatto", in basso a
+/// sinistra tastiera e fotocamera, tenui (D38).
 ///
 /// **Un foglio vive finché è sullo schermo** (D34): se l'app va in secondo piano il foglio
 /// si chiude, e prima ancora si copre, così l'istantanea che iOS mostra nel selettore
 /// delle app è carta bianca e non la nota.
-final class CaptureViewController: UIViewController {
+final class CaptureViewController: UIViewController, UITextViewDelegate,
+    UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     var onDone: () -> Void = {}
 
@@ -30,6 +18,14 @@ final class CaptureViewController: UIViewController {
     private let cover = UIView()
     private let meter = UILabel()
     private var firstFrameAt: Date?
+
+    /// Il testo digitato (D38): una scheda sotto la barra di stato, che compare solo se la si chiede.
+    private let textCard = UIView()
+    private let textView = UITextView()
+    private var textCommit: DispatchWorkItem?
+
+    /// Le miniature delle foto scattate, sopra gli strumenti.
+    private let photoStrip = UIStackView()
 
     init(requestedAt: Date) {
         self.requestedAt = requestedAt
@@ -41,7 +37,8 @@ final class CaptureViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(Brand.paper)
+        // Di notte il foglio si scurisce (D52): colore dinamico, deciso dal sistema.
+        view.backgroundColor = Brand.sheetPaper
 
         let center = NotificationCenter.default
         center.addObserver(self, selector: #selector(willResignActive), name: UIApplication.willResignActiveNotification, object: nil)
@@ -75,38 +72,178 @@ final class CaptureViewController: UIViewController {
         config.image = UIImage(systemName: "checkmark")
         config.imagePadding = 8
         config.cornerStyle = .capsule
-        config.baseBackgroundColor = UIColor(Brand.ink)
-        config.baseForegroundColor = UIColor(Brand.paper)
+        config.baseBackgroundColor = Brand.sheetInk
+        config.baseForegroundColor = Brand.sheetPaper
         config.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 22, bottom: 14, trailing: 22)
         let done = UIButton(configuration: config, primaryAction: UIAction { [weak self] _ in self?.finish() })
         done.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(done)
+
+        // Gli strumenti: due icone sulla carta, senza pillola e senza ombra (D46). Si possono
+        // ignorare senza pensarci, quindi non sono una decisione (D21).
+        let keyboard = toolButton("keyboard", label: String(localized: "Type")) { [weak self] in self?.showTextCard() }
+        let camera = toolButton("camera", label: String(localized: "Photo")) { [weak self] in self?.takePhoto() }
+        let tools = UIStackView(arrangedSubviews: [keyboard, camera])
+        tools.spacing = 4
+        tools.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(tools)
+
+        photoStrip.spacing = 8
+        photoStrip.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(photoStrip)
+
+        installTextCard()
+
         NSLayoutConstraint.activate([
             done.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-            done.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12),
+            done.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -12),
+            tools.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
+            tools.centerYAnchor.constraint(equalTo: done.centerYAnchor),
+            photoStrip.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            photoStrip.bottomAnchor.constraint(equalTo: done.topAnchor, constant: -14),
         ])
 
         #if DEBUG
         installMeter(canvas: canvas)
         #endif
 
-        cover.backgroundColor = UIColor(Brand.paper)
+        cover.backgroundColor = Brand.sheetPaper
         cover.frame = view.bounds
         cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         cover.isHidden = true
         view.addSubview(cover)
     }
 
+    private func toolButton(_ symbol: String, label: String, action: @escaping () -> Void) -> UIButton {
+        var config = UIButton.Configuration.plain()
+        config.image = UIImage(systemName: symbol, withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .regular))
+        config.baseForegroundColor = Brand.sheetMuted
+        config.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+        let button = UIButton(configuration: config, primaryAction: UIAction { _ in action() })
+        button.accessibilityLabel = label
+        NSLayoutConstraint.activate([
+            button.widthAnchor.constraint(greaterThanOrEqualToConstant: 48),
+            button.heightAnchor.constraint(greaterThanOrEqualToConstant: 48),
+        ])
+        return button
+    }
+
     private func finish() {
         canvas?.commitIfDrawing()
+        commitTextNow()
+        // Un tocco breve: la nota è al sicuro, senza bisogno di guardare (D52).
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
         onDone()
+    }
+
+    // MARK: Testo digitato (D38)
+
+    private func installTextCard() {
+        textCard.backgroundColor = UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0x26 / 255, green: 0x24 / 255, blue: 0x20 / 255, alpha: 1)
+                : UIColor(red: 0xFF / 255, green: 0xFD / 255, blue: 0xF8 / 255, alpha: 1)
+        }
+        textCard.layer.cornerRadius = 20
+        textCard.layer.cornerCurve = .continuous
+        textCard.layer.borderWidth = 1
+        textCard.layer.borderColor = UIColor(Brand.outline).cgColor
+        textCard.isHidden = true
+        textCard.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(textCard)
+
+        textView.font = .systemFont(ofSize: 18)
+        textView.textColor = Brand.sheetInk
+        textView.backgroundColor = .clear
+        textView.delegate = self
+        textView.textContainerInset = UIEdgeInsets(top: 14, left: 12, bottom: 14, right: 12)
+        textView.isScrollEnabled = true
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        textCard.addSubview(textView)
+
+        NSLayoutConstraint.activate([
+            textCard.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            textCard.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            textCard.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            textCard.heightAnchor.constraint(equalToConstant: 150),
+            textView.topAnchor.constraint(equalTo: textCard.topAnchor),
+            textView.bottomAnchor.constraint(equalTo: textCard.bottomAnchor),
+            textView.leadingAnchor.constraint(equalTo: textCard.leadingAnchor),
+            textView.trailingAnchor.constraint(equalTo: textCard.trailingAnchor),
+        ])
+    }
+
+    private func showTextCard() {
+        textCard.isHidden = false
+        textView.becomeFirstResponder()
+    }
+
+    func textViewDidChange(_ textView: UITextView) {
+        // Nel giornale dopo una breve pausa nella digitazione: non a ogni lettera, che
+        // sarebbe un pezzo nuovo e un tombstone per ogni tasto (D38).
+        textCommit?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.commitTextNow() }
+        textCommit = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8, execute: work)
+    }
+
+    func textViewDidEndEditing(_ textView: UITextView) {
+        commitTextNow()
+    }
+
+    private func commitTextNow() {
+        textCommit?.cancel()
+        textCommit = nil
+        guard let sheet = canvas?.sheet, !textCard.isHidden else { return }
+        sheet.commitText(text: textView.text ?? "")
+    }
+
+    // MARK: Foto (D38)
+
+    private func takePhoto() {
+        let picker = UIImagePickerController()
+        // Il simulatore non ha fotocamera: lì si prende dalla libreria, che non chiede permessi.
+        picker.sourceType = UIImagePickerController.isSourceTypeAvailable(.camera) ? .camera : .photoLibrary
+        picker.delegate = self
+        // Il mirino si apre sopra il foglio, dentro l'app: niente cambio d'app, niente
+        // foglio chiuso come succedeva su Android con la fotocamera di sistema (D45).
+        present(picker, animated: true)
+    }
+
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+        picker.dismiss(animated: true)
+        guard let image = info[.originalImage] as? UIImage, let sheet = canvas?.sheet else { return }
+        // La foto entra nella nota subito, il file si scrive su un'altra coda (D45).
+        let path = PhotoFiles.newRelativePath()
+        sheet.addPhoto(relativePath: path)
+        PhotoFiles.write(image, to: path)
+        addThumbnail(image)
+    }
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
+    }
+
+    private func addThumbnail(_ image: UIImage) {
+        let thumb = UIImageView(image: image.scaledToFit(maxSide: 200))
+        thumb.contentMode = .scaleAspectFill
+        thumb.clipsToBounds = true
+        thumb.layer.cornerRadius = 12
+        thumb.layer.cornerCurve = .continuous
+        thumb.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            thumb.widthAnchor.constraint(equalToConstant: 56),
+            thumb.heightAnchor.constraint(equalToConstant: 56),
+        ])
+        photoStrip.addArrangedSubview(thumb)
     }
 
     // MARK: Ciclo di vita (D34)
 
     @objc private func willResignActive() {
-        // Prima dell'istantanea del selettore delle app: carta bianca, non la nota.
+        // Prima dell'istantanea del selettore delle app: carta, non la nota.
         canvas?.commitIfDrawing()
+        commitTextNow()
         cover.isHidden = false
     }
 
@@ -126,7 +263,7 @@ final class CaptureViewController: UIViewController {
     #if DEBUG
     private func installMeter(canvas: InkCanvasView) {
         meter.font = .systemFont(ofSize: 11, weight: .medium)
-        meter.textColor = UIColor(Brand.inkMuted)
+        meter.textColor = Brand.sheetMuted
         meter.text = "attrito: in misura…"
         meter.translatesAutoresizingMaskIntoConstraints = false
         meter.isUserInteractionEnabled = true

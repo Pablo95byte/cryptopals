@@ -2,8 +2,8 @@
 
 Questo file dice cosa tocca a te, in ordine. Tutto il resto lo faccio io.
 
-Se leggi solo una cosa: **il passo 1 sblocca tutto il resto.** Finché non c'è quel
-numero, scrivere la seconda app è lavoro a rischio.
+Se leggi solo una cosa: **adesso tocca a iOS** (§0 e §0bis). Il resto aspetta che l'app
+giri sul tuo iPhone.
 
 ---
 
@@ -147,6 +147,62 @@ se Xcode si lamenta, mandami gli errori così come li vedi (anche uno screenshot
 E in parallelo, se riesci: **trova le 12 persone per il test chiuso Android**. I 14 giorni
 del Play Store corrono mentre io scrivo iOS, e alla fine usciamo su tutti e due insieme.
 
+## 0bis. iOS, la seconda tappa: cosa provare (D52)
+
+Si compila insieme alla prima: stesso `git pull`, stesso `xcodegen generate`. Poi, sul
+telefono:
+
+1. **Il foglio**: in basso a sinistra tastiera e fotocamera. La tastiera apre una scheda in
+   alto; la fotocamera si apre sopra il foglio e la miniatura compare in basso.
+2. **"Fatto"** dà una vibrazione breve.
+3. **Di notte**: metti il telefono in tema scuro e apri il foglio. Deve essere scuro, con
+   l'inchiostro chiaro. Nell'archivio la stessa nota resta un bigliettino chiaro.
+4. **Una nota aperta**: tocca un bigliettino. Inchiostro, testo, foto, "Manda a…" in
+   basso, il cestino in alto.
+5. **Il promemoria**: scrivi con la tastiera "dentista domani alle 10", poi apri la nota
+   nell'archivio. Deve comparire "Ricordamelo · …": toccalo, e il calendario si apre già
+   compilato.
+6. **Lo smistamento**: in alto a destra nell'archivio c'è "Smista" col numero delle note
+   nuove. Trascina a destra (manda), a sinistra (tieni), in giù (butta).
+7. **La riemersione** comparirà da sola fra una settimana, quando avrai note abbastanza
+   vecchie. Per provarla subito cambia la data del telefono di otto giorni in avanti.
+
+Se Xcode si lamenta, mandami gli errori come li vedi: è Swift scritto senza compilatore.
+
+## 0ter. Codemagic (D53)
+
+Il file è già nel repository: `codemagic.yaml`. Su codemagic.io:
+
+1. **Aggiungi il repository** (Add application → GitHub → `cryptopals`). Codemagic trova
+   da solo il file di configurazione.
+2. **La chiave di App Store Connect.** In App Store Connect → Utenti e accesso →
+   Integrazioni → Chiavi API: crea una chiave col ruolo **App Manager** e scarica il file
+   `.p8` (si scarica una volta sola). Su Codemagic: Team settings → Integrations → App
+   Store Connect → aggiungi la chiave, e **chiamala `InkNote ASC`**, che è il nome scritto
+   nel file.
+3. **Certificato e profili iOS.** Team settings → codemagic.yaml settings → Code signing
+   identities:
+   - iOS certificates → **Generate certificate** di tipo *Apple Distribution*;
+   - iOS provisioning profiles → **Fetch profiles**, e prendi i profili *App Store* per
+     `app.inknote.ios` e `app.inknote.ios.widgets`. Se non esistono ancora, creali dal
+     portale sviluppatori Apple (Certificates, IDs & Profiles), dopo aver registrato i due
+     identificativi.
+4. **La scheda dell'app** in App Store Connect (serve per TestFlight, ed è anche il modo di
+   **prenotare il nome**, vedi D54). Poi copia il suo **Apple ID** numerico (Informazioni
+   sull'app) nel file, alla riga `APP_STORE_APPLE_ID`.
+5. **Android**, quando servirà: Team settings → Code signing identities → Android keystores →
+   carica la chiave di caricamento e **chiamala `inknote_upload_key`**. Poi un gruppo di
+   variabili `google_play` con `GCLOUD_SERVICE_ACCOUNT_CREDENTIALS`, il file JSON
+   dell'account di servizio del Play Console. **Il primo AAB va caricato a mano** dal Play
+   Console: l'API non può creare un'app nuova.
+
+**Come si usa:** i test del core partono da soli a ogni push. Per mandare una build a
+TestFlight: *Start new build* → workflow **iOS — TestFlight**, oppure un tag, per esempio
+`git tag ios-0.1-1 && git push origin ios-0.1-1`.
+
+**Il primo giro iOS dura di più** (una ventina di minuti): scarica il compilatore di
+Kotlin/Native. Dal secondo è in cache.
+
 ## 1bis. Il giro di prova dell'app intera (D38–D42)
 
 Dopo `git pull`, reinstalla (`./gradlew :androidApp:installDebug`). **È la prima volta
@@ -239,9 +295,10 @@ Nessuna blocca il codice, ma prima o poi servono. In ordine di quanto pesano:
    mockup, artboard `DueVarianti`. Io consiglio il segno.
 2. **La direzione visiva.** Carta calda (quella attuale) o la direzione B, "gesso su
    lavagna". Va scelta prima di rifinire l'interfaccia.
-3. **Il nome commerciale.** `InkNote` è solo l'identificativo tecnico. Il nome vero conta
-   più del codice per farsi trovare, e va deciso guardando cosa cerca la gente negli
-   store, non a intuito.
+3. **Il nome commerciale.** `InkNote` è solo l'identificativo tecnico. La mia proposta è
+   **Quicknib** ("veloce" + "pennino"), poi Inkflash; criteri e verifiche in D54. Quando
+   hai scelto: crea la scheda in App Store Connect con quel nome (se è libero, resta tuo),
+   e compra subito il dominio `.app`.
 4. **Cosa sta nel Pro.** "Widget multipli" non vale più niente da quando il widget è
    bianco. La proposta: il Pro poggia su esportazione automatica verso Notion e i file,
    ricerca nel testo, punte e temi — col foglio di condivisione sempre gratuito.
@@ -257,23 +314,20 @@ Ti risparmia soldi e tempo:
   testi vanno scritti quando l'app è finita, non prima.
 - **Non aprire l'account RevenueCat** e non configurare prodotti in-app. Serve quando il
   paywall esiste davvero, ed è gratuito fino a 2500 $ al mese di ricavi: non c'è fretta.
-- **Non comprare un dominio** né aprire profili social. Prima si vede se l'app regge in
-  mano.
-- **Non installare Xcode** finché Android non gira. Se il pavimento dell'attrito è un
-  problema, la conseguenza cambia anche l'app iOS: scriverla prima di saperlo è lavoro
-  da rifare.
+- **Non comprare domini a caso** né aprire profili social prima di aver scelto il nome:
+  il dominio si compra il giorno in cui il nome è deciso, non prima (D54).
 
 ---
 
 ## 6. Dove siamo, in tre righe
 
 Il **core condiviso è scritto e verificato**: modello dati pronto per il sync, motore
-d'inchiostro, geometria, archivio SQLite con quattro migrazioni provate, giornale che
-mette l'inchiostro al sicuro dal primo tratto, ricerca che ignora accenti e ordine delle
-parole, uscita verso altre app. **261 test, tutti verdi, su qualunque macchina.**
+d'inchiostro, archivio SQLite con cinque migrazioni provate, giornale che mette
+l'inchiostro al sicuro dal primo tratto, ricerca, uscita verso altre app, smistamento,
+riemersione e date. **302 test, tutti verdi, su qualunque macchina.**
 
-L'**app Android è scritta ma non l'ha compilata nessuno**: è la prova di velocità, e il
-primo build è il tuo. L'**app iOS non è ancora scritta**, per scelta: aspetta la misura.
+L'**app Android compila e gira** sul tuo S8, con le misure tutte verdi. L'**app iOS è
+scritta** — le due tappe — e **aspetta la prima compilazione**, sul tuo Mac o su Codemagic.
 
 Le ragioni di ogni scelta stanno in [`CLAUDE.md`](CLAUDE.md), che è la memoria del
 progetto: se una decisione ti sembra sbagliata, lì c'è scritto perché era stata presa e

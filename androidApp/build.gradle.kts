@@ -1,9 +1,42 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+}
+
+/**
+ * La chiave di caricamento sul Play Store (D53). Da dove arriva, in ordine:
+ *
+ * 1. le variabili che Codemagic imposta quando il workflow dichiara `android_signing`;
+ * 2. `keystore.properties` nella radice, per firmare sulla propria macchina. Non si versiona.
+ *
+ * Se non c'è nessuna delle due, la build di rilascio si firma con la chiave di debug: si
+ * installa sul telefono, ma lo store la rifiuta. Una chiave nel repository, invece, non
+ * si toglie più da nessuna parte.
+ */
+val releaseKey: Map<String, String>? = run {
+    val env = System.getenv()
+    if (env["CM_KEYSTORE_PATH"] != null) {
+        mapOf(
+            "storeFile" to env.getValue("CM_KEYSTORE_PATH"),
+            "storePassword" to env["CM_KEYSTORE_PASSWORD"].orEmpty(),
+            "keyAlias" to env["CM_KEY_ALIAS"].orEmpty(),
+            "keyPassword" to env["CM_KEY_PASSWORD"].orEmpty(),
+        )
+    } else {
+        val file = rootProject.file("keystore.properties")
+        if (!file.exists()) {
+            null
+        } else {
+            val properties = Properties().apply { file.inputStream().use { load(it) } }
+            listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+                .associateWith { properties.getProperty(it).orEmpty() }
+                .let { it + ("storeFile" to rootProject.file(it.getValue("storeFile")).path) }
+        }
+    }
 }
 
 android {
@@ -16,14 +49,24 @@ android {
         // cattura sopra il blocco è il motivo per cui questa app esiste (D17).
         minSdk = 27
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1-prova-di-velocita"
+        // Il numero della build lo dà il CI (D53): il Play Store rifiuta due caricamenti
+        // con lo stesso numero, e contarli a mano è il modo di sbagliare il giorno del rilascio.
+        versionCode = System.getenv("BUILD_NUMBER")?.toIntOrNull() ?: 1
+        versionName = "0.1"
+    }
+
+    signingConfigs {
+        releaseKey?.let { key ->
+            create("release") {
+                storeFile = file(key.getValue("storeFile"))
+                storePassword = key.getValue("storePassword")
+                keyAlias = key.getValue("keyAlias")
+                keyPassword = key.getValue("keyPassword")
+            }
+        }
     }
 
     buildTypes {
-        // Firmata con la chiave di debug: serve a installarla su un telefono, non a
-        // pubblicarla. La firma vera arriverà col primo rilascio.
-        //
         // R8 acceso non per il peso dell'APK ma per l'avvio a freddo (D37): toglie dalla
         // libreria standard di Kotlin tutto quello che non usiamo, e meno classi da
         // caricare e verificare sono millisecondi in meno prima del foglio.
@@ -31,7 +74,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 

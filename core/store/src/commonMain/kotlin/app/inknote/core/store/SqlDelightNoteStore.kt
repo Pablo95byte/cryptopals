@@ -124,6 +124,14 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
 
     override fun liveNoteCount(): Long = queries.countLiveNotes().executeAsOne()
 
+    override fun notesToSort(limit: Int): List<Note> =
+        queries.selectNotesToSort(limit.toLong()).executeAsList().map { it.toNote() }
+
+    override fun notesToSortCount(): Long = queries.countNotesToSort().executeAsOne()
+
+    override fun notesCreatedBefore(before: Long, limit: Int): List<Note> =
+        queries.selectNotesCreatedBefore(before = before, limit = limit.toLong()).executeAsList().map { it.toNote() }
+
     override fun save(note: Note) {
         database.transaction {
             queries.insertNoteIfAbsent(
@@ -138,6 +146,7 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
                 recognizedFromRevision = note.recognizedFromRevision,
                 recognizedTextNormalized = SearchText.normalize(note.recognizedText),
                 searchVersion = SearchText.VERSION.toLong(),
+                sortedAt = note.sortedAt,
             )
             queries.updateNote(
                 canvasWidth = note.canvas.width.toDouble(),
@@ -149,6 +158,7 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
                 recognizedFromRevision = note.recognizedFromRevision,
                 recognizedTextNormalized = SearchText.normalize(note.recognizedText),
                 searchVersion = SearchText.VERSION.toLong(),
+                sortedAt = note.sortedAt,
                 id = note.id.value,
             )
             for (stroke in note.strokes) {
@@ -275,6 +285,7 @@ internal class SqlDelightNoteStore(private val database: InkNoteDatabase) : Note
         deletedAt = deleted_at,
         recognizedText = recognized_text,
         recognizedFromRevision = recognized_from_revision,
+        sortedAt = sorted_at,
     )
 
     private fun TextClipRow.toTextClip() = TextClip(

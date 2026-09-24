@@ -1,0 +1,356 @@
+{
+  "sourceLanguage": "en",
+  "version": "1.0",
+  "strings": {
+    "%lld days ago": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld giorni fa"
+          }
+        }
+      }
+    },
+    "%lld to sort": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld da smistare"
+          }
+        }
+      }
+    },
+    "A month ago today": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un mese fa, oggi"
+          }
+        }
+      }
+    },
+    "A week ago today": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una settimana fa, oggi"
+          }
+        }
+      }
+    },
+    "A year ago today": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un anno fa, oggi"
+          }
+        }
+      }
+    },
+    "All sorted": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tutto smistato"
+          }
+        }
+      }
+    },
+    "Blank sheet": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foglio bianco"
+          }
+        }
+      }
+    },
+    "Close": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiudi"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina"
+          }
+        }
+      }
+    },
+    "Delete this note?": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminare questa nota?"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fatto"
+          }
+        }
+      }
+    },
+    "From a note written in InkNote.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Da una nota scritta con InkNote."
+          }
+        }
+      }
+    },
+    "Keep": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tieni"
+          }
+        }
+      }
+    },
+    "New notes will wait here until you have a minute.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le note nuove ti aspettano qui finché hai un minuto."
+          }
+        }
+      }
+    },
+    "Not today": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non oggi"
+          }
+        }
+      }
+    },
+    "Notes": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        }
+      }
+    },
+    "Nothing found.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuna nota trovata."
+          }
+        }
+      }
+    },
+    "Nothing here yet": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ancora niente qui"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Opens a blank sheet, ready for your handwriting.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apre un foglio bianco, pronto per la tua scrittura."
+          }
+        }
+      }
+    },
+    "Opens a blank sheet.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apre un foglio bianco."
+          }
+        }
+      }
+    },
+    "Photo": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto"
+          }
+        }
+      }
+    },
+    "Remind me · %@": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ricordamelo · %@"
+          }
+        }
+      }
+    },
+    "Search": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerca"
+          }
+        }
+      }
+    },
+    "Send": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manda"
+          }
+        }
+      }
+    },
+    "Send to…": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manda a…"
+          }
+        }
+      }
+    },
+    "Sort %lld": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smista %lld"
+          }
+        }
+      }
+    },
+    "Tap Write, or add the widget to your Home Screen: an idea takes a second.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocca Scrivi, o metti il widget nella schermata Home: un'idea richiede un secondo."
+          }
+        }
+      }
+    },
+    "Tap anywhere and write.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocca dove vuoi e scrivi."
+          }
+        }
+      }
+    },
+    "The last stroke before the app closed could not be saved.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'ultimo tratto prima della chiusura dell'app non si è potuto salvare."
+          }
+        }
+      }
+    },
+    "Three months ago today": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tre mesi fa, oggi"
+          }
+        }
+      }
+    },
+    "Type": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scrivi a tastiera"
+          }
+        }
+      }
+    },
+    "Write": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scrivi"
+          }
+        }
+      }
+    },
+    "Write a note": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scrivi una nota"
+          }
+        }
+      }
+    },
+    "You wrote this. Still a good idea?": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'hai scritta tu. È ancora una buona idea?"
+          }
+        }
+      }
+    }
+  }
+}

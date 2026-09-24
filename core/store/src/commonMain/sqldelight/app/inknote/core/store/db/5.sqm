@@ -1,0 +1,7 @@
+-- Migrazione 5 → 6: lo smistamento a carte (decisione D52).
+--
+-- In fondo alla tabella, come ogni colonna aggiunta da una migrazione (D28). Le note già
+-- salvate partono non smistate, tranne quelle già mandate fuori, che lo sono per via
+-- della loro riga in note_export.
+
+ALTER TABLE note ADD COLUMN sorted_at INTEGER;

@@ -88,6 +88,17 @@ interface NoteStore {
 
     fun liveNoteCount(): Long
 
+    /**
+     * La coda dello smistamento a carte (D52): note vive con qualcosa dentro, mai tenute né
+     * mandate fuori, dalla più vecchia.
+     */
+    fun notesToSort(limit: Int = 100): List<Note>
+
+    fun notesToSortCount(): Long
+
+    /** Le candidate alla riemersione (D52): note vive scritte prima di [before], dalla più recente. */
+    fun notesCreatedBefore(before: Long, limit: Int = 500): List<Note>
+
     /** Scrive la nota e i suoi tratti in una sola transazione. */
     fun save(note: Note)
 

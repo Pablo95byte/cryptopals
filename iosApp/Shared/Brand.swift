@@ -25,6 +25,29 @@ enum Brand {
             : UIColor(red: 0xE0 / 255, green: 0xD8 / 255, blue: 0xC8 / 255, alpha: 1)
     })
 
+    /// Il foglio di scrittura (D52): di notte si scurisce e l'inchiostro diventa chiaro.
+    ///
+    /// Chi scrive un'idea a letto al buio non deve essere accecato da un rettangolo bianco.
+    /// Vale solo per il foglio: nell'archivio i bigliettini restano carta (D46). Ed è solo
+    /// un modo di mostrare: i tratti salvati hanno sempre l'inchiostro del giorno (D7).
+    static let sheetPaper = UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0x1B / 255, green: 0x1A / 255, blue: 0x17 / 255, alpha: 1)
+            : UIColor(red: 0xFB / 255, green: 0xF8 / 255, blue: 0xF1 / 255, alpha: 1)
+    }
+
+    static let sheetInk = UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0xEC / 255, green: 0xE5 / 255, blue: 0xD6 / 255, alpha: 1)
+            : UIColor(red: 0x1F / 255, green: 0x24 / 255, blue: 0x30 / 255, alpha: 1)
+    }
+
+    static let sheetMuted = UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0x8F / 255, green: 0x88 / 255, blue: 0x7A / 255, alpha: 1)
+            : UIColor(red: 0x8B / 255, green: 0x83 / 255, blue: 0x74 / 255, alpha: 1)
+    }
+
     /// L'indirizzo che apre il foglio: widget, Centro di Controllo, scorciatoie.
     static let captureURL = URL(string: "inknote://capture")!
 }

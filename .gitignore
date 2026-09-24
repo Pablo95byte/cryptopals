@@ -34,3 +34,8 @@ iosApp/*.xcodeproj/
 iosApp/DerivedData/
 xcuserdata/
 .DS_Store
+
+# La chiave di firma di Android e le sue password (D53): mai nel repository.
+keystore.properties
+*.jks
+*.keystore

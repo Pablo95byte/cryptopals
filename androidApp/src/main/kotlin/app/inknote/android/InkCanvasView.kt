@@ -1,6 +1,7 @@
 package app.inknote.android
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
@@ -85,7 +86,14 @@ class InkCanvasView(context: Context) : View(context) {
      * fotogramma mentre si scrive, e allocare lì fa lavorare il garbage collector
      * proprio mentre il dito si muove.
      */
-    private var livePaint: Paint = InkDraw.paint(strokePen)
+    /**
+     * Il foglio di notte (D52). Letto una volta: il foglio vive pochi secondi, e il manifest
+     * dichiara `uiMode` fra i cambi che non lo ricreano.
+     */
+    private val night = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+        Configuration.UI_MODE_NIGHT_YES
+
+    private var livePaint: Paint = InkDraw.paint(strokePen, night)
     private var livePaintPen: Pen = strokePen
 
     /** Unità logiche per pixel: i tratti sono salvati in dp, non in pixel (D10). */
@@ -108,7 +116,7 @@ class InkCanvasView(context: Context) : View(context) {
         // Niente righe (D42): righe fitte chiedono una scrittura piccola, che col dito non
         // esiste. Il foglio bianco lascia scrivere grande, e l'archivio rimpicciolisce da
         // solo, perché inquadra l'inchiostro e non il foglio.
-        canvas.drawColor(InkPalette.PAPER)
+        canvas.drawColor(if (night) InkPalette.NIGHT_PAPER else InkPalette.PAPER)
 
         for (painted in committed) canvas.drawPath(painted.path, painted.paint)
 
@@ -125,7 +133,7 @@ class InkCanvasView(context: Context) : View(context) {
                 createdAt = 0L,
             )
             if (livePaintPen != strokePen) {
-                livePaint = InkDraw.paint(strokePen)
+                livePaint = InkDraw.paint(strokePen, night)
                 livePaintPen = strokePen
             }
             canvas.drawPath(StrokeGeometry.outline(live, RenderQuality.SCREEN).toPath(scale), livePaint)
@@ -257,7 +265,7 @@ class InkCanvasView(context: Context) : View(context) {
 
     private fun paint(stroke: Stroke) = PaintedStroke(
         path = InkDraw.path(stroke, scale),
-        paint = InkDraw.paint(stroke.pen),
+        paint = InkDraw.paint(stroke.pen, night),
     )
 
     private class PaintedStroke(val path: Path, val paint: Paint)

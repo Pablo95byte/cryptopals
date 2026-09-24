@@ -15,14 +15,14 @@
         <item name="android:windowLightNavigationBar">false</item>
     </style>
 
-    <!-- Il foglio è carta anche di notte: icone scure sulle barre. -->
+    <!-- Di notte il foglio si scurisce (D52): icone chiare sulle barre. -->
     <style name="Theme.InkNote.Capture" parent="Theme.InkNote">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowAnimationStyle">@null</item>
         <item name="android:windowContentTransitions">false</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
     </style>
 
 </resources>

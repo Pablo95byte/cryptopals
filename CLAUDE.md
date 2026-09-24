@@ -96,6 +96,8 @@ posto solo invece che sparsi fra le decisioni.
 | Scrittura | **Foglio senza righe e tratto da pennarello col dito**: si scrive grande, l'archivio rimpicciolisce (D42) | nel codice, da provare |
 | Mani occupate | **Tastiera e foto dal foglio**, a un tocco, anche a telefono bloccato; la fotocamera sta dentro il foglio (D38, D45) | nel codice |
 | Mani occupate | **Cattura a voce** (D18): l'unica strada senza sblocco su iPhone | modello fatto, cattura da scrivere |
+| Scrittura, di notte | **Il foglio si scurisce col tema scuro**: a letto al buio non acceca (D52) | nel codice, Android e iOS |
+| Ritorno | **Una vibrazione breve su "Fatto"**: la nota è al sicuro, senza guardare (D52) | nel codice, Android e iOS |
 | Tutti | **I tetti: foglio pronto in 100 ms a caldo, 400 a freddo; tratto dietro al dito di al massimo 50 ms** (D19, D32, D36). Non sono funzionalità: impediscono alle altre di degradarsi | **tutti verdi** sul Samsung S8: 86 ms a caldo, 358–387 a freddo, tratto 13–14 ms a caldo e 30 a freddo |
 | Tutti | **Restare piccoli**: un processo leggero resta nella cache del sistema, e la seconda apertura della giornata è calda (D32) | nel codice, zero dipendenze |
 
@@ -1451,7 +1453,8 @@ pagine di privacy e assistenza servono prima, per TestFlight esterno: si possono
 pubblicare subito con l'indirizzo provvisorio.
 
 ### D51 — Cosa aggiungere, e cosa no
-**Data:** 2026-09-24 · **Stato:** proposta · **Il metro è §1: nessuno sforzo**
+**Data:** 2026-09-24 · **Stato:** approvata dal committente · **Il metro è §1: nessuno sforzo** ·
+**i punti 1–4 e 6 sono attuati da D52**; il 5, le formule, è rimandato
 
 Il committente chiede cosa aggiungerebbe un genio che deve fermare un'idea al volo. La
 regola per rispondere è sempre la stessa: **una funzione entra se toglie sforzo, o se
@@ -1494,6 +1497,148 @@ scrive, perde.
   modo di farla disinstallare.
 - **Formattazione, modelli, pagine**: sforzo, per definizione.
 
+### D52 — Smistamento, riemersione, date, foglio di notte, conferma al tatto
+**Data:** 2026-09-24 · **Stato:** attiva · **Attua D51** · core e iOS scritti; su Android
+solo foglio di notte e vibrazione
+
+Il committente ha approvato la lista di D51. Cinque punti su sei sono scritti; le formule no.
+
+**1. Lo smistamento a carte.** Una nota è **da smistare** finché non è stata tenuta, mandata
+o buttata. "Tenuta" è un campo nuovo, `Note.sortedAt`, con la migrazione 5 → 6; "mandata" è
+già scritto in `exports` (D31); "buttata" è il tombstone. La coda (`notesToSort`) la decide
+l'archivio con una query sola, dalla più vecchia.
+
+- **`sortedAt` non fa avanzare `revision`**, per la stessa ragione di un invio (D31):
+  smistare non modifica la nota, e altrimenti la rimetterebbe in coda d'invio.
+- **In archivio si aggiorna col minimo, e un salvataggio vecchio non può toglierlo**
+  (`CASE … min(…)`), come i tombstone (D26). Nel merge vince il più vecchio: è la prima
+  volta che la nota è stata smistata, e la risposta non dipende dall'ordine (invariante 4).
+- **Il pulsante compare solo se c'è qualcosa da smistare.** Un "0 da smistare" sarebbe un
+  compito, e D51 esclude le app che danno compiti.
+- Su iOS: a destra si manda (foglio di condivisione, D31), a sinistra si tiene, in basso si
+  butta; gli stessi tre gesti come pulsanti, per chi non trascina e per VoiceOver. Se la
+  condivisione si chiude senza destinazione, la carta torna al centro e resta in coda
+  (invariante 18).
+
+**2. La riemersione.** `Resurface.pick`: una nota vecchia al giorno, in cima all'archivio.
+Prima gli anniversari — una settimana, un mese, tre mesi, un anno fa oggi — poi una nota
+qualunque più vecchia di una settimana. **Stabile per tutta la giornata** e **senza nessun
+campo in archivio**: è una funzione del giorno e delle note. Si toglie per oggi con la
+crocetta, ricordato nelle preferenze di chi guarda, non in archivio. Nessuna notifica.
+
+**3. Le date riconosciute.** `DateHints.find` legge il testo della nota (digitato,
+riconosciuto, trascritto) in italiano e in inglese: parole relative (domani, dopodomani),
+giorni della settimana, date numeriche e con il nome del mese, ore. Diventa, **nella nota
+aperta dell'archivio e mai sul foglio**, un pulsante "Ricordamelo", che apre l'editor di
+eventi del sistema già compilato. Su iOS 17 quell'editor non chiede nessun permesso sul
+calendario: non leggiamo niente, e l'utente decide se salvare (D12).
+
+- **Il fuso arriva da fuori** come scarto in millisecondi (invariante 5): "domani alle 9" è
+  un fatto locale.
+- **Un giorno della settimana è sempre il prossimo**, mai oggi: chi scrive "lunedì" di
+  lunedì intende quello dopo. **Un'ora da sola** è oggi se deve ancora venire, se no domani.
+  **Una data senza ora** vale le 9.
+- **`\b` non basta per l'italiano**: da Java 19 è solo ASCII, e "lunedì" non veniva mai
+  trovato. I confini di parola sono scritti con le lettere Unicode. L'ha trovato un test.
+- Con il riconoscimento della scrittura (D2) le date arriveranno anche dall'inchiostro,
+  senza cambiare questo codice.
+
+**4. Il foglio di notte.** Col tema scuro del sistema il **foglio di scrittura** si scurisce
+e l'inchiostro della casa diventa chiaro. È **solo un modo di mostrare**: i tratti salvati
+hanno sempre l'inchiostro del giorno (D7), quindi la stessa nota nell'archivio è un
+bigliettino chiaro come le altre (D46), e l'immagine mandata fuori è sempre su carta
+chiara, perché andrà a vivere altrove. Precisa D46: "i fogli restano carta" vale per i
+bigliettini, non per la superficie su cui si scrive a letto al buio.
+
+**5. Un tocco di conferma.** Una vibrazione breve su "Fatto": la nota è al sicuro, senza
+guardare. Su Android segue l'impostazione di sistema e non chiede permessi. Arriva
+**all'uscita**, non al primo tratto: al primo tratto sarebbe una distrazione.
+
+**Rimandato: le formule in LaTeX.** Servono un riconoscitore di scrittura matematica, che
+né Vision né ML Kit danno. Esistono motori commerciali (MyScript) con licenze a pagamento.
+Si decide dopo il riconoscimento normale (D2), e solo se gli studenti lo chiedono.
+
+**Su Android**, per ora, solo foglio di notte e vibrazione: smistamento e riemersione sono
+nel core e aspettano l'interfaccia, dopo iOS (D48).
+
+### D53 — Il CI è Codemagic, con tre workflow
+**Data:** 2026-09-24 · **Stato:** attiva, **da provare** al primo giro
+
+`codemagic.yaml` nella radice:
+
+| Workflow | Quando | Cosa fa |
+|---|---|---|
+| `core-tests` | ogni push e ogni pull request | `jvmTest` e `verifySqlDelightMigration`, su Linux |
+| `ios-testflight` | a mano, o con un tag `ios-*` | XcodeGen, firma, IPA, TestFlight |
+| `android-internal` | a mano, o con un tag `android-*` | AAB firmato, canale di test interno |
+
+**Perché Codemagic.** È il CI con i Mac più semplice da mettere in piedi per un'app
+Kotlin Multiplatform: ha gli strumenti di firma di Apple già pronti, e un piano gratuito
+di minuti su Mac. Su GitHub Actions le stesse cose richiedono di scrivere a mano la
+gestione dei certificati.
+
+**Perché iOS e Android non partono a ogni push.** Ogni build su Mac costa minuti, e ogni
+build su TestFlight arriva ai tester come un aggiornamento. Si consegna quando c'è
+qualcosa da provare.
+
+**Il numero della build** su iOS è uno più dell'ultimo su TestFlight, o il contatore di
+Codemagic se è più alto: le build caricate a mano da Xcode contano anche loro. Su Android è
+il contatore di Codemagic, letto da Gradle (`BUILD_NUMBER`).
+
+**La firma.** Su iOS è dichiarativa (`ios_signing`): certificato e profili stanno nelle
+impostazioni di Codemagic, che prende anche il profilo del widget perché il suo id comincia
+con quello dell'app. Su Android la chiave di caricamento arriva a Gradle dalle variabili di
+Codemagic, o da `keystore.properties` sulla propria macchina; **nessuna chiave nel
+repository**, e senza chiave la build di rilascio si firma con quella di debug — si
+installa, ma lo store la rifiuta.
+
+**Lo schema Xcode è dichiarato in `project.yml`**: XcodeGen non lo crea da sé, e senza
+`xcodebuild` sul CI non trova niente da costruire.
+
+### D54 — Il nome: breve, dice "penna" e "veloce", e si verifica prima di innamorarsene
+**Data:** 2026-09-24 · **Stato:** proposta, **la scelta è del committente**
+
+**Il nome serve a tre cose, in quest'ordine:** farsi trovare nello store, farsi ricordare
+dopo averlo sentito una volta, e diventare il dominio del sito (D50).
+
+**I criteri.**
+
+1. **Corto**: sotto l'icona iOS ci stanno dodici caratteri circa.
+2. **Si pronuncia in un modo solo**, in italiano e in inglese: il passaparola è a voce.
+3. **Dice le due cose che siamo**: scrittura a mano (D1) e velocità (§1).
+4. **Non è una parola generica.** "InkNote" o "QuickNote" si confondono con decine di app,
+   e un nome descrittivo non si può registrare come marchio.
+5. **Le parole chiave vanno nel sottotitolo, non nel nome.** Nell'App Store il nome ha 30
+   caratteri e il sottotitolo altri 30, ed entrambi contano per la ricerca: "Quicknib —
+   Handwritten quick notes" lavora meglio di un nome lungo.
+6. **Il dominio `.app` è libero.** È il dominio naturale per un'app, e impone HTTPS.
+
+**La rosa**, dopo un controllo dei DNS (un dominio senza record non è per forza libero:
+lo conferma solo un registrar):
+
+| Nome | Perché sì | Perché no | `.app` |
+|---|---|---|---|
+| **Quicknib** | "veloce" + "pennino": le due promesse in otto lettere | "nib" è poco noto fuori dall'inglese | senza record |
+| **Inkflash** | inchiostro + lampo: l'idea al volo | "flash" è molto usato | senza record |
+| **Catchink** | si legge "catching": acchiappare l'idea con l'inchiostro | sentito a voce, non si sa come si scrive | senza record |
+| Nibnote | corto, suona bene | dice "nota", non "veloce" | senza record |
+
+Scartati perché i domini sono già in uso: Inkling, Jotly, Inklet, Scrawl, Inkdrop, Tapjot,
+Jotink, Inkspark, Scriblet, Scribo. InkNote resta l'identificativo tecnico: generico, e
+nello store ci sono già app con nomi quasi uguali.
+
+**Proposta: Quicknib**, con Inkflash come seconda scelta.
+
+**Come si verifica, in quest'ordine, prima di dirlo a chiunque:**
+
+1. **App Store Connect**: creare la scheda dell'app con quel nome. Se il nome è preso, lo
+   dice subito; se è libero, **resta nostro**. Serve comunque per TestFlight (D53).
+2. **Play Console**, e una ricerca nei due store per nomi quasi uguali.
+3. **Marchi**: una ricerca su EUIPO e USPTO nella classe 9 (software).
+4. **Il dominio** `.app` da un registrar, e subito: costa una quindicina di euro l'anno.
+
+Il nome non costa una rinomina del codice: i package restano `app.inknote` (§ iniziale).
+
 ---
 
 ## 5. Struttura del repository
@@ -1516,6 +1661,7 @@ androidApp/      L'app Android: il foglio (cattura, D20), l'archivio (D39), il w
                  piattaforma; una sola dipendenza esterna, il driver SQLite.
 tools/
   android-check/ Compilazione di controllo di :androidApp senza SDK (D44)
+codemagic.yaml   Il CI: test del core a ogni push, TestFlight e Play interno su tag (D53)
 design/
   mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato:
                  home iOS, cattura nuda, cattura con strumenti, Android da
@@ -1628,6 +1774,9 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
   le richieste: se lo script dice "download limitato", aspetta da solo.
 - **`./gradlew verifySqlDelightMigration`** controlla che schema e migrazioni
   coincidano. Va eseguito quando si toccano i file `.sq`.
+- **Codemagic** (`codemagic.yaml`, D53) ripete i test del core a ogni push, e con un tag
+  `ios-*` o `android-*` consegna a TestFlight o al canale interno del Play Store. È anche
+  il primo posto, fuori dal Mac del committente, dove lo Swift viene compilato.
 - **[`GUIDA.md`](GUIDA.md)** dice cosa tocca al committente, in ordine: la misura di D19
   col suo protocollo, le verifiche da fare col telefono in mano, le decisioni aperte e
   le cose da non fare ancora.
@@ -1636,7 +1785,9 @@ Stato attuale: **tutti i test verdi** (`./gradlew jvmTest`). L'app Android **com
 Galaxy S8, 2026-09-24, nessuna modifica al codice). Misure in D36: tutte verdi. Widget,
 riquadro sopra il blocco e privacy **provati sul telefono**. Archivio, tastiera, foto e
 condivisione (D38–D40) **compilano contro Android 15** (D44) ma non sono ancora stati
-costruiti con l'SDK né provati sul telefono.
+costruiti con l'SDK né provati sul telefono. L'app iOS (D48, D52) è scritta e **non è mai stata
+compilata**: qui non c'è Swift. La prima compilazione è sul Mac del committente o su
+Codemagic (D53).
 
 ---
 
@@ -1712,11 +1863,15 @@ costruiti con l'SDK né provati sul telefono.
 
 18. **iOS, prima tappa** — foglio, giornale, archivio, widget, Controllo, tasto Azione:
     scritta (D48), **da compilare e provare sul Mac del committente**.
-19. **iOS, seconda tappa** — tastiera e foto sul foglio, nota aperta, "Manda a…".
+19. ~~iOS, seconda tappa~~ — tastiera e foto sul foglio, nota aperta, "Manda a…",
+    smistamento, riemersione, promemoria dalle date, foglio di notte, vibrazione (D52).
+    Scritta, **da compilare** insieme alla prima.
 20. **Test chiuso del Play Store in parallelo** — i 14 giorni corrono mentre si fa iOS (D48).
 21. **`core:ocr`** — riconoscimento della scrittura (D2): Vision su iOS, ML Kit su
     Android, che registra un `ContentProvider` da togliere (invariante 21).
-22. **Smistamento a carte e riemersione** (D51).
+22. ~~Smistamento a carte e riemersione~~ — core e iOS fatti (D52). **Su Android manca
+    l'interfaccia.**
+22bis. **Codemagic al primo giro** (D53): i tre workflow, con le chiavi del committente.
 23. **`core:voice`** (D18), **"Condividi verso InkNote"**.
 24. **Il sito** (D50): privacy e assistenza subito, la pagina vera dopo il nome.
 25. **`core:billing`** — il Pro (D4), dopo il lancio (D43, D47).
@@ -1729,7 +1884,7 @@ costruiti con l'SDK né provati sul telefono.
 ## 10. Questioni ancora aperte
 
 - **Nome commerciale e posizionamento nello store.** Contano più del codice per la
-  scoperta: vanno decisi guardando le ricerche reali, non a intuito.
+  scoperta. Criteri, rosa e modo di verificarlo in D54: la proposta è Quicknib.
 - **Quanti widget nel livello gratuito.** Uno è la proposta; va verificato che non
   renda il livello gratuito inutile e quindi l'app non recensita.
 - **Prezzo effettivo del Pro**, per mercato.
@@ -1743,8 +1898,10 @@ costruiti con l'SDK né provati sul telefono.
   soluzione: copiare la nota sotto un id nuovo, accettando di perdere lo storico.
 - **Se il giornale debba coprire anche l'audio** (D25 lo lascia fuori per ora).
 - **Il piano di lancio (D43) e la strategia di crescita (D47)**: da confermare.
-- **Il backup è spento** (`allowBackup="false"`): chi cambia telefono perde le note. D47
-  propone di accenderlo; va deciso col committente per via di D12.
+- **Le formule in LaTeX** (D51, D52): serve un motore di riconoscimento matematico a
+  pagamento. Dopo D2, e solo se richiesto.
+- **Smistamento e riemersione su Android**: il core c'è, l'interfaccia no (D52).
+- ~~Il backup è spento~~ — acceso, sull'account dell'utente (D49).
 - **La fascia di scrittura ingrandita** per il corsivo col dito (D42): dopo aver provato
   foglio senza righe e tratto più spesso.
 - **Il foglio del widget: nudo o con un segno tenue?** Un rettangolo bianco vuoto può
