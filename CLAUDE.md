@@ -1733,7 +1733,8 @@ meno di un secondo.
 
 
 ### D57 — Il plugin Kotlin per Android si dichiara nella radice, e Xcode non vede l'app Android
-**Data:** 2026-09-24 · **Stato:** attiva · **Trovata dal primo giro di D56**
+**Data:** 2026-09-24 · **Stato:** attiva · **Trovata dal primo giro di D56** · **l'ultimo
+paragrafo è SUPERATO da D58**: il plugin Android non può restare solo in `:androidApp`
 
 Il primo `ios-check` su Codemagic si è fermato prima dello Swift, in Gradle:
 *"plugin 'org.jetbrains.kotlin.android' already on the classpath with an unknown
@@ -1752,10 +1753,48 @@ confrontarla con quella di un plugin arrivato sotto un altro id.
    perso a ogni build iOS. Non è un rimedio al punto 1, è igiene: il build iOS non deve
    poter rompersi per colpa dell'app Android.
 
-**Perché non anche il plugin Android nella radice**, come fanno i modelli ufficiali: la
+~~**Perché non anche il plugin Android nella radice**, come fanno i modelli ufficiali: la
 radice lo scaricherebbe sempre, anche dove il dominio di Google è bloccato, e il core non
 si compilerebbe più ovunque (D23). Il plugin Android resta caricato da `:androidApp`, come
-nel build che ha già funzionato sul telefono del committente.
+nel build che ha già funzionato sul telefono del committente.~~ **Sbagliato, vedi D58.**
+
+
+### D58 — Il plugin Android sta nella radice, ma solo quando serve
+**Data:** 2026-09-24 · **Stato:** attiva · **Corregge D57** · trovata dal primo giro di
+`ios-testflight`
+
+Con D57 la radice carica il plugin Kotlin anche per Android, ma il plugin **Android** lo
+caricava ancora `:androidApp`, in un classloader figlio. Il plugin Kotlin per Android deve
+vederne le classi, e dal classloader della radice non le vede: Gradle si fermava su
+`com/android/build/gradle/api/BaseVariant`. È successo nel passo "Test della facciata per
+Swift" di `ios-testflight`, che gira fuori da Xcode su un Mac con l'SDK. **Lo stesso guasto
+avrebbe colpito ogni build con l'SDK**: il telefono del committente, i workflow Android di
+Codemagic, `core-tests`. D57 aveva tolto un errore e ne aveva messo un altro, e l'ambiente
+di sviluppo non poteva vederlo perché qui l'SDK non c'è.
+
+**La correzione, nel modo che non rompe D23.** Il plugin Android entra nel classpath della
+radice con un `buildscript` **condizionato**: `settings.gradle.kts` decide se `:androidApp`
+entra nel build e lo scrive in una proprietà (`inknote.androidApp`), e la radice mette il
+plugin Android sul suo classpath solo in quel caso. Plugin Kotlin e plugin Android stanno
+così nello stesso classloader, e dove l'SDK non c'è — o il dominio di Google è bloccato, o
+chiama Xcode — il plugin Android non viene nemmeno cercato.
+
+**Conseguenze:**
+
+- `:androidApp` chiede il plugin Android **senza versione**, perché è già sul classpath della
+  radice; con la versione Gradle si fermerebbe come in D57.
+- **La versione del plugin Android sta in due posti**: `buildscript` della radice e
+  `gradle/libs.versions.toml`. Un commento in entrambi lo ricorda. Il `buildscript` non
+  legge il catalogo delle versioni.
+
+**Verificato qui:** senza SDK il build non cerca il plugin Android; con un SDK finto lo cerca
+nella radice (e qui fallisce solo perché Google è bloccato); con un SDK finto e Xcode,
+`:androidApp` resta fuori e il build passa. **Da verificare** col prossimo giro di Codemagic,
+l'unico posto con SDK e accesso a Google.
+
+**La lezione, per le prossime volte:** una modifica al build di Gradle va provata anche nel
+caso "SDK presente", che qui non si vede. Il modo meno costoso è lanciare `core-tests` su
+Codemagic prima dei workflow su Mac.
 
 ---
 

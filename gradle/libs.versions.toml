@@ -2,6 +2,7 @@
 kotlin = "2.1.21"
 sqldelight = "2.0.2"
 # Usate soltanto da :androidApp, che entra nel build solo dove c'è l'SDK.
+# La versione del plugin Android va cambiata anche nel `buildscript` della radice (D58).
 androidGradlePlugin = "8.7.3"
 
 [libraries]

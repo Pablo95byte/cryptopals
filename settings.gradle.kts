@@ -58,7 +58,12 @@ val androidSdkDir: File? = sequenceOf(
  */
 val calledByXcode = System.getenv("XCODE_VERSION_ACTUAL") != null
 
-if (androidSdkDir != null && !calledByXcode) {
+val withAndroidApp = androidSdkDir != null && !calledByXcode
+
+// La radice ne ha bisogno per mettere il plugin Android sul suo classpath (D58).
+(gradle as ExtensionAware).extra["inknote.androidApp"] = withAndroidApp
+
+if (withAndroidApp) {
     include(":androidApp")
 } else if (calledByXcode) {
     println("InkNote: build chiamato da Xcode, :androidApp escluso.")

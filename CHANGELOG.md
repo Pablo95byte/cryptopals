@@ -12,6 +12,9 @@ solo cosa è cambiato nel codice.
 
 ### Corretto
 
+- **Gradle si fermava su `BaseVariant` dove c'è l'SDK Android**: il plugin Android ora sta
+  nel classpath della radice, solo quando `:androidApp` entra nel build (D58). Correggeva
+  un errore introdotto da D57.
 - **Codemagic, cache sui Mac**: solo il compilatore Kotlin/Native. Salvare anche quella di
   Gradle costava sei minuti su nove a ogni build (D56).
 - **Gradle si fermava su ogni macchina con l'SDK Android** (Codemagic): il plugin Kotlin
