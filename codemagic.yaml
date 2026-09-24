@@ -104,9 +104,9 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 60
     integrations:
-      # La chiave API di App Store Connect, aggiunta in Team settings → Integrations
-      # con questo nome.
-      app_store_connect: InkNote ASC
+      # La chiave API di App Store Connect in Team settings → Integrations, con questo
+      # nome. È la stessa dell'altra app del committente: vale per tutto il team.
+      app_store_connect: codemagic
     environment:
       java: 21
       xcode: latest

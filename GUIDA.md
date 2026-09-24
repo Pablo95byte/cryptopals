@@ -188,8 +188,8 @@ Il file è già nel repository: `codemagic.yaml`. Su codemagic.io:
 2. **La chiave di App Store Connect.** In App Store Connect → Utenti e accesso →
    Integrazioni → Chiavi API: crea una chiave col ruolo **App Manager** e scarica il file
    `.p8` (si scarica una volta sola). Su Codemagic: Team settings → Integrations → App
-   Store Connect → aggiungi la chiave, e **chiamala `InkNote ASC`**, che è il nome scritto
-   nel file.
+   Store Connect → aggiungi la chiave. Il file usa quella che c'è già per l'altra app, di
+   nome **`codemagic`**: una chiave vale per tutto il team.
 3. **Certificato e profili iOS.** Team settings → codemagic.yaml settings → Code signing
    identities:
    - iOS certificates → **Generate certificate** di tipo *Apple Distribution*;
