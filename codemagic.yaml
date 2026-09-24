@@ -55,9 +55,11 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: app.inknote.ios
-      vars:
-        # L'Apple ID numerico dell'app: App Store Connect → l'app → Informazioni sull'app.
-        APP_STORE_APPLE_ID: ""
+      # L'Apple ID numerico dell'app (App Store Connect → l'app → Informazioni sull'app).
+      # Facoltativo: Codemagic non accetta valori vuoti, quindi finché la scheda non esiste
+      # la riga resta commentata e il numero della build è il contatore di Codemagic.
+      # vars:
+      #   APP_STORE_APPLE_ID: 1234567890
     triggering:
       events: [tag]
       tag_patterns:
@@ -70,7 +72,10 @@ workflows:
         script: |
           # Uno più dell'ultima build su TestFlight: App Store Connect rifiuta i doppioni,
           # e le build caricate a mano da Xcode contano anche loro.
-          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null | tail -1)
+          LATEST=0
+          if [ -n "${APP_STORE_APPLE_ID:-}" ]; then
+            LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null | tail -1)
+          fi
           case "$LATEST" in ''|*[!0-9]*) LATEST=0 ;; esac
           AFTER_LATEST=$(( LATEST + 1 ))
           COUNTER=${BUILD_NUMBER:-1}

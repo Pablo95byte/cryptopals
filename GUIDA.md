@@ -189,7 +189,9 @@ Il file è già nel repository: `codemagic.yaml`. Su codemagic.io:
      identificativi.
 4. **La scheda dell'app** in App Store Connect (serve per TestFlight, ed è anche il modo di
    **prenotare il nome**, vedi D54). Poi copia il suo **Apple ID** numerico (Informazioni
-   sull'app) nel file, alla riga `APP_STORE_APPLE_ID`.
+   sull'app) nel file: togli il `#` dalle due righe `vars:` e `APP_STORE_APPLE_ID` e
+   metti il numero al posto di quello d'esempio. Finché non lo fai il numero della build è
+   il contatore di Codemagic, che va bene se non carichi build a mano da Xcode.
 5. **Android**, quando servirà: Team settings → Code signing identities → Android keystores →
    carica la chiave di caricamento e **chiamala `inknote_upload_key`**. Poi un gruppo di
    variabili `google_play` con `GCLOUD_SERVICE_ACCOUNT_CREDENTIALS`, il file JSON
