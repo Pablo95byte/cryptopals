@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #2E5AA8; } a:hover { color: #1F3F78; }
+    .ui { font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif; }
+    .ink { font-family: 'Caveat', 'Bradley Hand', 'Segoe Script', cursive; }
+    .num { width: 26px; height: 26px; border-radius: 50%; background: #23201B; color: #FBF8F1; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  </style>
+</helmet>
+
+<div class="ui" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FBF8F1;">
+
+  <!--
+    Si arriva qui dopo la prima nota, non prima. È la schermata che decide se l'app
+    verrà usata di nuovo: senza il widget in home il gesto di cattura non esiste, e
+    nessuno scopre da solo come si aggiunge un widget.
+  -->
+
+  <div style="display: flex; align-items: center; gap: 4px; padding: 58px 14px 0 14px;">
+    <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#23201B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 5l-7 7 7 7"></path>
+      </svg>
+    </div>
+    <span style="font-size: 17px; font-weight: 600; color: #23201B;">Mettilo in home</span>
+  </div>
+
+  <!-- Le istruzioni cambiano fra i due sistemi: qui si scelgono, non si indovinano. -->
+  <div style="margin: 18px 22px 0 22px; height: 44px; background: #F1EADC; border-radius: 13px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px;">
+    <div style="border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(35,32,27,0.10);">
+      <span style="font-size: 14px; font-weight: 600; color: #23201B;">iPhone</span>
+    </div>
+    <div style="border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+      <span style="font-size: 14px; font-weight: 500; color: #8B8374;">Android</span>
+    </div>
+  </div>
+
+  <div style="padding: 26px 22px 0 22px; display: flex; flex-direction: column; gap: 22px;">
+
+    <div style="display: flex; gap: 13px;">
+      <div class="num">1</div>
+      <div style="display: flex; flex-direction: column; gap: 10px; flex-grow: 1;">
+        <span style="font-size: 15.5px; line-height: 1.4; color: #23201B;">Tieni premuto uno spazio vuoto della home</span>
+        <div style="height: 96px; border-radius: 14px; background: linear-gradient(160deg, #4A5663 0%, #333C46 100%); position: relative; overflow: hidden;">
+          <div style="position: absolute; left: 14px; top: 14px; display: grid; grid-template-columns: repeat(4, 32px); gap: 10px;">
+            <div style="height: 32px; border-radius: 8px; background: rgba(255,255,255,0.22);"></div>
+            <div style="height: 32px; border-radius: 8px; background: rgba(255,255,255,0.22);"></div>
+            <div style="height: 32px; border-radius: 8px; background: rgba(255,255,255,0.22);"></div>
+            <div style="height: 32px; border-radius: 8px; background: rgba(255,255,255,0.22);"></div>
+          </div>
+          <div style="position: absolute; right: 26px; bottom: 16px; width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.85);"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 13px;">
+      <div class="num">2</div>
+      <div style="display: flex; flex-direction: column; gap: 10px; flex-grow: 1;">
+        <span style="font-size: 15.5px; line-height: 1.4; color: #23201B;">Tocca <span style="font-weight: 600;">+</span> in alto a sinistra</span>
+        <div style="height: 96px; border-radius: 14px; background: linear-gradient(160deg, #4A5663 0%, #333C46 100%); position: relative;">
+          <div style="position: absolute; left: 14px; top: 14px; width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.92); display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2B333C" stroke-width="2.6" stroke-linecap="round">
+              <path d="M12 5v14M5 12h14"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 13px;">
+      <div class="num">3</div>
+      <div style="display: flex; flex-direction: column; gap: 10px; flex-grow: 1;">
+        <span style="font-size: 15.5px; line-height: 1.4; color: #23201B;">Cerca InkNote e scegli la misura</span>
+        <div style="height: 96px; border-radius: 14px; background: #FFFDF6; border: 1px solid #EDE4D2; display: flex; align-items: center; gap: 12px; padding: 0 14px;">
+          <div style="width: 64px; height: 64px; border-radius: 14px; background: #FBF8F1; border: 1px solid #EDE4D2; padding: 8px;">
+            <div class="ink" style="font-size: 15px; line-height: 1.1; color: #23201B;">chiamare<br>Luca</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <span class="ink" style="font-size: 20px; color: #23201B;">InkNote</span>
+            <span style="font-size: 11.5px; color: #ADA492;">piccolo · medio · grande</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; left: 22px; right: 22px; bottom: 34px; display: flex; flex-direction: column; gap: 14px;">
+    <span style="font-size: 12.5px; line-height: 1.45; color: #ADA492; text-align: center;">Puoi metterlo anche nella schermata di blocco, così scrivi senza sbloccare.</span>
+    <div style="height: 56px; border-radius: 18px; background: #23201B; display: flex; align-items: center; justify-content: center;">
+      <span style="font-size: 17px; font-weight: 600; color: #FBF8F1;">Fatto</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

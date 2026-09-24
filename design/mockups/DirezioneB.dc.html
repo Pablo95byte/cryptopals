@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #8FB8F0; } a:hover { color: #B4D0F6; }
+    .ui { font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif; }
+    .ink { font-family: 'Caveat', 'Bradley Hand', 'Segoe Script', cursive; }
+  </style>
+</helmet>
+
+<div class="ui" style="width: 390px; height: 560px; background: #1A1C1E; padding: 28px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
+
+  <div style="display: flex; flex-direction: column; gap: 5px;">
+    <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(240,238,234,0.45);">Direzione B — schizzo</div>
+    <div style="font-size: 19px; font-weight: 600; color: #F0EEEA;">Gesso su lavagna</div>
+    <div style="font-size: 13px; line-height: 1.45; color: rgba(240,238,234,0.55); text-wrap: pretty;">Inchiostro chiaro su fondo scuro invece di carta. Più discreto sulla home, meno "bigliettino".</div>
+  </div>
+
+  <!-- Schizzo del widget -->
+  <div style="border: 1px dashed rgba(240,238,234,0.28); border-radius: 20px; padding: 12px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 34px; padding: 0 4px;">
+      <span class="ink" style="font-size: 20px; color: #F0EEEA;">InkNote</span>
+      <div style="width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(240,238,234,0.4); display: flex; align-items: center; justify-content: center;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F0EEEA" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 8px;">
+      <div style="height: 82px; border-radius: 12px; background: #24272A; padding: 10px;">
+        <div class="ink" style="font-size: 19px; line-height: 1.12; color: #EDEBE6;">chiamare Luca</div>
+      </div>
+      <div style="height: 82px; border-radius: 12px; background: #24272A; padding: 10px;">
+        <div class="ink" style="font-size: 19px; line-height: 1.12; color: #E9DFA8;">latte, pane, caffè</div>
+      </div>
+      <div style="height: 82px; border-radius: 12px; background: #24272A; padding: 10px;">
+        <div class="ink" style="font-size: 19px; line-height: 1.12; color: #BFD8C2;">podcast sul vino</div>
+      </div>
+      <div style="height: 82px; border-radius: 12px; background: #24272A; padding: 10px;">
+        <div class="ink" style="font-size: 19px; line-height: 1.12; color: #EDC9CB;">targa AB 421 XY</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schizzo della cattura -->
+  <div style="flex-grow: 1; border: 1px dashed rgba(240,238,234,0.28); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+    <div class="ink" style="font-size: 28px; line-height: 1.25; color: #F0EEEA;">passare in farmacia<br>prima delle 19</div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="width: 44px; height: 44px; border-radius: 13px; border: 1px solid rgba(240,238,234,0.35);"></div>
+      <div style="width: 24px; height: 24px; border-radius: 50%; background: #F0EEEA;"></div>
+      <div style="width: 24px; height: 24px; border-radius: 50%; background: #8FB8F0;"></div>
+      <div style="flex-grow: 1;"></div>
+      <div style="width: 80px; height: 46px; border-radius: 14px; background: #F0EEEA; display: flex; align-items: center; justify-content: center;">
+        <span style="font-size: 15px; font-weight: 600; color: #1A1C1E;">OK</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

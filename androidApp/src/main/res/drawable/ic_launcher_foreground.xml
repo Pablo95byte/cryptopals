@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    L'icona dell'app: il ricciolo del widget (D30), in inchiostro su carta. Il disegno sta
+    nei 66 dp centrali dei 108: fuori, il launcher può ritagliare.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="2.4"
+        android:scaleY="2.4"
+        android:translateX="25.2"
+        android:translateY="25.2">
+        <path
+            android:fillColor="#00000000"
+            android:pathData="M4,19.5c3,-1 5,-6.5 8,-11.5 2.2,-3.7 4,-4.3 4.8,-3.4 0.9,1 -0.4,3.2 -2.4,5.6 -1.6,1.9 -3,3 -3,4.3 0,1 0.8,1.5 1.8,1.2 1.4,-0.4 2.6,-1.6 3.8,-3.2"
+            android:strokeColor="#1F2430"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="1.7" />
+    </group>
+</vector>

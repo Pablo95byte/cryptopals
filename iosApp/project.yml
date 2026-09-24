@@ -1,0 +1,83 @@
+# Il progetto Xcode si genera da questo file (D48): `xcodegen generate` in questa cartella.
+#
+# Perché XcodeGen e non un .xcodeproj nel repository: il file di Xcode è un formato
+# illeggibile che si rompe a ogni fusione, e scritto a mano da chi non ha un Mac non
+# si aprirebbe. Questo è testo, si legge, e Xcode lo ricostruisce identico.
+name: InkNote
+options:
+  bundleIdPrefix: app.inknote
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    MARKETING_VERSION: "0.1"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.10"
+    # La propria squadra di sviluppo: Xcode → Signing & Capabilities, oppure qui.
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+targets:
+  InkNote:
+    type: application
+    platform: iOS
+    sources:
+      - InkNote
+      - Shared
+    info:
+      path: InkNote/Info.plist
+      properties:
+        CFBundleDisplayName: InkNote
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen:
+          UIColorName: Paper
+        UIApplicationSupportsIndirectInputEvents: true
+        CFBundleURLTypes:
+          - CFBundleURLName: app.inknote.capture
+            CFBundleURLSchemes: [inknote]
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.inknote.ios
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Il framework del core, costruito da Gradle nella fase qui sotto.
+        FRAMEWORK_SEARCH_PATHS: $(inherited) $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)
+        OTHER_LDFLAGS: $(inherited) -framework InkNoteKit -lsqlite3
+        # Lo script di Gradle legge e scrive fuori dalla cartella del progetto.
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    preBuildScripts:
+      - name: Compila il core Kotlin
+        basedOnDependencyAnalysis: false
+        script: |
+          cd "$SRCROOT/.."
+          ./gradlew :shared:embedAndSignAppleFrameworkForXcode
+    dependencies:
+      - target: InkNoteWidgets
+  InkNoteWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - InkNoteWidgets
+      - Shared
+    info:
+      path: InkNoteWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: InkNote
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.inknote.ios.widgets
+        TARGETED_DEVICE_FAMILY: "1,2"

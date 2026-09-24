@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Il bianco caldo della direzione visiva (D16), non il bianco puro. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FBF8F1" />
+    <corners android:radius="22dp" />
+</shape>
