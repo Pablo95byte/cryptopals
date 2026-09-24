@@ -12,6 +12,8 @@ solo cosa è cambiato nel codice.
 
 ### Corretto
 
+- **Codemagic, cache sui Mac**: solo il compilatore Kotlin/Native. Salvare anche quella di
+  Gradle costava sei minuti su nove a ogni build (D56).
 - **Gradle si fermava su ogni macchina con l'SDK Android** (Codemagic): il plugin Kotlin
   per Android è ora dichiarato nella radice. Quando il build lo chiama Xcode,
   `:androidApp` resta fuori (D57).

@@ -13,12 +13,18 @@
 # Cosa va impostato su codemagic.io prima del primo giro è in GUIDA.md, §0ter.
 
 definitions:
+  # Sui Linux: le librerie di Gradle, che si scaricano in fretta ma costano ogni volta.
   cache: &gradle_cache
     cache_paths:
       - $HOME/.gradle/caches
       - $HOME/.gradle/wrapper
-      # Il compilatore Kotlin/Native e le sue librerie: quasi un gigabyte, scaricato una volta.
+  # Sui Mac: solo il compilatore Kotlin/Native (più di un gigabyte, scaricato una volta).
+  # Non cambia da un build all'altro, quindi non si ricarica. La cache di Gradle invece
+  # cambia sempre: al primo giro salvarla costava sei minuti su nove (D56).
+  mac_cache: &mac_cache
+    cache_paths:
       - $HOME/.konan
+      - $HOME/.gradle/wrapper
 
 workflows:
   core-tests:
@@ -63,7 +69,7 @@ workflows:
           - "*.gradle.kts"
           - "gradle/**"
           - "gradle.properties"
-    cache: *gradle_cache
+    cache: *mac_cache
     scripts:
       - name: Il progetto Xcode
         script: |
@@ -117,7 +123,7 @@ workflows:
       events: [tag]
       tag_patterns:
         - pattern: "ios-*"
-    cache: *gradle_cache
+    cache: *mac_cache
     scripts:
       - name: XcodeGen
         script: brew install xcodegen

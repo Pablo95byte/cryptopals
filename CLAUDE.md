@@ -1723,6 +1723,12 @@ qualunque branch. Un push che cambia solo la documentazione non consuma minuti d
 L'Apple ID di Instink (`6815617566`) è nel file: il numero della build su TestFlight ora
 parte dall'ultimo caricato.
 
+**Primo giro verde** (2026-09-24, build 4): lo Swift scritto senza compilatore ha
+compilato al primo tentativo, dopo la correzione di Gradle di D57. Nove minuti, di cui
+**sei per salvare la cache** (1,1 GB): la cache di Gradle cambia a ogni build e veniva
+ricaricata ogni volta. Sui Mac ora si tiene solo il compilatore Kotlin/Native, che non
+cambia e quindi non si ricarica; la cache di Gradle resta ai workflow Linux.
+
 
 ### D57 — Il plugin Kotlin per Android si dichiara nella radice, e Xcode non vede l'app Android
 **Data:** 2026-09-24 · **Stato:** attiva · **Trovata dal primo giro di D56**
@@ -1896,9 +1902,10 @@ Stato attuale: **tutti i test verdi** (`./gradlew jvmTest`). L'app Android **com
 Galaxy S8, 2026-09-24, nessuna modifica al codice). Misure in D36: tutte verdi. Widget,
 riquadro sopra il blocco e privacy **provati sul telefono**. Archivio, tastiera, foto e
 condivisione (D38–D40) **compilano contro Android 15** (D44) ma non sono ancora stati
-costruiti con l'SDK né provati sul telefono. L'app iOS (D48, D52) è scritta e **non è mai stata
-compilata**: qui non c'è Swift. La prima compilazione è sul Mac del committente o su
-Codemagic (D53).
+costruiti con l'SDK né provati sul telefono. L'app iOS (D48, D52) **compila**, app e widget
+insieme al core Kotlin/Native: primo giro verde di `ios-check` su Codemagic, 2026-09-24,
+dopo la correzione di Gradle (D57). Non è ancora stata provata su un iPhone: serve la
+firma e TestFlight (D53).
 
 ---
 
