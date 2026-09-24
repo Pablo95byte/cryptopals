@@ -121,6 +121,15 @@ enum Recognition {
 
     // MARK: Voce (D63)
 
+    /// Se su questo telefono la voce si può trascrivere adesso: permesso dato, e la lingua
+    /// del telefono riconosciuta senza rete. Se no, la nota aperta lo dice invece di
+    /// promettere una trascrizione che non arriverà.
+    static var canTranscribe: Bool {
+        guard SFSpeechRecognizer.authorizationStatus() == .authorized,
+              let recognizer = SFSpeechRecognizer() else { return false }
+        return recognizer.supportsOnDeviceRecognition
+    }
+
     private static func transcribe(finish: @escaping (Bool) -> Void) {
         // Solo sul dispositivo. Se non si può, la registrazione aspetta con l'audio intatto.
         guard SFSpeechRecognizer.authorizationStatus() == .authorized,
@@ -170,12 +179,13 @@ enum Recognition {
             if let result, result.isFinal {
                 delivered = true
                 save(result.bestTranscription.formattedString)
-            } else if let error {
+            } else if error != nil {
                 delivered = true
-                // "Nessun parlato" è un esito: la registrazione esce dalla coda. Ogni altro
-                // errore la lascia lì, per la prossima volta.
-                let nsError = error as NSError
-                save(nsError.domain == "kAFAssistantErrorDomain" && nsError.code == 1110 ? "" : nil)
+                // Il riconoscitore c'era e l'errore è sul file: nessun parlato, un audio che
+                // non si capisce. È un esito, e la registrazione esce dalla coda con l'audio
+                // intatto. Solo un riconoscitore che intanto è sparito la lascia per dopo:
+                // altrimenti la nota prometterebbe per sempre una trascrizione.
+                save(recognizer.isAvailable ? "" : nil)
             }
         }
     }

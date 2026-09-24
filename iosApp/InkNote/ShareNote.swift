@@ -16,7 +16,9 @@ enum ShareNote {
             dateStyle: .medium,
             timeStyle: .short
         )
-        if let text = archive.shareText(note: note, dateLabel: date) { items.append(text) }
+        // La firma è l'anello di crescita (D68): chi riceve la nota scopre da dove viene.
+        let signature = String(localized: "Written with Instink · instink.app")
+        if let text = archive.shareText(note: note, dateLabel: date, signature: signature) { items.append(text) }
         if let ink = inkImage(of: note) { items.append(ink) }
         for path in archive.photoPaths(note: note) {
             if let photo = PhotoFiles.load(path) { items.append(photo) }

@@ -10,6 +10,24 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Corretto — il microfono (D63)
+
+- **La registrazione vocale non partiva su iPhone**: la sessione audio usava un modo di
+  riproduzione (`.spokenAudio`) che iOS rifiuta in registrazione. Ora `.default`, e se la
+  registrazione non parte il foglio lo dice con un avviso.
+- **La trascrizione non promette più per sempre**: un errore sul file toglie la
+  registrazione dalla coda (l'audio resta), e se il telefono non sa trascrivere la nota
+  aperta spiega cosa fare.
+
+### Aggiunto — crescere adesso, guadagnare dopo (D68)
+
+- **La firma "Scritta con Instink · instink.app"** in fondo al testo delle note mandate
+  fuori, su iOS e Android (`NoteExport.prepare(signature = …)`, con i suoi test).
+- **La richiesta di recensione** su iOS, una volta per versione, dopo la settima nota.
+- **`lancio/MERCATO.md`**: la ricerca di mercato (concorrenti, prezzi, conversioni) e il
+  piano: gratis al lancio, Pro dopo, "ciò che hai resta tuo".
+- **GUIDA §0nonies**: il Play Store passo per passo, dal primo bundle al test chiuso.
+
 ### Aggiunto — il segno, i testi degli store, il piano per guadagnare (D66, D67)
 
 - **Icona nuova** su iOS e Android: il ricciolo scritto a inchiostro, con una goccia

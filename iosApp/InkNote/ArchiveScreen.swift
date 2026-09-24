@@ -1,4 +1,5 @@
 import InkNoteKit
+import StoreKit
 import SwiftUI
 
 /// L'archivio (D39, D46): bigliettini di carta su una scrivania, in una griglia che mette
@@ -10,6 +11,7 @@ struct ArchiveScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var sorting = false
     @State private var share: SharePayload?
+    @Environment(\.requestReview) private var requestReview
 
     var body: some View {
         NavigationStack {
@@ -93,9 +95,22 @@ struct ArchiveScreen: View {
         .onAppear { model.refresh() }
         .onChange(of: scenePhase) { _, phase in if phase == .active { model.refresh() } }
         .onChange(of: router.isCapturing) { _, capturing in if !capturing { model.refresh() } }
+        .onChange(of: model.notes.count) { _, count in askForReviewIfDeserved(noteCount: count) }
         .alert("The last stroke before the app closed could not be saved.", isPresented: $model.lostStroke) {
             Button("OK", role: .cancel) {}
         }
+    }
+
+    /// La recensione si chiede una volta per versione, e solo a chi l'app la usa davvero:
+    /// dopo la settima nota, tornando all'archivio da un foglio appena chiuso (D68). Le
+    /// stelle decidono il posto nella ricerca dello store più di qualunque testo, e chi ha
+    /// già scritto sette note è la persona giusta a cui chiederle. Mai sul foglio.
+    private func askForReviewIfDeserved(noteCount: Int) {
+        let key = "review.askedForVersion"
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+        guard noteCount >= 7, model.query.isEmpty, !router.isCapturing, UserDefaults.standard.string(forKey: key) != version else { return }
+        UserDefaults.standard.set(version, forKey: key)
+        requestReview()
     }
 }
 

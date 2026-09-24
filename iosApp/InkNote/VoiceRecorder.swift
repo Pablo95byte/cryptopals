@@ -41,18 +41,23 @@ final class VoiceRecorder {
         }
     }
 
-    /// Comincia a registrare. [completion] sul thread principale: `false` se non si può.
-    func start(_ completion: @escaping (Bool) -> Void) {
+    /// Comincia a registrare. [completion] sul thread principale, con `nil` se la
+    /// registrazione è partita, o il motivo per cui non è partita: il foglio lo deve dire,
+    /// non tacere.
+    func start(_ completion: @escaping (Error?) -> Void) {
         let relative = "voice/\(UUID().uuidString.lowercased()).m4a"
         queue.async { [self] in
             guard let url = PhotoFiles.url(of: relative) else {
-                DispatchQueue.main.async { completion(false) }
+                DispatchQueue.main.async { completion(CocoaError(.fileNoSuchFile)) }
                 return
             }
             do {
                 try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
                 let session = AVAudioSession.sharedInstance()
-                try session.setCategory(.record, mode: .spokenAudio)
+                // Modo `.default`, non `.spokenAudio`: quello è un modo di riproduzione, e
+                // con la categoria `.record` iOS lo rifiuta. Era il guasto della prima prova
+                // su iPhone: il registratore non partiva e il foglio non diceva niente (D63).
+                try session.setCategory(.record, mode: .default)
                 try session.setActive(true)
                 // AAC mono a 22 kHz: la voce resta chiara, e un minuto pesa meno di mezzo
                 // megabyte nel backup (D49).
@@ -69,11 +74,11 @@ final class VoiceRecorder {
                 DispatchQueue.main.async {
                     self.isRecording = true
                     self.startedAt = Date()
-                    completion(true)
+                    completion(nil)
                 }
             } catch {
                 try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-                DispatchQueue.main.async { completion(false) }
+                DispatchQueue.main.async { completion(error) }
             }
         }
     }

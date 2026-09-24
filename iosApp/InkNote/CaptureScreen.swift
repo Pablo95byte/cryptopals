@@ -282,9 +282,12 @@ final class CaptureViewController: UIViewController, UITextViewDelegate,
                 self.explainMicrophoneOff()
                 return
             }
-            self.recorder.start { started in
+            self.recorder.start { error in
                 self.startingRecording = false
-                guard started else { return }
+                if let error {
+                    self.explainRecordingFailed(error)
+                    return
+                }
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 self.recordingPill?.isHidden = false
                 self.updateRecordingPill()
@@ -345,6 +348,17 @@ final class CaptureViewController: UIViewController, UITextViewDelegate,
         chip.isUserInteractionEnabled = false
         chip.accessibilityLabel = String(localized: "Voice note")
         photoStrip.addArrangedSubview(chip)
+    }
+
+    /// Un microfono che non parte deve dirlo: un tocco senza risposta sembra un'app rotta.
+    private func explainRecordingFailed(_ error: Error) {
+        let alert = UIAlertController(
+            title: String(localized: "Can't record right now"),
+            message: String(localized: "Another app may be using the microphone. Try again in a moment."),
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+        present(alert, animated: true)
     }
 
     private func explainMicrophoneOff() {

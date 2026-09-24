@@ -158,27 +158,27 @@ Non è un quaderno con cartelle e pagine. È la penna del sistema di note che us
 Domande o idee: hello@instink.app""",
 )
 
-# Da aggiungere in fondo alla descrizione quando Instink Pro sarà in vendita (D67). Apple
+# Da aggiungere in fondo alla descrizione quando Instink Pro sarà in vendita (D67, D68). Apple
 # chiede che un abbonamento dica prezzo, durata, rinnovo e dove si disdice.
 PRO_EN = """INSTINK PRO
 Capturing notes is free, forever. Pro is for when your notes pile up:
-• Search everything you've ever written — free search covers the last 30 days
+• Search everything you've ever written — free search covers the last 30 days (if you installed Instink before Pro existed, you keep unlimited search)
 • Turn handwritten dates into reminders
 • Send notes without the "Written with Instink" line
 • Every new Pro feature as it arrives
 
-Instink Pro is available as a yearly subscription with a 7-day free trial, or as a one-time lifetime purchase. The subscription renews automatically unless cancelled at least 24 hours before the end of the period, and is charged to your Apple Account. Manage or cancel it in Settings › Apple Account › Subscriptions.
+Instink Pro is available as a monthly or yearly subscription — the yearly one with a 14-day free trial — or as a one-time lifetime purchase. The subscription renews automatically unless cancelled at least 24 hours before the end of the period, and is charged to your Apple Account. Manage or cancel it in Settings › Apple Account › Subscriptions.
 Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Privacy: https://instink.app/privacy.html"""
 
 PRO_IT = """INSTINK PRO
 Catturare le note è gratis, per sempre. Pro è per quando le note diventano tante:
-• Cerca in tutto quello che hai scritto — la ricerca gratuita copre gli ultimi 30 giorni
+• Cerca in tutto quello che hai scritto — la ricerca gratuita copre gli ultimi 30 giorni (chi ha installato Instink prima che Pro esistesse tiene la ricerca illimitata)
 • Trasforma le date scritte a mano in promemoria
 • Manda le note senza la riga "Scritta con Instink"
 • Ogni funzione Pro nuova, appena arriva
 
-Instink Pro è disponibile come abbonamento annuale con 7 giorni di prova gratuita, oppure come acquisto unico a vita. L'abbonamento si rinnova automaticamente se non viene disdetto almeno 24 ore prima della scadenza, ed è addebitato sul tuo Account Apple. Si gestisce o si disdice in Impostazioni › Account Apple › Abbonamenti.
+Instink Pro è disponibile come abbonamento mensile o annuale — quello annuale con 14 giorni di prova gratuita — oppure come acquisto unico a vita. L'abbonamento si rinnova automaticamente se non viene disdetto almeno 24 ore prima della scadenza, ed è addebitato sul tuo Account Apple. Si gestisce o si disdice in Impostazioni › Account Apple › Abbonamenti.
 Condizioni d'uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Privacy: https://instink.app/it/privacy.html"""
 
@@ -235,7 +235,7 @@ lunghezza sul limite dello store.
         out.append(block("Testo promozionale", texts["promo"], 170))
         out.append(block("Descrizione", texts["description"], 4000))
         out.append(block("Novità di questa versione", texts["whats_new"], 4000))
-        out.append(block("Da aggiungere alla descrizione quando Pro è in vendita (D67)", pro, 4000 - len(texts["description"]) - 2))
+        out.append(block("Da aggiungere alla descrizione quando Pro è in vendita (D67, D68): non al lancio", pro, 4000 - len(texts["description"]) - 2))
         out.append(f"\n## Play Store — {title}\n")
         out.append(block("Titolo", texts["play_title"], 30))
         out.append(block("Descrizione breve", texts["play_short"], 80))

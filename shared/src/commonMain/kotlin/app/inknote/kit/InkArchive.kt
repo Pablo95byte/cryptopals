@@ -56,8 +56,13 @@ class InkArchive(private val store: NoteStore) {
         store.save(note.withExport(ExportTarget.SystemShare, nowMillis))
     }
 
-    /** Il testo da mandare fuori, già composto, o `null` se non c'è testo (D31). */
-    fun shareText(note: Note, dateLabel: String): String? = NoteExport.prepare(note, dateLabel)?.text
+    /**
+     * Il testo da mandare fuori, già composto, o `null` se non c'è testo (D31).
+     *
+     * @param signature la riga "Scritta con Instink" nella lingua dell'utente (D68).
+     */
+    fun shareText(note: Note, dateLabel: String, signature: String?): String? =
+        NoteExport.prepare(note, dateLabel, signature)?.text
 
     /** L'id come stringa: da Swift i tipi valore di Kotlin non sono comodi. */
     fun idOf(note: Note): String = note.id.value
