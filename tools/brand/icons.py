@@ -1,5 +1,9 @@
 """
-Il segno di Instink e tutti i suoi formati (D66).
+Il segno di Instink e tutti i suoi formati (D66, D71).
+
+L'icona è un foglio bianco, un po' inclinato, su un campo vermiglio, con sopra il ricciolo
+scritto a inchiostro e la goccia (D71): il foglio è quello del widget (D30), e si capisce
+senza leggere nessuna lingua.
 
 Il ricciolo è lo stesso del widget e del sito (D30), ma disegnato come inchiostro: sottile
 all'attacco, pieno nel corpo, un po' più stretto alla fine — la stessa idea dello spessore
@@ -25,6 +29,9 @@ NIGHT = "#15171D"
 NIGHT_DEEP = "#0C0D11"
 CREAM = "#F3ECDD"
 SPARK = "#E4572E"
+# Il campo dell'icona (D71): il vermiglio del marchio, un filo più chiaro in alto.
+FIELD = "#EA5F35"
+FIELD_DEEP = "#D9481F"
 
 # Il ricciolo, in coordinate 24×24: lo stesso percorso di Brand.swift e del sito.
 SEGMENTS = [
@@ -132,63 +139,131 @@ def icon_svg(size, background, ink, spark, scale=0.58, stroke=2.05, spark_r=1.25
     )
 
 
+# Il foglio, in un quadrato da 1024: 620×660, angoli da 56, inclinato di 7 gradi.
+SHEET = dict(x=202, y=182, w=620, h=660, r=56, angle=-7)
+# Il ricciolo sul foglio: 27 unità di disegno per 1024 pixel.
+SHEET_MARK = 27 * 15.8 / 1024
+
+
+def sheet_icon_svg(size, field, sheet, ink, spark, stroke=2.05, spark_r=1.25, radius=0, gid="g"):
+    """L'icona di D71. [field] è un colore, una coppia per il gradiente, o None (trasparente)."""
+    f = size / 1024
+    defs, bg = "", ""
+    if field:
+        fill = field
+        if isinstance(field, tuple):
+            defs = (
+                f'<defs><linearGradient id="{gid}" x1="0" y1="0" x2="0" y2="1">'
+                f'<stop offset="0" stop-color="{field[0]}"/><stop offset="1" stop-color="{field[1]}"/>'
+                f"</linearGradient></defs>"
+            )
+            fill = f"url(#{gid})"
+        bg = f'<rect width="{size}" height="{size}" rx="{radius}" fill="{fill}"/>'
+    c = size / 2
+    paper = (
+        f'<g transform="rotate({SHEET["angle"]} {c:.2f} {c:.2f})">'
+        f'<rect x="{SHEET["x"] * f:.2f}" y="{SHEET["y"] * f:.2f}" width="{SHEET["w"] * f:.2f}" '
+        f'height="{SHEET["h"] * f:.2f}" rx="{SHEET["r"] * f:.2f}" fill="{sheet}"/></g>'
+    )
+    k = size * SHEET_MARK / 15.8
+    tx, ty = c - CENTER[0] * k, c - CENTER[1] * k
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 {size} {size}">'
+        f"{defs}{bg}{paper}<g transform=\"translate({tx:.3f},{ty:.3f}) scale({k:.4f})\">"
+        f"{mark(stroke, ink, spark, spark_r)}</g></svg>"
+    )
+
+
+def sheet_group(size, x, y):
+    """L'icona di D71 come gruppo da mettere dentro un'altra immagine, in alto a sinistra in (x, y)."""
+    inner = sheet_icon_svg(size, (FIELD, FIELD_DEEP), PAPER, INK, SPARK, radius=size * 0.2237, gid="gi")
+    body = inner.split(">", 1)[1].rsplit("</svg>", 1)[0]
+    return f'<g transform="translate({x},{y})">{body}</g>'
+
+
 def feature_svg():
-    """La grafica in evidenza del Play Store, 1024×500: il segno, il nome, la frase."""
-    k = 280 / 15.8
-    tx, ty = 245 - CENTER[0] * k, 250 - CENTER[1] * k
+    """La grafica in evidenza del Play Store, 1024×500: l'icona, il nome, la frase (D71)."""
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">'
         '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'
-        f'<stop offset="0" stop-color="{PAPER}"/><stop offset="1" stop-color="{PAPER_DEEP}"/></linearGradient>'
+        f'<stop offset="0" stop-color="{FIELD}"/><stop offset="1" stop-color="{FIELD_DEEP}"/></linearGradient>'
         '<style>@font-face{font-family:IS;src:url("../../site/fonts/InstrumentSans.ttf")}</style></defs>'
         '<rect width="1024" height="500" fill="url(#g)"/>'
-        f'<g transform="translate({tx:.2f},{ty:.2f}) scale({k:.3f})">{mark(2.05, INK, SPARK, 1.25)}</g>'
-        f'<text x="470" y="238" font-family="IS" font-weight="700" font-size="104" fill="{INK}" letter-spacing="-3">Instink</text>'
-        f'<text x="474" y="306" font-family="IS" font-weight="500" font-size="38" fill="#6F685B">Write on instinct.</text>'
+        + sheet_group(260, 110, 120).replace(f'fill="url(#gi)"', 'fill="none"') +
+        f'<text x="440" y="238" font-family="IS" font-weight="700" font-size="104" fill="{PAPER}" letter-spacing="-3">Instink</text>'
+        f'<text x="444" y="306" font-family="IS" font-weight="500" font-size="38" fill="{PAPER}" fill-opacity="0.82">Write on instinct.</text>'
         "</svg>"
     )
 
 
 def og_svg(title, line):
-    """L'immagine delle anteprime dei link (1200×630): WhatsApp, Messaggi, social."""
-    k = 330 / 15.8
-    tx, ty = 290 - CENTER[0] * k, 315 - CENTER[1] * k
+    """L'immagine delle anteprime dei link (1200×630): WhatsApp, Messaggi, social (D71)."""
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">'
         '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'
-        f'<stop offset="0" stop-color="{PAPER}"/><stop offset="1" stop-color="{PAPER_DEEP}"/></linearGradient>'
+        f'<stop offset="0" stop-color="{FIELD}"/><stop offset="1" stop-color="{FIELD_DEEP}"/></linearGradient>'
         '<style>@font-face{font-family:IS;src:url("../../site/fonts/InstrumentSans.ttf")}</style></defs>'
         '<rect width="1200" height="630" fill="url(#g)"/>'
-        f'<g transform="translate({tx:.2f},{ty:.2f}) scale({k:.3f})">{mark(2.05, INK, SPARK, 1.25)}</g>'
-        f'<text x="540" y="300" font-family="IS" font-weight="700" font-size="112" fill="{INK}" letter-spacing="-3">{title}</text>'
-        f'<text x="545" y="372" font-family="IS" font-weight="500" font-size="40" fill="#6F685B">{line}</text>'
+        + sheet_group(330, 130, 150).replace(f'fill="url(#gi)"', 'fill="none"') +
+        f'<text x="540" y="300" font-family="IS" font-weight="700" font-size="112" fill="{PAPER}" letter-spacing="-3">{title}</text>'
+        f'<text x="545" y="372" font-family="IS" font-weight="500" font-size="40" fill="{PAPER}" fill-opacity="0.82">{line}</text>'
         "</svg>"
     )
 
 
 def android_foreground_xml(monochrome=False):
-    """Il primo piano dell'icona adattiva: il segno nei 66 dp centrali dei 108 (D33)."""
+    """Il primo piano dell'icona adattiva (D33, D71).
+
+    A colori: il foglio inclinato col ricciolo, dentro il cerchio sicuro di 66 dp dei 108; il
+    vermiglio è lo sfondo, in `ic_launcher_background`. Monocromatica: solo il ricciolo, che il
+    sistema colora; un foglio pieno col ricciolo ritagliato darebbe un buco doppio dove il
+    tratto si incrocia.
+    """
     d, (s, sr), (e, er) = outline(2.05)
-    k = 60 / 15.8  # un po' meno dei 66 dp sicuri: il launcher ritaglia a cerchio
-    tx, ty = 54 - CENTER[0] * k, 54 - CENTER[1] * k
-    ink = "#FFFFFFFF" if monochrome else "#FF1F2430"
-    spark = "#FFFFFFFF" if monochrome else "#FFE4572E"
 
     def circle(cx, cy, r):
         return f"M{cx - r:.3f},{cy:.3f}a{r:.3f},{r:.3f} 0 1,0 {2 * r:.3f},0a{r:.3f},{r:.3f} 0 1,0 {-2 * r:.3f},0"
 
     body = d + " " + circle(s[0], s[1], sr) + " " + circle(e[0], e[1], er)
-    note = "monocromatica: il sistema la colora, e la goccia resta un punto" if monochrome else "a colori"
+    if monochrome:
+        k = 60 / 15.8
+        ink, spark, sheet = "#FFFFFFFF", "#FFFFFFFF", ""
+        note = "monocromatica: il sistema la colora, e la goccia resta un punto"
+    else:
+        # I 72 dp visibili corrispondono ai 1024 pixel dell'icona di iOS, ridotti del 10%:
+        # così gli angoli del foglio inclinato restano dentro il cerchio sicuro di 66 dp.
+        f = 72 / 1024 * 0.9
+        k = 27 * f
+        w, h, r = SHEET["w"] * f, SHEET["h"] * f, SHEET["r"] * f
+        x, y = 54 + (SHEET["x"] - 512) * f, 54 + (SHEET["y"] - 512) * f
+        rect = (
+            f"M{x + r:.3f},{y:.3f}h{w - 2 * r:.3f}a{r:.3f},{r:.3f} 0 0,1 {r:.3f},{r:.3f}"
+            f"v{h - 2 * r:.3f}a{r:.3f},{r:.3f} 0 0,1 {-r:.3f},{r:.3f}h{-(w - 2 * r):.3f}"
+            f"a{r:.3f},{r:.3f} 0 0,1 {-r:.3f},{-r:.3f}v{-(h - 2 * r):.3f}a{r:.3f},{r:.3f} 0 0,1 {r:.3f},{-r:.3f}z"
+        )
+        ink, spark = "#FF1F2430", "#FFE4572E"
+        sheet = f"""    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:rotation="{SHEET["angle"]}">
+        <path
+            android:fillColor="#FFFBF8F1"
+            android:pathData="{rect}" />
+    </group>
+"""
+        note = "a colori: il foglio col ricciolo; il vermiglio sta nello sfondo"
+    tx, ty = 54 - CENTER[0] * k, 54 - CENTER[1] * k
     return f"""<?xml version="1.0" encoding="utf-8"?>
 <!--
-    L'icona dell'app, {note} (D66). Generata da tools/brand/icons.py: non si modifica a mano.
+    L'icona dell'app, {note} (D66, D71).
+    Generata da tools/brand/icons.py: non si modifica a mano.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group
+{sheet}    <group
         android:scaleX="{k:.4f}"
         android:scaleY="{k:.4f}"
         android:translateX="{tx:.3f}"
@@ -207,16 +282,18 @@ def android_foreground_xml(monochrome=False):
 def main():
     os.makedirs(OUT, exist_ok=True)
     svgs = {
-        # L'icona di iOS e dello store: quadrato pieno, senza angoli (li mette il sistema).
-        "icon-light.svg": icon_svg(1024, PAPER, INK, SPARK, gradient=(PAPER, PAPER_DEEP)),
-        # iOS 18, icona scura: fondo trasparente, il sistema mette il suo nero.
-        "icon-dark.svg": icon_svg(1024, None, CREAM, SPARK),
-        # iOS 18, icona colorata dall'utente: scala di grigi su trasparente.
-        "icon-tinted.svg": icon_svg(1024, None, "#FFFFFF", "#9A9A9A"),
+        # L'icona di iOS e degli store (D71): quadrato pieno, senza angoli (li mette il sistema).
+        "icon-light.svg": sheet_icon_svg(1024, (FIELD, FIELD_DEEP), PAPER, INK, SPARK),
+        # iOS 18, icona scura: fondo trasparente, il sistema mette il suo nero. Il vermiglio
+        # passa sul foglio, che su nero non abbaglia; il ricciolo e il punto in crema.
+        "icon-dark.svg": sheet_icon_svg(1024, None, FIELD, CREAM, CREAM),
+        # iOS 18, icona colorata dall'utente: scala di grigi su trasparente. Il foglio prende
+        # il colore scelto, il ricciolo resta scuro.
+        "icon-tinted.svg": sheet_icon_svg(1024, None, "#FFFFFF", "#3A3A3A", "#8A8A8A"),
         # Il segno da solo, per il sito e le presentazioni.
         "mark.svg": icon_svg(512, None, INK, SPARK),
-        # Favicon: il quadrato arrotondato, visibile anche sulle schede scure.
-        "favicon.svg": icon_svg(64, PAPER, INK, SPARK, scale=0.74, stroke=2.4, spark_r=1.5, radius=14),
+        # Favicon: l'icona in piccolo, col tratto più spesso perché si legga a 16 pixel.
+        "favicon.svg": sheet_icon_svg(64, (FIELD, FIELD_DEEP), PAPER, INK, SPARK, stroke=2.6, spark_r=1.6, radius=14),
         "feature-graphic.svg": feature_svg(),
         "og-en.svg": og_svg("Instink", "Write on instinct."),
         "og-it.svg": og_svg("Instink", "Scrivi d'istinto."),

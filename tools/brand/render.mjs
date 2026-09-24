@@ -15,6 +15,14 @@ for (const job of jobs) {
   await page.goto(svg);
   await page.waitForLoadState('networkidle');
   await page.evaluate(() => document.fonts.ready);
+  // L'SVG ha la sua misura (1024 per le icone): la si porta a quella del lavoro, e il
+  // viewBox scala il disegno. Senza, un'icona da 512 era l'angolo in alto a sinistra di
+  // quella da 1024, cioè un quadrato di carta vuoto.
+  await page.evaluate(([w, h]) => {
+    const svg = document.documentElement;
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+  }, [job.w, job.h]);
   await page.waitForTimeout(150);
   mkdirSync(dirname(`${root}/${job.out}`), { recursive: true });
   await page.screenshot({ path: `${root}/${job.out}`, omitBackground: job.alpha });

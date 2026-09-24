@@ -261,6 +261,7 @@ barra di stato pulita, il segno del tocco, i formati giusti.
 
 **Prima di cominciare**
 
+0. Installa da TestFlight la build con l'**icona nuova** (§0septies).
 1. Batteria carica, **Non disturbare** acceso, nessuna notifica sullo schermo.
 2. **Telefono in inglese**: Impostazioni → Generali → Lingua e zona → Lingua iPhone →
    English. E Siri in inglese: Impostazioni → Siri → Lingua → English (United States).
@@ -407,10 +408,10 @@ Su developer.apple.com → Certificates, IDs & Profiles:
 
 Poi dimmi "fatto" e scrivo l'estensione.
 
-## 0septies. Le icone (D66)
+## 0septies. Le icone (D66, D71)
 
-Tutto è già nel repository, e si rigenera con tre comandi (sono in
-`tools/brand/icons.py`).
+L'icona è il **foglio su campo vermiglio** (D71). Tutto è già nel repository, e si
+rigenera con i tre comandi scritti in cima a `tools/brand/icons.py`.
 
 | Dove | File | Cosa fare |
 |---|---|---|
@@ -421,8 +422,9 @@ Tutto è già nel repository, e si rigenera con tre comandi (sono in
 | Play Store | `design/brand/store/play-feature-graphic-1024x500.png` | "Grafica in evidenza" |
 | Sito | `site/favicon.svg`, `apple-touch-icon.png`, `og.png` | niente: sono già nelle pagine |
 
-Manda una build nuova su TestFlight e guarda l'icona sulla tua home, di giorno e col tema
-scuro. Se non ti convince, dimmi cosa: si cambia in un punto solo e si rigenera tutto.
+**Prima degli screenshot manda una build nuova su TestFlight** (tag `ios-*`) e installala:
+nello scatto della Home si vede la tua schermata, e l'icona vecchia non deve comparire. Poi
+guardala sulla tua Home, di giorno e col tema scuro.
 
 ## 0octies. Per guadagnare dopo: cosa fare adesso, e cosa no (D68)
 

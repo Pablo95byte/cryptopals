@@ -10,6 +10,19 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Cambiato — l'icona (D71)
+
+- **L'icona è un foglio bianco inclinato su un campo vermiglio**, col ricciolo e la goccia:
+  iOS (anche scura e colorata), Android (adattiva e monocromatica), store, sito, anteprime
+  dei link. Il confronto fra le quattro candidate è in `design/brand/icone-a-confronto.png`.
+- Il vermiglio è il fondo degli screenshot dell'App Store (D70).
+
+### Corretto
+
+- **Le icone più piccole erano quadrati vuoti**: Play Store 512 e le icone del sito (180 e
+  512) salvavano l'angolo in alto a sinistra del disegno da 1024. `render.mjs` ora porta
+  l'SVG alla misura giusta.
+
 ### Cambiato — gli screenshot (D70)
 
 - **Una lista sola** di sei screenshot, in un ordine nuovo: la scrittura a mano per prima,
