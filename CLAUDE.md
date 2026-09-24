@@ -496,7 +496,8 @@ che un tratto si è perso che lasciargli trovare una nota incompleta senza
 spiegazione.
 
 ### D23 — L'app Android entra nel build solo dove c'è l'SDK, e consuma la variante jvm del core
-**Data:** 2026-09-12 · **Stato:** attiva, la variante jvm non ancora provata con l'SDK
+**Data:** 2026-09-12 · **Stato:** attiva, **provata**: il 2026-09-24 il committente ha
+compilato e installato l'app su un Samsung Galaxy S8 senza modificare niente
 
 `settings.gradle.kts` include `:androidApp` soltanto se trova l'SDK Android
 (`ANDROID_HOME`, `ANDROID_SDK_ROOT` o `sdk.dir` in `local.properties`). I moduli del
@@ -1128,8 +1129,10 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
   col suo protocollo, le verifiche da fare col telefono in mano, le decisioni aperte e
   le cose da non fare ancora.
 
-Stato attuale: **233 test, tutti verdi.** L'app Android è scritta ma **non compilata
-da nessuno**: il primo build è sulla macchina del committente.
+Stato attuale: **233 test, tutti verdi.** L'app Android **compila e si installa** (Samsung
+Galaxy S8, 2026-09-24, nessuna modifica al codice). Prima lettura:
+`am start -W` → `TotalTime: 86` ms, senza sapere se l'avvio era a freddo o a caldo. Le
+misure ripetute e le verifiche col telefono in mano sono ancora da fare.
 
 ---
 
