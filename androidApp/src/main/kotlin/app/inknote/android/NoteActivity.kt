@@ -98,7 +98,7 @@ class NoteActivity : Activity() {
         if (note.hasInk) {
             val height = NoteRenderer.inkHeightFor(note, width, dp(180), dp(560))
             column.addView(FrameLayout(this).apply {
-                Ui.card(this, context, elevationDp = 2f)
+                Ui.card(this, context)
                 addView(InkPreviewView(context).apply {
                     this.note = note
                     setPadding(dp(16), dp(16), dp(16), dp(16))
@@ -111,7 +111,7 @@ class NoteActivity : Activity() {
                 this.text = text
                 setTextIsSelectable(true)
                 setPadding(dp(20), dp(18), dp(20), dp(18))
-                Ui.card(this, context, elevationDp = 2f)
+                Ui.card(this, context)
             }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 bottomMargin = dp(14)
             })
@@ -131,7 +131,6 @@ class NoteActivity : Activity() {
                 adjustViewBounds = true
                 scaleType = ImageView.ScaleType.FIT_CENTER
                 Ui.clipRounded(this, dp(Ui.RADIUS_CARD.toInt()).toFloat())
-                elevation = dp(2).toFloat()
             }
             column.addView(view, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 bottomMargin = dp(14)

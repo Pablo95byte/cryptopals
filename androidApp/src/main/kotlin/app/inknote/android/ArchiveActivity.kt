@@ -354,7 +354,7 @@ private class NotesAdapter(private val context: Context) : BaseAdapter() {
             }
             card = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
-                Ui.card(this, context, elevationDp = 1.5f)
+                Ui.card(this, context)
                 foreground = Ui.pressable(context, null, dp(Ui.RADIUS_CARD).toFloat())
                 addView(preview, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
                 addView(footer)

@@ -135,7 +135,10 @@ object Ui {
                 compoundDrawablePadding = dp(context, 8f)
             }
             this.background = pressable(context, rounded(background, dp(context, RADIUS_PILL).toFloat()), dp(context, RADIUS_PILL).toFloat())
-            elevation = if (primary) dp(context, 6f).toFloat() else 0f
+            // Piatto: il colore pieno basta a dire "questo è il pulsante". Le ombre sotto i
+            // comandi li facevano sembrare adesivi appiccicati sopra (D46).
+            stateListAnimator = null
+            elevation = 0f
             isClickable = true
             isFocusable = true
             setOnClickListener { onClick() }
@@ -154,13 +157,19 @@ object Ui {
             val pad = dp(context, 12f)
             setPadding(pad, pad, pad, pad)
             background = pressable(context, null, size / 2f)
+            // Nessuna ombra e nessun contorno: l'icona sta sulla superficie, non sopra.
+            stateListAnimator = null
+            elevation = 0f
+            outlineProvider = null
             setOnClickListener { onClick() }
         }
 
     /** Superficie di una card: carta, angoli tondi, ombra leggera. */
-    fun card(view: View, context: Context, radiusDp: Float = RADIUS_CARD, elevationDp: Float = 2f) {
+    fun card(view: View, context: Context, radiusDp: Float = RADIUS_CARD, elevationDp: Float = 0f) {
         val radius = dp(context, radiusDp).toFloat()
-        view.background = rounded(color(context, R.color.card), radius)
+        // Un filo di bordo al posto dell'ombra: la carta si stacca dalla scrivania senza
+        // sembrare sollevata (D46).
+        view.background = rounded(color(context, R.color.card), radius, color(context, R.color.outline), dp(context, 1f).coerceAtLeast(1))
         view.elevation = dp(context, elevationDp).toFloat()
         clipRounded(view, radius)
     }

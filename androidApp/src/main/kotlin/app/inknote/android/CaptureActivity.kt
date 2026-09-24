@@ -249,7 +249,7 @@ class CaptureActivity : Activity() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.TOP
             setPadding(dp(14), dp(10), dp(4), dp(10))
-            Ui.card(this, context, elevationDp = 6f)
+            Ui.card(this, context)
             visibility = View.GONE
             addView(textField, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             addView(hide)
@@ -279,12 +279,11 @@ class CaptureActivity : Activity() {
 
         // Tastiera e fotocamera, tenui (D38): non sono decisioni da prendere, chi vuole
         // scrivere a mano scrive e basta.
+        // Direttamente sulla carta: niente contenitore e niente ombra. Una pillola con
+        // l'ombra dietro faceva sembrare le icone un adesivo appiccicato sul foglio (D46).
         val muted = getColor(R.color.on_paper_muted)
         val tools = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            setPadding(dp(4), dp(2), dp(4), dp(2))
-            background = Ui.rounded(getColor(R.color.card), dp(28).toFloat())
-            elevation = dp(3).toFloat()
             addView(Ui.iconButton(this@CaptureActivity, R.drawable.ic_keyboard, getString(R.string.keyboard), muted) { openKeyboard() })
             addView(Ui.iconButton(this@CaptureActivity, R.drawable.ic_camera, getString(R.string.camera), muted) { takePhoto() })
         }
@@ -296,6 +295,7 @@ class CaptureActivity : Activity() {
         }.apply {
             // Colori fissi: il foglio è carta anche di notte, e il pulsante resta inchiostro.
             background = Ui.pressable(context, Ui.rounded(getColor(R.color.on_paper), dp(28).toFloat()), dp(28).toFloat())
+            elevation = 0f
             setTextColor(getColor(R.color.paper))
             compoundDrawablesRelative[0]?.setTint(getColor(R.color.paper))
         }
@@ -426,7 +426,6 @@ class CaptureActivity : Activity() {
         val thumbnail = ImageView(this).apply {
             scaleType = ImageView.ScaleType.CENTER_CROP
             background = Ui.rounded(getColor(R.color.card), radius)
-            elevation = dp(2).toFloat()
             Ui.clipRounded(this, radius)
         }
         photoStrip.addView(thumbnail, LinearLayout.LayoutParams(size, size).apply { rightMargin = dp(8) })

@@ -1319,6 +1319,64 @@ ciò che tiene l'app coerente: ogni schermata usa gli stessi pezzi.
 **Aperto:** il disegno è stato scritto senza vederlo su uno schermo — qui non c'è un
 emulatore. Il giudizio vero è quello del committente sul telefono.
 
+**Primo giudizio, e correzione: piatto, niente ombre.** Sul telefono le icone del foglio
+"mostravano un quadrato sfocato dietro, sembrano appiccicate sopra": era la pillola chiara
+con l'ombra che le conteneva. Ora le icone stanno direttamente sulla carta, i pulsanti
+pieni non hanno ombra, e le card si staccano dalla scrivania con un filo di bordo invece
+che con un'ombra. Regola per il futuro: **nessuna ombra sotto i comandi**; la gerarchia la
+fanno colore e dimensione.
+
+### D47 — Crescere e guadagnare: prima la fedeltà, poi il pubblico, poi il prezzo
+**Data:** 2026-09-24 · **Stato:** proposta, **da confermare col committente**
+
+Il committente chiede quali funzioni servono per moltiplicare il pubblico e poi
+monetizzare. La risposta onesta: **le funzioni non portano utenti da sole**. Un'app di
+cattura cresce se chi la prova la usa ancora dopo un mese, e se si fa trovare nello
+store. Aggiungere funzioni prima di sapere se la gente torna è lavoro alla cieca.
+
+**Le leve, in ordine di resa per costo:**
+
+1. **iOS.** Raddoppia il mercato, e il pubblico della scrittura a mano che paga sta lì
+   (iPad e Apple Pencil). Serve un Mac.
+2. **Nome e scheda dello store**, in più lingue. È la leva gratuita più grande: la gente
+   trova le app cercando, e decide dagli screenshot. Si fa con dati di ricerca, non a
+   intuito (§10).
+3. **Riconoscimento della scrittura (D2).** Rende le note cercabili e le fa arrivare in
+   Notion e Keep come testo, non solo come immagine: senza, la promessa di D31 è a metà.
+4. **Voce (D18)**: le mani occupate sono metà delle idee perse.
+5. **"Condividi verso InkNote"**: da qualunque app un link, un testo o una foto diventano
+   una nota.
+6. **Backup.** Oggi `allowBackup` è spento: chi cambia telefono **perde tutte le note**.
+   Per un'app che vuole fiducia è il buco più grave, e il backup automatico di Android
+   (sull'account dell'utente, cifrato) costa poche righe. Va deciso contro la frase di
+   D12 "le note non escono dal telefono": proposta, sì, perché va sull'account
+   dell'utente come l'esportazione di D31.
+7. **Un anello di crescita:** in fondo alle note mandate fuori, "scritta con InkNote".
+   Chi riceve la nota vede da dove viene. Nel Pro si toglie.
+
+**Come si guadagna (conferma D4, con i tempi di D43):**
+
+- **Catturare resta gratis per sempre**: è il gancio, e farlo pagare ucciderebbe la
+  crescita.
+- **Pro, acquisto singolo:** invio automatico a Notion e a una cartella (Obsidian, Drive),
+  punte e temi, niente riga "scritta con InkNote". Il riconoscimento della scrittura si
+  decide coi dati: se è ciò che fa tornare la gente, deve restare gratis.
+- **Abbonamento solo quando esisterà un servizio che costa**: sincronizzazione fra
+  dispositivi e backup nostro.
+- **Mai pubblicità** (D4).
+
+**Il metodo: soglie, non opinioni.**
+
+1. Correggere il disegno col committente (in corso).
+2. **Canale di test chiuso del Play Store**: per un account sviluppatore personale nuovo
+   Google chiede un test chiuso di almeno 12 persone per 14 giorni prima della
+   pubblicazione. Si usa per misurare, non come formalità: la Play Console dà ritorno e
+   disinstallazioni **senza nessun SDK di statistiche** dentro l'app (D12).
+3. Intanto si costruisce: riconoscimento della scrittura, poi voce, poi "condividi verso".
+4. **Soglia:** se dopo 7 giorni almeno un tester su quattro la usa ancora, si pubblica e si
+   parte con iOS. Se no, si lavora sulla cattura e non si aggiungono funzioni.
+5. Il Pro arriva dopo il lancio, con i dati di chi la usa davvero.
+
 ---
 
 ## 5. Struttura del repository
@@ -1562,7 +1620,9 @@ costruiti con l'SDK né provati sul telefono.
   permette più (D26) e al primo sync la cancellazione vincerebbe comunque. Probabile
   soluzione: copiare la nota sotto un id nuovo, accettando di perdere lo storico.
 - **Se il giornale debba coprire anche l'audio** (D25 lo lascia fuori per ora).
-- **Il piano di lancio (D43)**: gratis all'inizio, Android prima. Da confermare.
+- **Il piano di lancio (D43) e la strategia di crescita (D47)**: da confermare.
+- **Il backup è spento** (`allowBackup="false"`): chi cambia telefono perde le note. D47
+  propone di accenderlo; va deciso col committente per via di D12.
 - **La fascia di scrittura ingrandita** per il corsivo col dito (D42): dopo aver provato
   foglio senza righe e tratto più spesso.
 - **Il foglio del widget: nudo o con un segno tenue?** Un rettangolo bianco vuoto può

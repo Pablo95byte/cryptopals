@@ -216,6 +216,9 @@ solo cosa è cambiato nel codice.
 
 ### Corretto
 
+- **Le icone del foglio sembravano adesivi** con un quadrato sfocato dietro: tolte la
+  pillola e le ombre; pulsanti piatti, card con un filo di bordo invece dell'ombra (D46).
+
 - **Scattare una foto dal foglio aperto al volo chiudeva il foglio e chiedeva lo
   sblocco**: la fotocamera del sistema portava fuori dall'app. Ora la fotocamera è dentro
   il foglio (D45).
