@@ -16,10 +16,18 @@
                                     riavvio, perché il giornale sta in area
                                     protetta dal dispositivo e non dalle credenziali.
             android:launchMode      singleTop: due tocchi rapidi non aprono due fogli.
+            android:excludeFromRecents  le app recenti mostrano un'istantanea dello
+                                    schermo, cioè la nota: fuori dall'app non si
+                                    legge nessuna nota (invariante 11, D34).
+            android:configChanges   ruotare il telefono non ricrea il foglio.
+                                    Ricrearlo spezzerebbe la nota in due, e toglierebbe
+                                    dallo schermo l'inchiostro appena scritto.
         -->
         <activity
             android:name=".CaptureActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale|locale|layoutDirection"
             android:directBootAware="true"
+            android:excludeFromRecents="true"
             android:exported="true"
             android:launchMode="singleTop"
             android:showWhenLocked="true"
@@ -35,6 +43,37 @@
             android:name=".RecoveredNotesActivity"
             android:exported="false"
             android:label="@string/recovered_title" />
+
+        <!--
+            Il widget della home (D30, D33): RemoteViews di piattaforma, non Glance.
+        -->
+        <receiver
+            android:name=".SheetWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_sheet_info" />
+        </receiver>
+
+        <!--
+            Il riquadro delle impostazioni rapide: l'ingresso a telefono bloccato (D17,
+            D33). directBootAware come la cattura, così funziona anche prima del primo
+            sblocco dopo un riavvio.
+        -->
+        <service
+            android:name=".CaptureTileService"
+            android:directBootAware="true"
+            android:exported="true"
+            android:icon="@drawable/ic_scribble"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
 
     </application>
 

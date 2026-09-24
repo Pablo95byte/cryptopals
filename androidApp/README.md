@@ -24,25 +24,30 @@ classpath senza SDK.
 
 ## Cosa verificare, in quest'ordine
 
+Il protocollo completo, con cosa mandare indietro, sta in [`GUIDA.md`](../GUIDA.md).
+In breve:
+
 1. **Il numero.** In alto a sinistra compare il misuratore appena tracci il primo
-   segno: `attrito: 210ms (entro 400ms) · superficie 150ms · primo fotogramma 180ms`.
-   Verde entro il bilancio, rosso oltre. **Misura a freddo:** chiudi l'app dalle
-   recenti, aspetta qualche secondo, poi riapri e traccia subito. Il numero parte
-   dall'avvio del processo, non da quando il nostro codice comincia a girare.
-2. **Il tratto.** Scrivi una riga col dito e guarda se lo spessore vive — sottile nei
-   movimenti rapidi, più pieno dove rallenti. Se sembra un tubo di spessore costante
-   c'è qualcosa che non va nel calcolo per velocità. Con un pennino attivo lo
-   spessore deve seguire la pressione.
-3. **La sopravvivenza.** Scrivi due o tre tratti, **non premere OK**, e uccidi l'app
-   dalle recenti. Riaprila e tocca il misuratore in alto a sinistra: si apre l'elenco
-   delle note nel giornale, e i tratti devono essere lì.
+   segno: `attrito freddo: 310ms (entro 400ms) · visibile 340ms · superficie 240ms ·
+   1° fotogramma 280ms`. Verde entro il tetto, rosso oltre. **A freddo:** arresto
+   forzato dalle impostazioni (il foglio non compare fra le recenti, D34), poi riapri e
+   traccia subito. **A caldo:** OK, riapri, traccia. Il numero a caldo è ottimista: parte
+   da `onCreate` (D32).
+2. **Il tratto.** Lo spessore deve vivere — sottile nei movimenti rapidi, più pieno
+   dove rallenti. Con un pennino attivo deve seguire la pressione.
+3. **La sopravvivenza.** Due o tre tratti, niente OK, home, arresto forzato. Riapri e
+   tocca il misuratore: l'elenco del giornale deve contenere i tratti.
+4. **Il riquadro rapido a telefono bloccato** (D33): il foglio compare sopra il blocco
+   senza chiedere lo sblocco.
+5. **La privacy** (D34): schermo spento senza OK → alla riaccensione si vede il blocco,
+   non la nota.
 
 ## Cosa non c'è ancora
 
 - L'archivio SQLite. `JournalIngest` esiste ed è testato, ma collegarlo richiede il
   driver SQLite di Android: è il passo successivo. Per ora il giornale accumula, e
   l'elenco lo legge direttamente da lì.
-- I widget, la barra delle punte, i colori, la voce, l'OCR.
+- La barra delle punte, i colori, la voce, l'OCR.
 - Il misuratore e la scorciatoia all'elenco compaiono **solo nelle build di debug**:
   all'apertura il foglio deve essere nudo (D21).
 

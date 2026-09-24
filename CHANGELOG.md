@@ -12,6 +12,13 @@ solo cosa è cambiato nel codice.
 
 ### Aggiunto
 
+- **Widget della home su Android** (`SheetWidgetProvider`): un foglio bianco col segno
+  tenue, tutto il riquadro apre la cattura. `RemoteViews` di piattaforma e non Glance,
+  nessun aggiornamento periodico (D33).
+- **Riquadro nelle impostazioni rapide** (`CaptureTileService`): l'ingresso alla cattura
+  a telefono bloccato, che D17 prevedeva ma non aveva (D33).
+- **Avviso di scrittura fallita** sul foglio: compare solo se il giornale non riesce a
+  scrivere, cioè col disco pieno (D35).
 - **Fondazione del progetto**: struttura Kotlin Multiplatform con Gradle 8.14.3 e
   wrapper incluso, target `jvm` (per i test su qualunque macchina) e `iosArm64` /
   `iosSimulatorArm64` / `iosX64`.
@@ -47,7 +54,7 @@ solo cosa è cambiato nel codice.
     (decisione D11);
   - `Bounds`: rettangolo dell'inchiostro, spessore della penna compreso, per il
     ritaglio nei widget piccoli.
-- **228 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
+- **233 test** sul core, eseguibili con `./gradlew jvmTest` senza Xcode né emulatori.
   Coprono fra l'altro l'idempotenza e la commutatività del merge, la tenuta della
   geometria su campioni duplicati o coincidenti, e il comportamento dello spessore
   in assenza di pressione, e il giro di andata e ritorno completo di una nota
@@ -187,6 +194,28 @@ solo cosa è cambiato nel codice.
 
 ### Corretto
 
+- **Un tratto interrotto a metà scrittura rendeva invisibili tutte le note scritte
+  dopo**, e l'assorbimento le avrebbe cancellate. Il lettore del giornale ora salta i byte
+  rotti e riprende dal record valido successivo (D35). Riprodotto con un test prima della
+  correzione.
+- **Lo svuotamento del giornale cancellava anche i tratti arrivati dopo la lettura.**
+  `InkJournalSink.clear()` è sostituito da `discardPrefix(n)`, e `InkJournal.discard`
+  toglie solo ciò che il `recover` corrispondente ha letto (D35, invariante 13).
+- **Un record di una versione futura veniva svuotato come spazzatura**: ora la lettura
+  si ferma lì e non lo consuma.
+- **La nota restava leggibile sopra il blocco**: scritta una nota e spento lo schermo
+  senza premere OK, il foglio ricompariva alla riaccensione con la nota visibile. Ora il
+  foglio si chiude quando esce dallo schermo e non compare fra le app recenti (D34).
+- **Ruotare il telefono ricreava il foglio**, togliendo dallo schermo l'inchiostro e
+  spezzando la nota in due: ora i cambi di configurazione non ricreano l'Activity.
+- **`fd.sync()` girava sul thread dell'interfaccia** al sollevamento del dito, fra una
+  parola e l'altra: ora le scritture passano da un solo thread dedicato, svuotato in
+  `onStop` (D35).
+- **Il misuratore classificava "a freddo" un secondo foglio aperto entro 10 secondi**, e
+  lo misurava dall'avvio del processo di prima: migliaia di millisecondi falsi, proprio
+  nel protocollo a caldo. Ora è freddo solo il primo foglio del processo.
+- Il pennello del tratto in corso non viene più allocato a ogni fotogramma.
+
 
 
 - **La coda di invio poteva rimandare per sempre una nota già mandata, duplicandola
@@ -266,6 +295,11 @@ solo cosa è cambiato nel codice.
 - Integrazione continua su GitHub Actions: i test del core a ogni push.
 
 ### Modificato
+
+- `InkJournal.recover()` restituisce `JournalRecovery` (note, `hadTornTail`,
+  `consumedBytes`) al posto di una lista di `RecoveredNote`.
+- `JournalReadResult.discardedTailBytes` diventa `discardedBytes`: i byte illeggibili
+  possono stare anche in mezzo.
 
 - **Il target `jvm` dei moduli del core produce bytecode 11** invece di 21: è il jar
   che consuma l'app Android, e D8 lo digerisce senza discutere.

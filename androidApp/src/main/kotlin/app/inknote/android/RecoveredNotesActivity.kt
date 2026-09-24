@@ -12,7 +12,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import app.inknote.android.InkDraw.toPath
 import app.inknote.core.capture.InkJournal
-import app.inknote.core.capture.RecoveredNote
+import app.inknote.core.capture.JournalRecovery
 import app.inknote.core.geometry.Bounds
 import app.inknote.core.geometry.RenderQuality
 import app.inknote.core.geometry.StrokeGeometry
@@ -34,7 +34,7 @@ class RecoveredNotesActivity : Activity() {
         super.onCreate(savedInstanceState)
 
         val journal = InkJournal(AndroidInkJournalSink.open(this))
-        val recovered = journal.recover()
+        val recovery = journal.recover()
 
         val column = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -42,12 +42,12 @@ class RecoveredNotesActivity : Activity() {
             setBackgroundColor(InkPalette.PAPER)
         }
 
-        column.addView(header(recovered))
+        column.addView(header(recovery))
 
-        for (entry in recovered) {
-            column.addView(caption(entry))
+        for (note in recovery.notes) {
+            column.addView(caption(note))
             column.addView(
-                NotePreview(this, entry.note),
+                NotePreview(this, note),
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(180)).apply {
                     bottomMargin = dp(20)
                 },
@@ -58,7 +58,9 @@ class RecoveredNotesActivity : Activity() {
             Button(this).apply {
                 text = getString(R.string.clear_journal)
                 setOnClickListener {
-                    journal.clear()
+                    // Solo ciò che questa schermata ha letto: un tratto arrivato nel
+                    // frattempo resta dov'è (invariante 13).
+                    journal.discard(recovery)
                     recreate()
                 }
             },
@@ -72,21 +74,21 @@ class RecoveredNotesActivity : Activity() {
         )
     }
 
-    private fun header(recovered: List<RecoveredNote>) = TextView(this).apply {
-        val strokes = recovered.sumOf { it.note.strokes.size }
-        val torn = recovered.any { it.hadTornTail }
+    private fun header(recovery: JournalRecovery) = TextView(this).apply {
+        val strokes = recovery.notes.sumOf { it.strokes.size }
+        val torn = recovery.hadTornTail
         text = buildString {
-            append("${recovered.size} note nel giornale, $strokes tratti")
+            append("${recovery.notes.size} note nel giornale, $strokes tratti")
             // Un tratto perso si dice, non si nasconde (D22).
-            if (torn) append("\nla coda del giornale era troncata: un tratto si è perso")
+            if (torn) append("\nuna parte del giornale era illeggibile: un tratto si è perso")
         }
         setTextColor(if (torn) 0xFFB4402F.toInt() else InkPalette.INK)
         textSize = 15f
         setPadding(0, 0, 0, dp(20))
     }
 
-    private fun caption(entry: RecoveredNote) = TextView(this).apply {
-        text = "${entry.note.id.value.take(8)} · ${entry.note.strokes.size} tratti"
+    private fun caption(note: Note) = TextView(this).apply {
+        text = "${note.id.value.take(8)} · ${note.strokes.size} tratti"
         setTextColor(InkPalette.MUTED)
         textSize = 11f
         setPadding(0, 0, 0, dp(6))
@@ -98,7 +100,7 @@ class RecoveredNotesActivity : Activity() {
 /**
  * Anteprima di una nota, inquadrata sull'inchiostro e non sul foglio intero: tre
  * parole scritte in alto a sinistra, mostrate senza ritaglio, sarebbero illeggibili.
- * È lo stesso ragionamento che vale per i widget.
+ * È lo stesso ragionamento di `NoteFraming` nel core.
  */
 private class NotePreview(context: Context, private val note: Note) : View(context) {
 

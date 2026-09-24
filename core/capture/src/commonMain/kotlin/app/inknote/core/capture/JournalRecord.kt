@@ -67,34 +67,69 @@ internal object JournalCodec {
     /**
      * Legge tutti i record leggibili, in ordine.
      *
-     * @return i record recuperati e quanti byte in coda sono stati scartati perché
-     *   illeggibili. Il secondo valore non è un dettaglio: è ciò che permette di
-     *   dire all'utente che si è perso un tratto, invece di far finta di niente.
+     * ## Un record rotto non nasconde quelli dopo
+     *
+     * Il caso vero non è solo la coda troncata. Il processo muore a metà di un
+     * tratto, e all'apertura successiva la nuova sessione **scrive in coda, dopo i
+     * byte rotti**. Fermarsi al primo record illeggibile renderebbe invisibili tutti i
+     * tratti scritti dopo — e l'assorbimento, svuotando il giornale, li cancellerebbe.
+     * Quindi davanti a un record che non torna si avanza di un byte e si cerca il
+     * prossimo record valido: lunghezza plausibile **e** checksum giusto sul contenuto,
+     * che per caso capita una volta su quattro miliardi.
+     *
+     * ## Un record di una versione futura non si consuma
+     *
+     * Un record con la cornice integra ma una versione che non conosciamo non è
+     * spazzatura: l'ha scritto un'app più nuova. La lettura si ferma lì e
+     * [JournalReadResult.consumedBytes] non lo include, così nessuno svuotamento può
+     * cancellarlo (D13: una versione sconosciuta è un errore esplicito, non una
+     * lettura approssimativa).
      */
     fun decodeAll(bytes: ByteArray): JournalReadResult {
         val records = ArrayList<JournalRecord>()
         var offset = 0
+        var discarded = 0
 
         while (offset < bytes.size) {
-            if (bytes.size - offset < HEADER_BYTES) break
-
-            val version = bytes[offset].toInt()
-            if (version != VERSION) break
-
-            val reader = ByteReader(bytes, offset + 1)
-            val length = reader.int()
-            val expectedChecksum = reader.int()
-            if (length < 0 || length > bytes.size - offset - HEADER_BYTES) break
-
-            val body = bytes.copyOfRange(offset + HEADER_BYTES, offset + HEADER_BYTES + length)
-            if (checksum(body) != expectedChecksum) break
-
-            val record = runCatching { decodeBody(body) }.getOrNull() ?: break
-            records += record
-            offset += HEADER_BYTES + length
+            when (val frame = frameAt(bytes, offset)) {
+                is Frame.Record -> {
+                    records += frame.record
+                    offset += frame.size
+                }
+                is Frame.Future -> return JournalReadResult(records, discarded, consumedBytes = offset)
+                Frame.Damaged -> {
+                    offset++
+                    discarded++
+                }
+            }
         }
 
-        return JournalReadResult(records = records, discardedTailBytes = bytes.size - offset)
+        return JournalReadResult(records, discarded, consumedBytes = bytes.size)
+    }
+
+    private fun frameAt(bytes: ByteArray, offset: Int): Frame {
+        if (bytes.size - offset < HEADER_BYTES) return Frame.Damaged
+
+        val version = bytes[offset].toInt()
+        val reader = ByteReader(bytes, offset + 1)
+        val length = reader.int()
+        val expectedChecksum = reader.int()
+        if (length < 0 || length > bytes.size - offset - HEADER_BYTES) return Frame.Damaged
+
+        val body = bytes.copyOfRange(offset + HEADER_BYTES, offset + HEADER_BYTES + length)
+        if (checksum(body) != expectedChecksum) return Frame.Damaged
+
+        if (version > VERSION) return Frame.Future
+        if (version != VERSION) return Frame.Damaged
+
+        val record = runCatching { decodeBody(body) }.getOrNull() ?: return Frame.Damaged
+        return Frame.Record(record, size = HEADER_BYTES + length)
+    }
+
+    private sealed interface Frame {
+        class Record(val record: JournalRecord, val size: Int) : Frame
+        data object Future : Frame
+        data object Damaged : Frame
     }
 
     private fun decodeBody(body: ByteArray): JournalRecord {
@@ -140,13 +175,21 @@ internal object JournalCodec {
     }
 }
 
-/** Esito della rilettura di un giornale. */
+/**
+ * Esito della rilettura di un giornale.
+ *
+ * @param discardedBytes byte illeggibili saltati, in coda o in mezzo.
+ * @param consumedBytes fin dove il giornale è stato letto per intero: è quanto si può
+ *   togliere dalla testa dopo aver messo in archivio i [records]. I byte oltre — un
+ *   record di una versione futura, o tratti arrivati dopo la lettura — non si toccano.
+ */
 data class JournalReadResult(
     val records: List<JournalRecord>,
-    val discardedTailBytes: Int,
+    val discardedBytes: Int,
+    val consumedBytes: Int,
 ) {
-    /** `true` se la coda del giornale era illeggibile: un tratto si è perso. */
-    val hadTornTail: Boolean get() = discardedTailBytes > 0
+    /** `true` se una parte del giornale era illeggibile: un tratto si è perso. */
+    val hadTornTail: Boolean get() = discardedBytes > 0
 }
 
 private class ByteWriter {

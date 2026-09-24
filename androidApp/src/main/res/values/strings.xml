@@ -4,4 +4,7 @@
     <string name="ok">OK</string>
     <string name="recovered_title">Note nel giornale</string>
     <string name="clear_journal">Svuota il giornale</string>
+    <string name="journal_failed">Memoria piena: questa nota non si sta salvando</string>
+    <string name="widget_description">Un foglio bianco: toccalo e scrivi</string>
+    <string name="tile_label">Scrivi una nota</string>
 </resources>

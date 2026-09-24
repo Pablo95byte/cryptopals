@@ -78,14 +78,17 @@ posto solo invece che sparsi fra le decisioni.
 | Anello | Cosa lo accorcia | Stato |
 |---|---|---|
 | Sblocco + ricerca dell'ingresso | **Cattura dalla schermata di blocco** su Android: `showWhenLocked`, foglio cieco (D17) | nel codice, non provata |
+| Sblocco + ricerca dell'ingresso | **Riquadro nelle impostazioni rapide** su Android: l'ingresso a telefono bloccato, da qualunque schermata (D33) | nel codice, non provato |
 | Sblocco | **Più porte d'ingresso su iOS**: widget di blocco, Controllo, tasto Azione, tocco sul retro (§2) | da scrivere |
-| Ricerca dell'ingresso | **Il widget è un foglio bianco che si tocca tutto** (D30): nessun bersaglio da centrare, in nessun formato | da scrivere |
+| Ricerca dell'ingresso | **Il widget è un foglio bianco che si tocca tutto** (D30): nessun bersaglio da centrare, in nessun formato | Android nel codice (D33), iOS da scrivere |
+| Ricerca dell'ingresso | **Ogni apertura trova un foglio bianco**: la nota si chiude quando il foglio esce dallo schermo (D34) | nel codice |
 | Apertura | **Finestra trasparente sopra il launcher** su Android: non si percepisce il cambio di app | nel codice |
 | Apertura | **Nessuna animazione**: tema senza `windowAnimationStyle`, `overridePendingTransition(0, 0)` | nel codice |
 | Apertura | **Il percorso di cattura non passa dall'app**: niente Compose, niente iniezione, niente database (D20) | nel codice |
 | Apertura | **Il primo tocco accettato al primo fotogramma**, con i campioni storici del `MotionEvent` | nel codice |
 | Prima decisione | **Il foglio si apre nudo**: nessuna carta, nessuna punta, nessun colore da scegliere (D21) | nel codice |
 | Salvataggio | **Giornale di scrittura con `fd.sync()`**: al sicuro dal primo tratto, non dalla conferma (D20, D22) | nel codice, testato |
+| Scrittura | **Il disco non tocca il thread dell'interfaccia**: la parola dopo non aspetta la memoria flash (D35) | nel codice |
 | Salvataggio | **Il giornale sta in area protetta dal dispositivo**: scrive anche prima del primo sblocco dopo un riavvio (D24) | nel codice |
 | Ritorno | **OK non salva, è solo un'uscita** (D5): nessun gesto è obbligatorio per non perdere la nota | nel codice |
 | Primo avvio | **Nessun account e nessun onboarding** (D12): all'apertura non c'è niente da configurare | deciso |
@@ -189,7 +192,7 @@ recensione a una stella, e in un'app che si vende sulla velocità succederà.
 **Data:** 2026-09-12 · **Stato:** attiva
 
 Core condiviso in Kotlin; UI in **SwiftUI** su iOS e **Compose** su Android; widget
-in **WidgetKit** e **Glance**.
+in **WidgetKit** e ~~**Glance**~~ **`RemoteViews` di piattaforma** (D33).
 
 **Criteri chiesti dal committente:** modularità e qualità, non velocità di uscita.
 
@@ -201,7 +204,8 @@ lo taglia nel punto giusto.
 - Il **disegno** lo fa il canvas nativo: 120 Hz ProMotion, pressione e inclinazione
   dell'Apple Pencil, palm rejection, latenza bassa.
 - **Anche i widget usano la stessa matematica**, perché Glance è Kotlin e WidgetKit
-  è Swift che chiama il framework Kotlin/Native: nessuno dei due deve chiedere
+  è Swift che chiama il framework Kotlin/Native (dopo D30 i widget non disegnano più
+  note, quindi questo argomento oggi vale solo dentro l'app): nessuno dei due deve chiedere
   all'app di disegnargli l'immagine.
 
 **Alternative scartate:**
@@ -275,8 +279,10 @@ segmenti delle punte.
 **Perché:** non è una rifinitura, è un vincolo. Su iOS l'estensione widget ha un
 tetto di memoria basso ed è terminata se lo supera; su Android il bitmap del widget
 passa da una transazione Binder con un limite di dimensione. Lo stesso dettaglio
-che serve a schermo, nel widget, fa **sparire** la nota. Per la stessa ragione ogni
-nota conserverà, oltre ai tratti, una **PNG piccola** dedicata al widget.
+che serve a schermo, nel widget, fa **sparire** la nota. ~~Per la stessa ragione ogni
+nota conserverà, oltre ai tratti, una **PNG piccola** dedicata al widget.~~
+**Superata da D30:** il widget non mostra note, quindi la PNG non serve. Il parametro
+resta utile per le anteprime dentro l'app.
 
 ### D12 — Niente account e niente cloud nella v1
 **Data:** 2026-09-12 · **Stato:** attiva
@@ -479,12 +485,13 @@ l'unico posto che rispetta il senso unico.
 svuota il giornale. Mai il contrario. Se il salvataggio non riesce, il giornale resta
 l'unica copia dell'inchiostro: svuotarlo prima è il solo modo di perdere una nota con
 questo meccanismo. C'è un test che fallisce il salvataggio di proposito e verifica
-che il giornale sopravviva.
+che il giornale sopravviva. **Precisato da D35:** "svuotare" vuol dire togliere dalla
+testa solo i byte letti, non cancellare il file.
 
 **Cosa si perde comunque:** il tratto in corso nel momento in cui il processo muore.
 Sono meno di un secondo di inchiostro, e recuperarlo richiederebbe scrivere durante
 il movimento del dito, cioè sul percorso critico. Quando succede,
-`RecoveredNote.hadTornTail` lo segnala fino all'interfaccia: è meglio dire all'utente
+`JournalRecovery.hadTornTail` lo segnala fino all'interfaccia: è meglio dire all'utente
 che un tratto si è perso che lasciargli trovare una nota incompleta senza
 spiegazione.
 
@@ -872,6 +879,19 @@ ragione — arrivata dopo — per cui `:androidApp` non ha nessuna dipendenza es
 3. **Accettare l'inchiostro prima del primo fotogramma**, che è già come funziona e che
    ora la misura dichiara invece di nascondere.
 
+**Scartato per ora: la partenza "calda calda".** Invece di chiudere il foglio quando
+esce dallo schermo, lo si potrebbe svuotare e tenere vivo in fondo alla pila: il tocco
+successivo lo riporterebbe davanti senza nemmeno crearlo, sotto i 100 ms con margine.
+Costa però due percorsi di avvio invece di uno, e un foglio vivo che il sistema può
+rimettere sopra il blocco in momenti che non scegliamo noi (D34). Si riconsidera **solo
+se la misura a caldo sfora**.
+
+**La misura a caldo del misuratore è ottimista, e va detto.** A freddo si parte
+dall'avvio del processo, che il sistema ci dice. A caldo il momento del tocco da dentro
+l'app non si vede: si parte da `onCreate`, e i millisecondi che il sistema spende prima
+non si contano. Il numero vero a caldo è quello di `adb shell am start -W` (la guida
+spiega come). Il misuratore resta utile per le tappe intermedie, che sono tutte nostre.
+
 **Scartato: tenere il processo vivo a forza.** Un servizio in primo piano o una notifica
 persistente terrebbero il processo caldo sempre, e darebbero il numero buono. Ma costano
 batteria, occupano la barra delle notifiche e sono il genere di cosa per cui un'app viene
@@ -881,6 +901,109 @@ disinstallata. Non vale 300 ms.
 il misuratore ora riporta anche le tappe intermedie (`superficie`, `primo fotogramma`)
 proprio perché dicono **dove** si perde il tempo, e la cura è diversa a seconda del
 punto. Prima la misura, poi la leva giusta.
+
+### D33 — Su Android widget e riquadro rapido sono di piattaforma, e il riquadro è l'ingresso a telefono bloccato
+**Data:** 2026-09-24 · **Stato:** attiva · **Precisa D6 e D17**
+
+Il widget della home è un `AppWidgetProvider` con `RemoteViews`, non Glance. Accanto c'è
+un **riquadro nelle impostazioni rapide** (`TileService`) che apre lo stesso foglio. Tutti
+e due stanno in `:androidApp`, non in un modulo a parte.
+
+**Perché non Glance, che D6 aveva previsto.** Glance porta con sé il runtime di Compose e
+WorkManager, e WorkManager registra un `ContentProvider` per inizializzarsi. Un
+`ContentProvider` dichiarato viene eseguito **a ogni avvio del processo**, compreso quello
+della cattura: è esattamente la leva 2 di D32, violata da una libreria. Glance aveva senso
+quando il widget disegnava note (D1, D29). Dopo D30 è un rettangolo che apre un'Activity,
+e con `RemoteViews` sono trenta righe senza nessuna dipendenza.
+
+**Perché nello stesso modulo.** Un widget deve stare nell'APK dell'app che apre, e un
+modulo in più per trenta righe avrebbe fatto scattare il debito del plugin di
+convenzione (§5) senza separare niente di utile.
+
+**Perché il riquadro, e perché è la parte importante.** D17 diceva che il foglio *può*
+stare sopra il blocco, ma non diceva **come ci si arriva**: su Android un'app non può
+mettere una scorciatoia sulla schermata di blocco, e i widget lì non esistono più dai
+telefoni di dieci anni fa. Senza un ingresso, `showWhenLocked` non serviva a niente. Le
+impostazioni rapide si aprono a telefono bloccato, da qualunque schermata, con un gesto
+che l'utente fa già: **scorri giù, tocca, scrivi**. È anche l'equivalente del Controllo
+nel Centro di Controllo di iOS.
+
+**Il riquadro non chiede lo sblocco, di proposito.** `TileService.unlockAndRun` lo
+chiederebbe, e lo sblocco è l'anello che questo ingresso toglie. Il foglio è cieco (D17),
+quindi dietro lo sblocco non ci sarebbe niente da proteggere.
+
+**Il segno tenue.** Il widget porta il segno della variante B di `DueVarianti`, che era la
+proposta. La decisione resta del committente (§10): per il foglio nudo basta togliere una
+vista dal layout.
+
+**Da provare sul telefono:** che l'Activity lanciata dal riquadro compaia davvero sopra
+il blocco senza chiederne lo sblocco. È il comportamento documentato per le Activity con
+`showWhenLocked`, ma nessuno l'ha visto su questo codice.
+
+### D34 — Un foglio vive finché è sullo schermo
+**Data:** 2026-09-24 · **Stato:** attiva · **Ripara una falla contro l'invariante 11**
+
+Quando il foglio esce dallo schermo — tasto home, schermo spento, una chiamata — la nota è
+chiusa e l'Activity con lei. L'apertura successiva, da qualunque ingresso, trova un
+foglio bianco. Il foglio non compare fra le app recenti.
+
+**Cosa era rotto.** Il foglio restava vivo in secondo piano con la nota di prima. Due
+conseguenze, entrambe contro decisioni prese:
+
+1. **Privacy (D17, invariante 11).** Scrivi una nota, premi il tasto laterale senza
+   premere OK. Il foglio ha `showWhenLocked`, quindi alla riaccensione compariva **sopra
+   il blocco, con la nota leggibile da chiunque raccolga il telefono**. Lo stesso valeva
+   per l'istantanea nelle app recenti.
+2. **Il foglio bianco (D30).** Il tocco successivo sul widget riportava davanti il foglio
+   vecchio, con la nota di ore prima, invece di un foglio bianco.
+
+**Cosa costa.** Se arriva una chiamata a metà nota, al ritorno il foglio è nuovo e la nota
+interrotta è già salva, ma separata. È il compromesso giusto: la nota non si perde (D5), e
+un foglio che riappare da solo con dentro del testo è peggio di due note.
+
+**Ruotare il telefono non è uscire.** Il manifest dichiara i cambi di configurazione, così
+l'Activity non viene ricreata: ricrearla avrebbe tolto dallo schermo l'inchiostro appena
+scritto e spezzato la nota in due.
+
+### D35 — Il giornale scrive su un thread suo, e si svuota solo di ciò che è stato letto
+**Data:** 2026-09-24 · **Stato:** attiva · **Precisa D20 e D22, ripara due perdite di dati**
+
+Tre cambiamenti al giornale, tutti trovati rileggendo il sistema.
+
+**1. Un record rotto non nasconde più quelli dopo.** Il lettore si fermava al primo record
+illeggibile. Ma il processo muore a metà di un tratto, e all'apertura successiva la nuova
+sessione **scrive in coda, dopo i byte rotti**: da quel momento tutte le note nuove erano
+invisibili, e l'assorbimento, svuotando il giornale, le avrebbe cancellate senza averle
+mai salvate. Riprodotto con un test prima di correggerlo. Ora davanti a un record che
+non torna il lettore avanza di un byte e cerca il prossimo record valido: lunghezza
+plausibile e checksum giusto, che per caso capita una volta su quattro miliardi.
+
+Un record con la cornice integra ma di una **versione futura** non è spazzatura: la
+lettura si ferma lì e nessuno svuotamento lo tocca (D13).
+
+**2. Svuotare vuol dire togliere dalla testa ciò che si è letto.** `clear()` cancellava il
+file intero dopo il salvataggio. Ma fra la lettura e lo svuotamento l'archivio impiega il
+suo tempo, e intanto la cattura può aggiungere un tratto: cancellarlo significava perdere
+inchiostro mai arrivato in archivio, contro l'invariante 13. Ora `InkJournalSink` ha solo
+`discardPrefix(n)`, e `InkJournal.discard` toglie esattamente i byte che il `recover`
+corrispondente ha letto. **Non esiste più uno svuotamento totale**: l'API non permette di
+sbagliare. Le tre operazioni del sink devono escludersi a vicenda; su Android lo garantisce
+il thread unico del punto 3, su iOS servirà un lock sul file perché widget e app sono
+processi diversi.
+
+**3. La scrittura su disco esce dal thread dell'interfaccia.** `fd.sync()` aspetta che la
+memoria flash confermi: pochi millisecondi su un telefono buono, decine su uno economico.
+Fatto al sollevamento del dito, cadeva fra un tratto e il successivo — mentre l'utente
+scrive, la parola dopo partiva in ritardo. D20 stesso diceva "fuori dal percorso critico",
+e il codice non lo rispettava. Ora c'è un solo thread di scrittura per processo.
+
+**Cosa costa il punto 3, e va detto.** "Al sicuro quando `endStroke` ritorna" diventa "al
+sicuro pochi millisecondi dopo". La finestra si chiude quando il foglio esce dallo schermo
+(`awaitWrites` in `onStop`), che è il momento in cui il sistema può uccidere il processo;
+a foglio aperto il processo è in primo piano e non viene ucciso. Un errore di scrittura
+non risale più al chiamante: lo conta il sink, e il foglio mostra un avviso — l'unico
+testo che può comparire prima del primo tratto, perché è l'unico caso in cui la promessa
+non vale.
 
 ---
 
@@ -896,7 +1019,8 @@ core/            Kotlin Multiplatform. Non conosce la UI e non conosce la rete.
   capture/       CaptureSession, InkJournal, FrictionTrace — non vede l'archivio
   store/         NoteStore, JournalIngest, schema SQLDelight e schema versionato
 androidApp/      La prova di velocità di D19, installabile. Zero dipendenze
-                 esterne: Activity di piattaforma e una View di disegno.
+                 esterne: Activity di piattaforma, una View di disegno, il widget
+                 della home e il riquadro delle impostazioni rapide (D33).
 design/
   mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato:
                  home iOS, cattura nuda, cattura con strumenti, Android da
@@ -905,7 +1029,7 @@ design/
 ```
 
 Ancora da creare: `core/ocr` (Vision / ML Kit), `core/billing` (RevenueCat),
-`androidApp`, `androidWidget`, `iosApp`, `iosWidget`.
+`iosApp`, `iosWidget`. Il widget Android non avrà un modulo suo (D33).
 
 **Regola di dipendenza da non rompere:** il core non dipende dalla UI né dalla rete.
 Le dipendenze vanno in una sola direzione: `geometry → ink → model`,
@@ -914,7 +1038,7 @@ supereranno i cinque, la configurazione Gradle duplicata va estratta in un plugi
 convenzione in `build-logic/`.
 
 **La facciata per i renderer è `StrokeGeometry`.** SwiftUI, Compose, WidgetKit e
-Glance devono conoscere solo quella: danno una nota, ricevono contorni da riempire.
+i renderer dell'archivio Android devono conoscere solo quella: danno una nota, ricevono contorni da riempire.
 Tutta la calligrafia sta dal lato Kotlin, quindi è identica sulle quattro superfici.
 
 ---
@@ -949,10 +1073,13 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
     Compose.** L'inchiostro deve essere disegnabile al primo fotogramma. (D20)
 11. **Fuori dall'app non si legge nessuna nota.** Né sulla schermata di blocco (D17)
     né nel widget della home (D30): il widget è un foglio bianco. Dalla home si
-    aggiunge, non si rilegge.
+    aggiunge, non si rilegge. Vale anche per il foglio stesso: quando esce dallo
+    schermo si chiude, e non compare fra le app recenti (D34).
 12. **I tetti dell'attrito bloccano il rilascio**, non sono obiettivi: 100 ms a caldo e
     400 a freddo dal gesto all'inchiostro accettato. (D19, D32)
-13. **Il giornale si svuota solo dopo che i record sono in archivio.** (D22)
+13. **Il giornale si svuota solo dopo che i record sono in archivio, e solo dei byte
+    letti.** Non esiste uno svuotamento totale: un tratto arrivato dopo la lettura resta
+    dov'è. (D22, D35)
 14. **`core:capture` non dipende da `core:store`.** Se un giorno serve, la risposta
     è quasi certamente spostare il chiamante, non aggiungere la dipendenza. (D22)
 15. **Un tombstone si mette, non si toglie.** Nell'archivio gli aggiornamenti di
@@ -970,6 +1097,11 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
     dell'utente. (D31)
 19. **Non si manda niente durante la cattura.** Scegliere una destinazione è una
     decisione, e nel momento della cattura non si chiedono decisioni. (D31)
+20. **Sul thread dell'interfaccia della cattura non si tocca il disco.** Né per
+    scrivere il giornale né per trovarne la cartella. (D35)
+21. **Nessuna libreria che registri un `ContentProvider`** in `:androidApp`. Il sistema
+    lo esegue a ogni avvio del processo, prima della cattura. Prima di aggiungere una
+    dipendenza si guarda il suo manifest. (D32, D33)
 
 ---
 
@@ -996,8 +1128,7 @@ bug locale: invalida il sync, o la compatibilità delle note già salvate.
   col suo protocollo, le verifiche da fare col telefono in mano, le decisioni aperte e
   le cose da non fare ancora.
 
-Stato attuale: **228 test, tutti verdi.** Sono meno di prima perché c'è meno codice:
-D30 ha cancellato `WidgetFraming` e i suoi test. L'app Android è scritta ma **non compilata
+Stato attuale: **233 test, tutti verdi.** L'app Android è scritta ma **non compilata
 da nessuno**: il primo build è sulla macchina del committente.
 
 ---
@@ -1030,49 +1161,52 @@ da nessuno**: il primo build è sulla macchina del committente.
    `InkCanvasView`, `AndroidInkJournalSink` e il misuratore a schermo.
 4. ~~Note vocali nel modello~~ — `VoiceClip`, migrazione 1 → 2, ricerca che copre le
    trascrizioni, e un test che rilegge un archivio della versione 1.
+5. ~~Widget e riquadro rapido su Android~~ — scritti, non compilati (D33). Dopo D30 non
+   c'era motivo di aspettare la misura: non toccano il percorso di cattura.
+6. ~~Revisione del sistema~~ — due perdite di dati nel giornale, una falla di privacy
+   sopra il blocco, il disco sul thread dell'interfaccia, un errore del misuratore
+   (D34, D35).
 
 ### Bloccato sulla misura
 
-5. **Prendere il numero di D19** su un telefono vero. Istruzioni in
-   [`androidApp/README.md`](androidApp/README.md). **Tocca al committente**, e va prima
+7. **Prendere il numero di D19** su un telefono vero. Istruzioni in
+   [`GUIDA.md`](GUIDA.md). **Tocca al committente**, e va prima
    di scrivere altro codice di piattaforma: se il pavimento è molto oltre i 400 ms la
    conseguenza cambia l'architettura di entrambe le app, e scriverne una seconda prima
    di saperlo è lavoro a rischio.
 
 ### Si può fare adesso, senza telefono (core puro, verificabile qui)
 
-6. ~~Ricerca normalizzata~~ — fatto: accenti e maiuscole ignorati, parole in qualsiasi
+8. ~~Ricerca normalizzata~~ — fatto: accenti e maiuscole ignorati, parole in qualsiasi
    ordine, risultati per pertinenza, indice versionato con reindicizzazione
    (migrazione 2 → 3).
-7. ~~Inquadratura dei widget~~ — fatto: `WidgetFraming` decide caselle, ritagli e
-   dettaglio per i tre formati, con la leggibilità come vincolo (D29).
-8. ~~Uscita verso altre app~~ — fatto nella parte core: `NoteExport` prepara testo,
+9. ~~Inquadratura dei widget~~ — scritta e poi cancellata: D30 ha tolto le note dal
+   widget, e di `WidgetFraming` resta `NoteFraming` per l'archivio.
+10. ~~Uscita verso altre app~~ — fatto nella parte core: `NoteExport` prepara testo,
    Markdown e nome del file; `Note.exports` registra cosa è già andato e dove, con
    migrazione 3 → 4 e la coda `notesToSend` (D31).
-9. **`core:billing`** — l'unico punto che risponde a "è Pro?" (D4), con le regole del
+11. **`core:billing`** — l'unico punto che risponde a "è Pro?" (D4), con le regole del
    livello gratuito. Ora ha una ragione d'essere più solida: il Pro poggia
    sull'esportazione automatica, non più sui widget multipli.
 
 ### Dopo la misura
 
-10. **Profilo di riferimento per l'avvio a freddo** (baseline profile): la leva più
+12. **Profilo di riferimento per l'avvio a freddo** (baseline profile): la leva più
     grossa sul numero a freddo, gratuita e senza cambiare logica. Va generata su un
     dispositivo, quindi subito dopo la misura (D32).
-11. **Il foglio di condivisione** su entrambe le piattaforme: è il 90% di D31, e su
+13. **Il foglio di condivisione** su entrambe le piattaforme: è il 90% di D31, e su
     Android è anche l'unica strada per Keep.
-12. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
+14. **Collegare l'archivio su Android** — driver SQLite di Android e `JournalIngest`
    all'avvio, così il giornale si svuota e le note vivono nel database.
-13. **`androidWidget`** — Glance. Dopo D30 è diventato quasi banale: un foglio bianco
-    che apre la cattura, senza dati da leggere e senza aggiornamenti da pianificare.
-14. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
+15. **`iosApp` + `iosWidget`** — SwiftUI e WidgetKit sulla stessa facciata, con widget
     di blocco, Controllo e tasto Azione. **Serve un Mac con Xcode.**
-15. **`core:ocr`** — Vision e ML Kit dietro un'unica interfaccia.
-16. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
+16. **`core:ocr`** — Vision e ML Kit dietro un'unica interfaccia.
+17. **`core:voice`** — registrazione e trascrizione sul dispositivo (D18). Va deciso
     allora se il giornale debba coprire anche l'audio.
 
 ### Prima di pubblicare
 
-17. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
+18. **Nome commerciale e schede degli store**, screenshot, testi, informativa sulla
     privacy. Contano più del codice per la scoperta, e il paywall va collegato.
 
 ## 10. Questioni ancora aperte
@@ -1089,6 +1223,7 @@ da nessuno**: il primo build è sulla macchina del committente.
 - **Se il giornale debba coprire anche l'audio** (D25 lo lascia fuori per ora).
 - **Il foglio del widget: nudo o con un segno tenue?** Un rettangolo bianco vuoto può
   sembrare rotto. Proposta: un segno a basso contrasto (D30, artboard `DueVarianti`).
+  Il widget Android oggi porta il segno; il foglio nudo è una vista da togliere (D33).
 - **Il Pro va rivisto dopo D30 e D31.** "Widget multipli" non vale più niente su widget
   bianchi. La proposta è che il Pro poggi su esportazione automatica, ricerca OCR, punte
   e temi, col foglio di condivisione sempre gratuito.

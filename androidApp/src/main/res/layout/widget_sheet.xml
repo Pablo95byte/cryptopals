@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Il widget della home (D30): un foglio e nient'altro. Nessuna nota, nessun conteggio,
+    nessuna intestazione. Tutto il riquadro è il bersaglio: non c'è niente da centrare.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_sheet"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_sheet_background"
+    android:clipToOutline="true"
+    android:contentDescription="@string/widget_description">
+
+    <!-- Il segno tenue. Se la decisione aperta di D30 cade sul foglio nudo, basta togliere questa vista. -->
+    <ImageView
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_gravity="center"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_scribble"
+        android:tint="#D9CEB8" />
+
+</FrameLayout>

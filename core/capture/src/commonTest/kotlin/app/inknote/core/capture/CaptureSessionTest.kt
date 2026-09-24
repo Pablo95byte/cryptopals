@@ -127,7 +127,7 @@ class CaptureSessionTest {
             object : InkJournalSink {
                 override fun append(record: ByteArray) = throw IllegalStateException("disco pieno")
                 override fun readAll() = ByteArray(0)
-                override fun clear() = Unit
+                override fun discardPrefix(byteCount: Int) = Unit
             },
         )
         val session = CaptureSession(canvas = CANVAS, journal = brokenJournal, clock = clock)
@@ -147,12 +147,13 @@ class CaptureSessionTest {
         val expected = session.note()
 
         // Il processo muore qui: nessuno ha chiamato l'archivio.
-        val recovered = InkJournal(InMemoryInkJournalSink(sink.readAll())).recover().single()
+        val recovery = InkJournal(InMemoryInkJournalSink(sink.readAll())).recover()
+        val recovered = recovery.notes.single()
 
-        assertEquals(expected.id, recovered.note.id)
-        assertEquals(expected.strokes, recovered.note.strokes)
-        assertEquals(expected.canvas, recovered.note.canvas)
-        assertEquals(expected.createdAt, recovered.note.createdAt)
-        assertFalse(recovered.hadTornTail)
+        assertEquals(expected.id, recovered.id)
+        assertEquals(expected.strokes, recovered.strokes)
+        assertEquals(expected.canvas, recovered.canvas)
+        assertEquals(expected.createdAt, recovered.createdAt)
+        assertFalse(recovery.hadTornTail)
     }
 }

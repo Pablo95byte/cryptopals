@@ -18,8 +18,9 @@ import app.inknote.core.model.orderStrokes
  * quello che serve perché la superficie di cattura possa accettare il primo tocco
  * al primo fotogramma (decisioni D19 e D20).
  *
- * Ogni tratto chiuso finisce nel giornale prima di tornare al chiamante: quando
- * [endStroke] ritorna, quell'inchiostro è già al sicuro.
+ * Ogni tratto chiuso viene consegnato al giornale prima di tornare al chiamante:
+ * quando [endStroke] ritorna, quell'inchiostro è su disco oppure in coda per
+ * andarci, a seconda di come la piattaforma scrive (D35).
  */
 class CaptureSession(
     val canvas: CanvasSize,

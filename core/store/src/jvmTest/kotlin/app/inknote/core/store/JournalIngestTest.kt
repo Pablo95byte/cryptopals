@@ -144,6 +144,27 @@ class JournalIngestTest {
     }
 
     @Test
+    fun `un tratto scritto durante l'assorbimento non si perde`() {
+        // L'archivio salva con calma, e intanto la cattura aggiunge un tratto al
+        // giornale. Uno svuotamento totale dopo il salvataggio lo cancellerebbe senza
+        // che sia mai arrivato in archivio.
+        session(NoteId("prima")).write()
+        val late = session(NoteId("durante"))
+        val slowStore = object : NoteStore by store {
+            override fun save(note: Note) {
+                store.save(note)
+                if (note.id.value == "prima") late.write()
+            }
+        }
+
+        JournalIngest(slowStore).ingest(journal)
+
+        assertEquals(1, journal.read().records.size, "il tratto arrivato dopo la lettura resta nel giornale")
+        ingest.ingest(journal)
+        assertNotNull(store.note(NoteId("durante")))
+    }
+
+    @Test
     fun `note diverse nello stesso giornale finiscono in note diverse`() {
         session(NoteId("prima")).write()
         now += 500

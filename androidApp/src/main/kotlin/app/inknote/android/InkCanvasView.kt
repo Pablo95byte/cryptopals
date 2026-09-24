@@ -44,6 +44,9 @@ class InkCanvasView(context: Context) : View(context) {
     var onInkAccepted: (() -> Unit)? = null
     var onInkDrawn: (() -> Unit)? = null
 
+    /** Scatta a ogni tratto chiuso, dopo che è stato consegnato al giornale. */
+    var onStrokeCommitted: (() -> Unit)? = null
+
     private var session: CaptureSession? = null
 
     private val committed = ArrayList<PaintedStroke>()
@@ -54,6 +57,14 @@ class InkCanvasView(context: Context) : View(context) {
     private var reportedInkDrawn = false
 
     private val rule = InkDraw.rulePaint()
+
+    /**
+     * Il pennello del tratto in corso, creato una volta sola: `onDraw` gira a ogni
+     * fotogramma mentre si scrive, e allocare lì fa lavorare il garbage collector
+     * proprio mentre il dito si muove.
+     */
+    private var livePaint: Paint = InkDraw.paint(pen)
+    private var livePaintPen: Pen = pen
 
     /** Unità logiche per pixel: i tratti sono salvati in dp, non in pixel (D10). */
     private val scale: Float get() = resources.displayMetrics.density
@@ -89,10 +100,11 @@ class InkCanvasView(context: Context) : View(context) {
                 points = ArrayList(liveSamples),
                 createdAt = 0L,
             )
-            canvas.drawPath(
-                StrokeGeometry.outline(live, RenderQuality.SCREEN).toPath(scale),
-                InkDraw.paint(pen),
-            )
+            if (livePaintPen != pen) {
+                livePaint = InkDraw.paint(pen)
+                livePaintPen = pen
+            }
+            canvas.drawPath(StrokeGeometry.outline(live, RenderQuality.SCREEN).toPath(scale), livePaint)
         }
 
         if (!reportedFirstFrame) {
@@ -195,12 +207,14 @@ class InkCanvasView(context: Context) : View(context) {
     }
 
     private fun commit(session: CaptureSession) {
-        // Quando questa chiamata ritorna il tratto è già nel giornale, quindi al
-        // sicuro: nessuna conferma serve (D20).
+        // Quando questa chiamata ritorna il tratto è consegnato al giornale, che lo
+        // porta su disco entro pochi millisecondi su un altro thread: nessuna
+        // conferma serve (D20, D35).
         val stroke = session.endStroke()
         liveSamples.clear()
         if (stroke != null) committed += paint(stroke)
         invalidate()
+        if (stroke != null) onStrokeCommitted?.invoke()
     }
 
     private fun paint(stroke: Stroke) = PaintedStroke(

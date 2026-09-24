@@ -42,50 +42,58 @@ class InkJournal(private val sink: InkJournalSink) {
      * Una nota recuperata può già esistere in archivio in una versione più vecchia:
      * l'unione per id dei tratti fa il resto, senza conflitti (decisione D8).
      */
-    fun recover(): List<RecoveredNote> {
+    fun recover(): JournalRecovery {
         val result = read()
-        return result.records
+        val notes = result.records
             .groupBy { it.noteId }
             .map { (noteId, records) ->
                 val strokes = orderStrokes(records.map { it.stroke })
                 val first = records.first()
-                RecoveredNote(
-                    note = Note(
-                        id = noteId,
-                        canvas = first.canvas,
-                        strokes = strokes,
-                        createdAt = first.noteCreatedAt,
-                        updatedAt = strokes.maxOfOrNull { it.createdAt } ?: first.noteCreatedAt,
-                        // Una revisione per tratto, come se la nota fosse stata
-                        // costruita tratto per tratto: così il merge con la copia in
-                        // archivio non la considera più vecchia di quello che è.
-                        revision = strokes.size + 1L,
-                    ),
-                    hadTornTail = result.hadTornTail,
+                Note(
+                    id = noteId,
+                    canvas = first.canvas,
+                    strokes = strokes,
+                    createdAt = first.noteCreatedAt,
+                    updatedAt = strokes.maxOfOrNull { it.createdAt } ?: first.noteCreatedAt,
+                    // Una revisione per tratto, come se la nota fosse stata
+                    // costruita tratto per tratto: così il merge con la copia in
+                    // archivio non la considera più vecchia di quello che è.
+                    revision = strokes.size + 1L,
                 )
             }
+        return JournalRecovery(
+            notes = notes,
+            hadTornTail = result.hadTornTail,
+            consumedBytes = result.consumedBytes,
+        )
     }
 
     /**
-     * Svuota il giornale.
+     * Toglie dal giornale ciò che [recovery] ha letto, e **solo** quello.
      *
-     * Da chiamare **solo** dopo che i record sono in archivio. Svuotarlo prima è
-     * l'unico modo di perdere inchiostro con questo meccanismo.
+     * Da chiamare **solo** dopo che quelle note sono in archivio: svuotare prima è
+     * l'unico modo di perdere inchiostro con questo meccanismo (D22). Un tratto
+     * arrivato dopo la lettura resta dov'è, e lo prenderà l'assorbimento successivo.
      */
-    fun clear() {
-        sink.clear()
+    fun discard(recovery: JournalRecovery) {
+        sink.discardPrefix(recovery.consumedBytes)
     }
 }
 
 /**
- * Una nota ritrovata nel giornale.
+ * Le note ritrovate nel giornale.
  *
- * @param hadTornTail `true` se la coda del giornale era illeggibile, cioè il
+ * @param hadTornTail `true` se una parte del giornale era illeggibile, cioè il
  *   processo è morto durante la scrittura di un tratto. Va portato fino
  *   all'interfaccia: è meglio dire all'utente che un tratto si è perso che fargli
  *   scoprire da solo una nota incompleta.
+ * @param consumedBytes quanto del giornale è stato letto: è ciò che [InkJournal.discard]
+ *   toglierà, e nient'altro.
  */
-data class RecoveredNote(
-    val note: Note,
+data class JournalRecovery(
+    val notes: List<Note>,
     val hadTornTail: Boolean,
-)
+    val consumedBytes: Int,
+) {
+    val isEmpty: Boolean get() = notes.isEmpty()
+}

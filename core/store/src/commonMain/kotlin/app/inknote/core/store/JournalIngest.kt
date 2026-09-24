@@ -24,23 +24,24 @@ class JournalIngest(private val store: NoteStore) {
      *   `false` serve a ispezionare senza consumare.
      */
     fun ingest(journal: InkJournal, clearOnSuccess: Boolean = true): IngestResult {
-        val recovered = journal.recover()
-        if (recovered.isEmpty()) return IngestResult(notesIngested = 0, hadTornTail = false)
+        val recovery = journal.recover()
 
-        for (entry in recovered) {
-            val existing = store.note(entry.note.id)
+        for (recovered in recovery.notes) {
+            val existing = store.note(recovered.id)
             // La fusione, non la sostituzione: in archivio possono esserci tratti che
             // il giornale non ha mai visto, e viceversa. L'unione per id non perde
             // niente da nessuna delle due parti (decisione D8).
-            val toSave = if (existing == null) entry.note else mergeNotes(existing, entry.note)
+            val toSave = if (existing == null) recovered else mergeNotes(existing, recovered)
             store.save(toSave)
         }
 
-        if (clearOnSuccess) journal.clear()
+        // Anche con zero note: dei byte illeggibili non diventeranno mai leggibili, e
+        // lasciarli lì li farebbe rileggere e segnalare a ogni avvio.
+        if (clearOnSuccess) journal.discard(recovery)
 
         return IngestResult(
-            notesIngested = recovered.size,
-            hadTornTail = recovered.any { it.hadTornTail },
+            notesIngested = recovery.notes.size,
+            hadTornTail = recovery.hadTornTail,
         )
     }
 }

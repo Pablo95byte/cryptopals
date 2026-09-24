@@ -44,7 +44,7 @@ quindi non ho né SDK Android né modo di compilare un APK.
 ```sh
 git clone <questo repository>
 cd cryptopals
-./gradlew jvmTest              # 224 test, devono essere tutti verdi
+./gradlew jvmTest              # 233 test, devono essere tutti verdi
 ./gradlew :androidApp:installDebug
 ```
 
@@ -62,7 +62,9 @@ attrito freddo: 310ms (entro 400ms) · visibile 340ms · superficie 240ms · 1°
 
 **Misura a freddo, che è il caso vero:**
 
-1. Chiudi l'app dalle app recenti.
+1. Chiudi l'app **con l'arresto forzato**: Impostazioni → App → InkNote → Arresto
+   forzato. Il foglio non compare più fra le app recenti — di proposito, perché lì si
+   vedrebbe l'istantanea della nota — quindi da lì non si chiude.
 2. Aspetta una decina di secondi.
 3. Riaprila e traccia **subito** un segno.
 4. Annota il numero.
@@ -70,8 +72,21 @@ attrito freddo: 310ms (entro 400ms) · visibile 340ms · superficie 240ms · 1°
    delle altre: se guardi solo quella ti spaventi per niente. Serve l'intervallo, non un
    numero solo.
 
-**Poi misura a caldo, che è il caso che conta di più:** riapri subito dopo aver chiuso,
-tre o quattro volte. Lì il tetto è 100 ms, e il misuratore lo scrive da sé.
+**Poi misura a caldo, che è il caso che conta di più:** premi OK, riapri, traccia un
+segno; tre o quattro volte. Lì il tetto è 100 ms, e il misuratore lo scrive da sé.
+
+**Attenzione: il numero a caldo del misuratore è ottimista.** A caldo, da dentro l'app, il
+momento del tuo tocco non si vede: si conta da quando il nostro codice parte, e i
+millisecondi che il sistema spende prima restano fuori. Se hai voglia di un numero
+onesto, col telefono collegato:
+
+```sh
+adb shell am start -W -n app.inknote.android/.CaptureActivity
+```
+
+e mandami la riga `TotalTime` (è il tempo fino al primo fotogramma, sistema compreso).
+Premi OK fra un lancio e l'altro. Non è obbligatorio: se non ti va, il misuratore basta
+per cominciare.
 
 ### Cosa mandarmi
 
@@ -97,10 +112,24 @@ movimenti rapidi, più pieno dove rallenti. Se sembra un tubo di spessore costan
 qualcosa che non va nel calcolo per velocità, e va sistemato prima di andare avanti. Con
 un pennino attivo lo spessore deve seguire la pressione.
 
-**La sopravvivenza.** Scrivi due o tre tratti, **non premere OK**, e uccidi l'app dalle
-recenti. Riaprila e tocca il misuratore in alto a sinistra: si apre l'elenco delle note
-nel giornale, e i tratti devono essere lì. Se non ci sono, il meccanismo che promette
-"al sicuro dal primo tratto" non funziona e quella è la prima cosa da riparare.
+**La sopravvivenza.** Scrivi due o tre tratti, **non premere OK**, torna alla home e fai
+l'arresto forzato. Riapri e tocca il misuratore in alto a sinistra: si apre l'elenco
+delle note nel giornale, e i tratti devono essere lì. Se non ci sono, il meccanismo che
+promette "al sicuro dal primo tratto" non funziona e quella è la prima cosa da riparare.
+
+**Il widget.** Tieni premuto sulla home → Widget → InkNote. Deve essere un foglio caldo
+con un piccolo segno al centro, e toccandolo **in qualunque punto** si apre il foglio.
+
+**Il riquadro rapido, a telefono bloccato.** È la verifica più importante di questo
+giro. Scorri giù le impostazioni rapide, tocca la matita per modificarle e trascina
+"Scrivi una nota" fra i riquadri. Poi **blocca il telefono**, riaccendi lo schermo senza
+sbloccare, scorri giù e tocca il riquadro: il foglio deve comparire **sopra il blocco,
+senza chiederti il codice**. Scrivi, premi OK: devi tornare alla schermata di blocco.
+
+**La privacy.** Scrivi qualcosa e premi il tasto laterale **senza premere OK**.
+Riaccendi: devi vedere la schermata di blocco, **non la tua nota**. Poi sblocca e tocca
+il widget: il foglio deve essere bianco. Se vedi la nota di prima in uno dei due casi,
+dimmelo subito: è una falla, non un dettaglio.
 
 ---
 
@@ -108,7 +137,7 @@ nel giornale, e i tratti devono essere lì. Se non ci sono, il meccanismo che pr
 
 C'è **un** rischio noto, dichiarato. I moduli condivisi non hanno un target Android —
 di proposito, altrimenti il codice non si compilerebbe più dove l'SDK non c'è, e
-perderei i 224 test che girano su qualunque macchina. L'app chiede quindi la loro
+perderei i 233 test che girano su qualunque macchina. L'app chiede quindi la loro
 variante `jvm` con un attributo Gradle, e **quella riga non l'ha mai provata nessuno con
 l'SDK presente**.
 
@@ -158,7 +187,7 @@ Ti risparmia soldi e tempo:
 Il **core condiviso è scritto e verificato**: modello dati pronto per il sync, motore
 d'inchiostro, geometria, archivio SQLite con quattro migrazioni provate, giornale che
 mette l'inchiostro al sicuro dal primo tratto, ricerca che ignora accenti e ordine delle
-parole, uscita verso altre app. **224 test, tutti verdi, su qualunque macchina.**
+parole, uscita verso altre app. **233 test, tutti verdi, su qualunque macchina.**
 
 L'**app Android è scritta ma non l'ha compilata nessuno**: è la prova di velocità, e il
 primo build è il tuo. L'**app iOS non è ancora scritta**, per scelta: aspetta la misura.

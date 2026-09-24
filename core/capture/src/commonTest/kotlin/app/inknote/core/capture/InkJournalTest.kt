@@ -38,11 +38,11 @@ class InkJournalTest {
         journal.record(record("n2", stroke("b", 3_000L)))
         journal.record(record("n1", stroke("c", 4_000L)))
 
-        val recovered = journal.recover().associateBy { it.note.id.value }
+        val recovered = journal.recover().notes.associateBy { it.id.value }
 
         assertEquals(2, recovered.size)
-        assertEquals(listOf("a", "c"), recovered.getValue("n1").note.strokes.map { it.id.value })
-        assertEquals(listOf("b"), recovered.getValue("n2").note.strokes.map { it.id.value })
+        assertEquals(listOf("a", "c"), recovered.getValue("n1").strokes.map { it.id.value })
+        assertEquals(listOf("b"), recovered.getValue("n2").strokes.map { it.id.value })
     }
 
     @Test
@@ -55,7 +55,7 @@ class InkJournalTest {
 
         assertEquals(listOf("salvo"), result.records.map { it.stroke.id.value })
         assertTrue(result.hadTornTail, "la coda troncata deve essere segnalata")
-        assertTrue(result.discardedTailBytes > 0)
+        assertTrue(result.discardedBytes > 0)
     }
 
     @Test
@@ -76,22 +76,81 @@ class InkJournalTest {
         journal.record(record("n1", stroke("mezzo", 3_000L)))
         sink.truncate(bytesLost = 8)
 
-        val recovered = journal.recover().single()
+        val recovery = journal.recover()
 
-        assertTrue(recovered.hadTornTail, "l'interfaccia deve poter avvisare che un tratto si è perso")
-        assertEquals(1, recovered.note.strokes.size)
+        assertTrue(recovery.hadTornTail, "l'interfaccia deve poter avvisare che un tratto si è perso")
+        assertEquals(1, recovery.notes.single().strokes.size)
     }
 
     @Test
-    fun `un giornale di una versione futura non viene interpretato`() {
+    fun `un giornale di una versione futura non viene interpretato né consumato`() {
         journal.record(record("n1", stroke("s1", 2_000L)))
         val bytes = sink.readAll().also { it[0] = 99 }
-        val futureJournal = InkJournal(InMemoryInkJournalSink(bytes))
+        val futureSink = InMemoryInkJournalSink(bytes)
+        val futureJournal = InkJournal(futureSink)
 
-        val result = futureJournal.read()
+        val recovery = futureJournal.recover()
+        futureJournal.discard(recovery)
 
-        assertTrue(result.records.isEmpty())
+        assertTrue(recovery.isEmpty)
+        assertEquals(0, recovery.consumedBytes, "l'ha scritto un'app più nuova: non è spazzatura")
+        assertEquals(bytes.size, futureSink.readAll().size, "svuotare non deve toccarlo")
+    }
+
+    @Test
+    fun `un tratto rotto non nasconde i tratti scritti dopo`() {
+        // Il caso reale: il processo muore a metà di un tratto, e all'apertura
+        // successiva la nuova sessione scrive in coda, dopo i byte rotti. Fermarsi al
+        // primo record illeggibile renderebbe invisibile la nota nuova, e lo
+        // svuotamento dopo l'assorbimento la cancellerebbe.
+        journal.record(record("n1", stroke("a", 2_000L)))
+        journal.record(record("n1", stroke("rotto", 3_000L)))
+        sink.truncate(bytesLost = 12)
+        journal.record(record("n2", stroke("c", 9_000L)))
+        journal.record(record("n2", stroke("d", 9_500L)))
+
+        val result = journal.read()
+
+        assertEquals(listOf("a", "c", "d"), result.records.map { it.stroke.id.value })
+        assertTrue(result.hadTornTail, "il tratto rotto va comunque segnalato")
+    }
+
+    @Test
+    fun `un record corrotto in mezzo costa solo quel record`() {
+        journal.record(record("n1", stroke("a", 2_000L)))
+        val middleStart = sink.readAll().size
+        journal.record(record("n1", stroke("guasto", 3_000L)))
+        journal.record(record("n1", stroke("c", 4_000L)))
+        val bytes = sink.readAll().also { it[middleStart + 20] = (it[middleStart + 20] + 1).toByte() }
+
+        val result = InkJournal(InMemoryInkJournalSink(bytes)).read()
+
+        assertEquals(listOf("a", "c"), result.records.map { it.stroke.id.value })
         assertTrue(result.hadTornTail)
+    }
+
+    @Test
+    fun `lo svuotamento non tocca i tratti arrivati dopo la lettura`() {
+        // Fra la lettura e lo svuotamento l'archivio impiega il suo tempo, e intanto la
+        // cattura può aggiungere un tratto. Cancellare il file intero lo perderebbe.
+        journal.record(record("n1", stroke("letto", 2_000L)))
+        val recovery = journal.recover()
+        journal.record(record("n2", stroke("arrivato-dopo", 3_000L)))
+
+        journal.discard(recovery)
+
+        assertEquals(listOf("arrivato-dopo"), journal.read().records.map { it.stroke.id.value })
+    }
+
+    @Test
+    fun `lo svuotamento toglie anche i byte illeggibili già letti`() {
+        journal.record(record("n1", stroke("a", 2_000L)))
+        journal.record(record("n1", stroke("rotto", 3_000L)))
+        sink.truncate(bytesLost = 12)
+
+        journal.discard(journal.recover())
+
+        assertEquals(0, sink.readAll().size, "altrimenti verrebbero segnalati a ogni avvio")
     }
 
     @Test
@@ -101,17 +160,17 @@ class InkJournalTest {
         val inStore = noteOf("n1", listOf(stroke("a", 2_000L), stroke("b", 3_000L)))
         journal.record(record("n1", stroke("c", 4_000L)))
 
-        val merged = mergeNotes(inStore, journal.recover().single().note)
+        val merged = mergeNotes(inStore, journal.recover().notes.single())
 
         assertEquals(listOf("a", "b", "c"), merged.strokes.map { it.id.value })
         assertEquals(4_000L, merged.updatedAt)
     }
 
     @Test
-    fun `svuotare il giornale lo azzera`() {
+    fun `svuotare dopo una lettura completa lo azzera`() {
         journal.record(record("n1", stroke("s1", 2_000L)))
 
-        journal.clear()
+        journal.discard(journal.recover())
 
         assertTrue(journal.read().records.isEmpty())
     }
