@@ -109,8 +109,21 @@ header.top {
 
 @keyframes write { to { stroke-dashoffset: 0; } }
 
+/* La goccia dell'istinto (D66): arriva quando il tratto è finito. */
+.scribble .spark {
+  opacity: 0;
+  transform-origin: 19.2px 9.4px;
+  animation: spark 0.35s ease-out 1.55s forwards;
+}
+
+@keyframes spark {
+  from { opacity: 0; transform: scale(0.2); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scribble path { animation: none; stroke-dashoffset: 0; }
+  .scribble .spark { animation: none; opacity: 1; }
 }
 
 .card {

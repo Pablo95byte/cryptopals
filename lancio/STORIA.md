@@ -50,6 +50,10 @@ recensioni da una stella nascono da aspettative sbagliate.
 
 ## 5. I testi dello store (bozza, in inglese: è la lingua di base, D41)
 
+> **Superato da [`STORE.md`](STORE.md)** (D67): lì ci sono i testi completi e definitivi,
+> in inglese e italiano, per App Store e Play Store, con i limiti controllati. Quelli qui
+> sotto restano come prima bozza.
+
 - **Nome:** Instink
 - **Sottotitolo (30):** `Handwritten quick notes` — italiano: `Note a mano, al volo`
 - **Parole chiave (100, invisibili):**

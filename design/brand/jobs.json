@@ -1,0 +1,72 @@
+[
+ {
+  "svg": "design/brand/icon-light.svg",
+  "out": "iosApp/InkNote/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+  "w": 1024,
+  "h": 1024,
+  "alpha": false
+ },
+ {
+  "svg": "design/brand/icon-dark.svg",
+  "out": "iosApp/InkNote/Assets.xcassets/AppIcon.appiconset/AppIcon-Dark.png",
+  "w": 1024,
+  "h": 1024,
+  "alpha": true
+ },
+ {
+  "svg": "design/brand/icon-tinted.svg",
+  "out": "iosApp/InkNote/Assets.xcassets/AppIcon.appiconset/AppIcon-Tinted.png",
+  "w": 1024,
+  "h": 1024,
+  "alpha": true
+ },
+ {
+  "svg": "design/brand/icon-light.svg",
+  "out": "design/brand/store/app-store-1024.png",
+  "w": 1024,
+  "h": 1024,
+  "alpha": false
+ },
+ {
+  "svg": "design/brand/icon-light.svg",
+  "out": "design/brand/store/play-store-512.png",
+  "w": 512,
+  "h": 512,
+  "alpha": false
+ },
+ {
+  "svg": "design/brand/feature-graphic.svg",
+  "out": "design/brand/store/play-feature-graphic-1024x500.png",
+  "w": 1024,
+  "h": 500,
+  "alpha": false
+ },
+ {
+  "svg": "design/brand/icon-light.svg",
+  "out": "site/apple-touch-icon.png",
+  "w": 180,
+  "h": 180,
+  "alpha": false
+ },
+ {
+  "svg": "design/brand/icon-light.svg",
+  "out": "site/icon-512.png",
+  "w": 512,
+  "h": 512,
+  "alpha": false
+ },
+ {
+  "svg": "design/brand/og-en.svg",
+  "out": "site/og.png",
+  "w": 1200,
+  "h": 630,
+  "alpha": false
+ },
+ {
+  "svg": "design/brand/og-it.svg",
+  "out": "site/it/og.png",
+  "w": 1200,
+  "h": 630,
+  "alpha": false
+ }
+]

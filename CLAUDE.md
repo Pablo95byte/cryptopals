@@ -159,7 +159,8 @@ riconosce: l'inchiostro resta la nota, il testo è solo un indice.
 scelta ragionevole sarebbe stata Swift nativo con PencilKit.
 
 ### D4 — Gratis con sblocco una volta sola; abbonamento solo quando esisterà il sync
-**Data:** 2026-09-12 · **Stato:** attiva, da implementare
+**Data:** 2026-09-12 · **Stato:** attiva, da implementare · **rivista da D67** (proposta):
+Pro dal lancio, annuale o a vita, con StoreKit e senza RevenueCat
 
 | Livello | Cosa comprende |
 |---|---|
@@ -2019,6 +2020,110 @@ salvataggio unisce comunque (D14), ma una copia vecchia non ha motivo di viaggia
    la cattura a telefono bloccato c'è già (D17, D33): la voce è meno urgente che su iPhone.
 4. **Le formule** restano dove le ha messe D52.
 
+
+### D66 — Il segno: il ricciolo scritto a inchiostro, e una goccia calda
+**Data:** 2026-09-24 · **Stato:** attiva, **da vedere sul telefono** · **Precisa D16 e D30**
+
+L'icona è il ricciolo del widget (D30), ma disegnato **come inchiostro**: sottile
+all'attacco, pieno nel corpo, un po' più stretto alla fine, la stessa idea dello spessore
+che segue la mano nell'app. Accanto, una **goccia vermiglia** (`#E4572E`) dove andrebbe il
+punto di una "i": l'istinto. È l'unico colore del marchio, e sta solo nel segno — non
+nell'interfaccia, dove la gerarchia la fanno ancora inchiostro e carta (D46).
+
+**Perché cambiarla, con la monetizzazione come metro (D67).** L'icona è la prima cosa che
+si vede nei risultati di ricerca dello store, accanto a quelle dei concorrenti, e decide
+se qualcuno tocca. Quella di prima era elegante ma occupava un terzo del quadrato, era
+tutta crema e grigio, e a 40 punti si leggeva come una "h". Ora il segno riempie la
+griglia di Apple, il tratto ha peso, e la goccia la fa riconoscere a colpo d'occhio anche
+piccola, in mezzo a icone colorate.
+
+**Un solo generatore per tutto** (`tools/brand/icons.py` e `render.mjs`): icona iOS con le
+varianti **scura** e **colorata** di iOS 18, icona adattiva Android con la versione
+**monocromatica** di Android 13, icona e grafica in evidenza per il Play Store, favicon,
+icona per la home dell'iPhone e **anteprima dei link** (`og.png`) per il sito. Cambiare il
+segno vuol dire cambiare una funzione e rigenerare, non ridisegnare dodici file. Le
+immagini per gli store **non hanno il canale alfa**: Apple rifiuta la build, Google il file.
+
+**Scartato: l'icona scura** ("gesso su lavagna", D16). Più di moda, ma su una home scura
+sparisce, e la carta chiara è ciò che dice "foglio bianco" (D30) prima ancora del nome.
+
+### D67 — Si guadagna da subito: Pro al lancio, abbonamento o acquisto a vita, la ricerca come ragione
+**Data:** 2026-09-24 · **Stato:** proposta, **da confermare col committente** ·
+**Rivede D4, D43 (punto 3) e D47** · **Precisa D54 (punto 5)**
+
+Il committente: *"l'obiettivo finale è monetizzare, quindi ogni scelta deve essere presa
+con quello scopo."* Riletti con quel metro, tre punti del piano precedente vanno cambiati.
+
+**1. Pro c'è dal lancio, non dopo** (D43 diceva "gratis al lancio, tutto incluso").
+I primi utenti sono quelli disposti a pagare di più: chi scarica un'app nuova il primo
+giorno è un appassionato. Aggiungere un pagamento dopo vuol dire **togliere** qualcosa a chi
+l'aveva gratis, e si paga in recensioni. E un incasso vero dal primo giorno è il solo dato
+che dice se il prezzo è giusto: le opinioni no.
+
+**2. Cosa è gratis, per sempre, e perché.** Tutta la **cattura**: foglio, tastiera, foto,
+voce, Siri, tutti gli ingressi, l'archivio, "Manda a…", lo smistamento, la riemersione, il
+foglio di notte. È la promessa (§1) e il gancio: una cattura a pagamento non la prova
+nessuno, e senza chi la prova non c'è nessuno a cui vendere Pro (D47). E **"Manda a…" non
+si chiude mai**: un'app che tiene in ostaggio le note si merita le recensioni che riceve
+(D31).
+
+**3. Pro è il ritrovare, non lo scrivere.** Il momento in cui si paga volentieri è quando le
+note sono tante e ne serve una: allora la ricerca vale soldi.
+
+- **La ricerca gratuita copre gli ultimi 30 giorni; Pro cerca in tutto, per sempre.** Il
+  riconoscimento di scrittura e voce gira comunque su tutte le note (D62, D63): chi compra
+  Pro trova **subito** anche le note di un anno fa, ed è il momento migliore dell'acquisto.
+  Chi non paga vede il valore ogni giorno, e il limite si fa sentire da solo quando
+  l'archivio cresce.
+- **I promemoria dalle date scritte a mano** (D52): si vedono sempre, si usano con Pro.
+- **Senza la riga "Scritta con Instink"** in fondo alle note mandate fuori. Quella riga,
+  gratis, è l'anello di crescita di D47: ogni nota mandata fuori porta il nome a qualcun
+  altro.
+- **Poi, man mano**: invio automatico a Notion e a una cartella (D31), punte e colori,
+  sincronizzazione fra iPhone, iPad e Mac. Ogni cosa nuova entra in Pro, e un abbonato la
+  riceve senza pagare di nuovo: è ciò che giustifica il rinnovo.
+
+**4. Il prezzo** (rivede D4: lì era un acquisto singolo da 6,99 €, e l'abbonamento solo
+col sync).
+
+| | prezzo | netto per noi, circa | perché |
+|---|---|---|---|
+| **Annuale** | 14,99 € con **7 giorni di prova** | 10,40 € l'anno | la prova converte, e il rinnovo è dove sta il guadagno (D60) |
+| **A vita** | 34,99 € — **24,99 € per i primi tre mesi** | 24,40 € (17,40 al prezzo d'esordio) | per chi rifiuta l'abbonamento su un'app locale: toglie l'obiezione di D4 senza rinunciare alla vendita. Il prezzo d'esordio dà una ragione per comprare adesso |
+| Mensile | no | — | una scelta in più sul paywall è una decisione in più (§1), e rende meno |
+
+Il netto toglie l'IVA italiana (22%) e la commissione di Apple col programma per le piccole
+imprese (15%, **da richiedere**, GUIDA §0octies: senza è il 30%). Per 50.000 € l'anno
+servono circa **4.800 abbonati** — o un misto con le vendite a vita — contro le 10.000
+vendite dell'acquisto singolo di D60. E gli abbonati si sommano di anno in anno.
+
+**5. Il paywall compare solo dove serve**, mai sul foglio e mai all'apertura:
+
+- quando la ricerca trova risultati oltre i 30 giorni: *"Altre 4 note più vecchie
+  corrispondono. Cerca in tutto con Pro."* È il momento in cui l'utente vuole proprio
+  quella cosa;
+- toccando "Ricordamelo";
+- in una voce delle impostazioni.
+
+Mai durante la cattura, per la stessa ragione per cui non si manda niente durante la
+cattura (invariante 19): è una decisione chiesta a chi vuole solo scrivere.
+
+**6. StoreKit, senza RevenueCat** (rivede D4). RevenueCat riceverebbe gli acquisti con un
+identificativo dell'utente, e la scheda non potrebbe più dire **"Nessun dato raccolto"**:
+per un'app di note è un argomento che vende. StoreKit 2 fa tutto sul telefono, e App Store
+Connect dà già prove, conversioni e disdette senza nessun SDK. Su Android, Play Billing
+quando arriverà Android.
+
+**7. Il nome nello store porta le parole chiave** (precisa D54, punto 5): "Instink:
+Handwritten Notes" / "Instink: Note scritte a mano". Il nome è il campo che pesa di più
+nella ricerca dell'App Store, e lasciarlo a un nome inventato vuol dire rinunciare a chi
+cerca "handwritten notes". Sotto l'icona resta "Instink". I testi completi, con i limiti
+di caratteri controllati da uno script, sono in [`lancio/STORE.md`](lancio/STORE.md).
+
+**Cosa si decide col committente prima di scrivere il codice:** i due prezzi, il limite dei
+30 giorni, e se i promemoria stanno in Pro. Il codice è una settimana: StoreKit, il
+paywall, il limite nella ricerca, la riga in fondo alle note mandate fuori.
+
 ---
 
 ## 5. Struttura del repository
@@ -2042,10 +2147,13 @@ androidApp/      L'app Android: il foglio (cattura, D20), l'archivio (D39), il w
                  piattaforma; una sola dipendenza esterna, il driver SQLite.
 tools/
   android-check/ Compilazione di controllo di :androidApp senza SDK (D44)
+  brand/         Il segno e tutte le icone (icons.py, render.mjs, D66); i testi degli store
+                 con i limiti di caratteri controllati (store_texts.py, D67)
 codemagic.yaml   Il CI: test del core a ogni push, TestFlight e Play interno su tag (D53)
-lancio/          La storia del prodotto e i testi pubblici: STORIA.md (D60)
+lancio/          La storia del prodotto (STORIA.md, D60) e i testi degli store (STORE.md, D67)
 site/            Il sito statico: home, privacy, assistenza, in inglese e italiano (D61)
 design/
+  brand/         Il segno in SVG e le immagini per gli store (D66)
   mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato:
                  home iOS, cattura nuda, cattura con strumenti, Android da
                  schermo bloccato, Android sopra il launcher, voce, archivio,
@@ -2264,7 +2372,8 @@ su Android (D64) compilano contro Android 15. 318 test.
     verso Instink"** aspetta l'App Group (D65); la voce su Android dopo.
 24. ~~Il sito, privacy e assistenza~~ (D61): scritti, da mettere in rete. La pagina vera,
     col video, dopo il disegno definitivo (D50).
-25. **`core:billing`** — il Pro (D4), dopo il lancio (D43, D47).
+25. **Pro con StoreKit** (D67): da confermare col committente, poi paywall, limite di 30
+    giorni nella ricerca e riga "Scritta con Instink". **Prima del lancio**, non dopo.
 
 ### Prima di pubblicare
 
@@ -2277,7 +2386,8 @@ su Android (D64) compilano contro Android 15. 318 test.
   dominio.
 - **Quanti widget nel livello gratuito.** Uno è la proposta; va verificato che non
   renda il livello gratuito inutile e quindi l'app non recensita.
-- **Prezzo effettivo del Pro**, per mercato.
+- **Prezzo effettivo del Pro**, per mercato: proposta in D67 (14,99 € l'anno, 34,99 € a
+  vita), da confermare.
 - **Gesto della gomma** con dito e con pennino, che sono casi diversi.
 - **Scrivere in corsivo col dito è difficile** (primo telefono vero). Da capire se è
   latenza, spessore, righe troppo fitte o la natura del dito. Se è la dimensione, la

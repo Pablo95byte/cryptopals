@@ -10,6 +10,18 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Aggiunto — il segno, i testi degli store, il piano per guadagnare (D66, D67)
+
+- **Icona nuova** su iOS e Android: il ricciolo scritto a inchiostro, con una goccia
+  vermiglia. Su iOS le varianti scura e colorata di iOS 18; su Android la monocromatica.
+- **Le immagini per gli store**: icona App Store 1024, icona Play Store 512, grafica in
+  evidenza 1024×500, in `design/brand/store/`. Tutto si rigenera da `tools/brand/`.
+- **Il sito**: favicon nuova, icona per la home dell'iPhone, anteprime per chi condivide il
+  link (`og.png`, in inglese e italiano), intestazioni di sicurezza per Cloudflare.
+- **`lancio/STORE.md`**: nome, sottotitolo, parole chiave, testo promozionale,
+  descrizione e novità per App Store e Play Store, in inglese e italiano, con i limiti di
+  caratteri controllati da `tools/brand/store_texts.py`.
+
 ### Aggiunto — il sito, la lettura della scrittura, la voce (D61–D64)
 
 - **Il sito** in `site/`: home, informativa sulla privacy e assistenza, in inglese e in
