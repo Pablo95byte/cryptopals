@@ -18,7 +18,9 @@ import InkNoteKit
 /// come tutto il resto: al sicuro subito, in archivio alla prossima apertura.
 struct AddNoteIntent: AppIntent {
     static let title: LocalizedStringResource = "Add a note"
-    static let description = IntentDescription("Dictate a note to Instink without unlocking your iPhone.")
+    // Apple rifiuta al caricamento le descrizioni delle azioni che nominano "iPhone"
+    // (errore 90626): il testo dice cosa fa, non su quale telefono.
+    static let description = IntentDescription("Dictate a note to Instink without unlocking.")
     static let openAppWhenRun: Bool = false
     // Funziona a telefono bloccato: il giornale sta in un file leggibile dopo il primo
     // sblocco (D24), e questa azione non mostra niente di ciò che è già scritto.

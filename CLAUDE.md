@@ -1960,6 +1960,12 @@ sarebbe stato spazzatura da saltare, cioè da cancellare.
 sovrascrive. L'eliminazione definitiva dopo trenta giorni riporta anche i file audio, oltre
 alle foto.
 
+**Primo caricamento rifiutato da Apple** (build 6, errore 90626): la descrizione
+dell'azione diceva "senza sbloccare l'iPhone", e le descrizioni delle azioni di Siri non
+possono contenere "iPhone". Ora dice "senza sbloccare". Regola per il futuro: **nei testi
+delle azioni (titoli, descrizioni, frasi) niente nomi di prodotti Apple**; il controllo lo
+fa solo App Store Connect al caricamento, non `ios-check`.
+
 **I permessi si chiedono al primo tocco sul microfono**, non all'apertura: microfono e
 riconoscimento vocale insieme, una volta sola. Senza il secondo, l'audio si registra e non
 si trascrive.

@@ -28,6 +28,8 @@ solo cosa è cambiato nel codice.
 
 ### Corretto
 
+- **Caricamento su TestFlight rifiutato** (errore 90626): la descrizione dell'azione di
+  Siri conteneva "iPhone", che Apple non ammette. Ora dice "senza sbloccare" (D63).
 - **Un salvataggio da una copia vecchia avrebbe cancellato il testo riconosciuto**:
   `recognized_text` si assegnava secco, e col riconoscimento che arriva in ritardo (D62)
   sarebbe bastato tenere una nota letta un attimo prima. Ora il testo si

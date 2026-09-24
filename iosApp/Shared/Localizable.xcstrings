@@ -121,12 +121,12 @@
         }
       }
     },
-    "Dictate a note to Instink without unlocking your iPhone.": {
+    "Dictate a note to Instink without unlocking.": {
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Detta una nota a Instink senza sbloccare l'iPhone."
+            "value": "Detta una nota a Instink senza sbloccare."
           }
         }
       }
