@@ -1585,6 +1585,10 @@ qualcosa da provare.
 Codemagic se è più alto: le build caricate a mano da Xcode contano anche loro. Su Android è
 il contatore di Codemagic, letto da Gradle (`BUILD_NUMBER`).
 
+**Codemagic rifiuta le variabili vuote** nel file: al primo giro `APP_STORE_APPLE_ID: ""`
+ha bloccato la validazione dell'intera configurazione. La riga sta commentata finché la
+scheda dell'app non esiste, e senza quel numero lo script usa il contatore di Codemagic.
+
 **La firma.** Su iOS è dichiarativa (`ios_signing`): certificato e profili stanno nelle
 impostazioni di Codemagic, che prende anche il profilo del widget perché il suo id comincia
 con quello dell'app. Su Android la chiave di caricamento arriva a Gradle dalle variabili di
