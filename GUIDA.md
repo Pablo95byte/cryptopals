@@ -239,14 +239,69 @@ Kotlin/Native. Dal secondo è in cache.
    Portoghese (Brasile), Giapponese. In ognuna copia i campi da `lancio/STORE.md`. Lo
    spagnolo del Messico conta anche per la ricerca negli Stati Uniti, il francese del
    Canada in Canada: stessi testi, doppia presenza.
-6. **Gli screenshot** (servono quelli da 6,9 pollici): le sei frasi di `STORE.md`. Te li
-   preparo io in tutte le lingue se mi mandi sei schermate vere dal telefono, una per
-   frase.
+6. **Gli screenshot** (§0undecies): tu fai gli scatti grezzi, io li compongo nelle sette
+   lingue, per iPhone e per iPad.
 7. **Privacy dell'app:** "Nessun dato raccolto". **Età:** 4+. **Prezzo:** gratuita, in
    tutti i paesi.
 8. **Invia per la revisione** quando i tester esterni non trovano più niente di grave.
    Scegli **rilascio manuale**: così decidi tu il giorno, e puoi farlo coincidere con il
    primo post (`lancio/STORIA.md`).
+
+## 0undecies. Gli screenshot dell'App Store (D70)
+
+La guida illustrata, schermata per schermata, è anche in una pagina che ti ho mandato. Qui
+la versione da tenere accanto al telefono. Tempo: circa un'ora.
+
+**Cosa conta.** Nei risultati di ricerca si vedono **i primi tre**, affiancati: chi cerca
+decide lì. Letti insieme devono dire tutto: *si scrive a mano in un attimo*, *parte dalla
+Home*, *la nota va nell'app che usi già*.
+
+**Tu fai gli scatti grezzi, io faccio il resto**: fondo, didascalie nelle sette lingue,
+barra di stato pulita, il segno del tocco, i formati giusti.
+
+**Prima di cominciare**
+
+0. Installa da TestFlight la build con l'**icona nuova** (§0septies).
+1. Batteria carica, **Non disturbare** acceso, nessuna notifica sullo schermo.
+2. **Telefono in inglese**: Impostazioni → Generali → Lingua e zona → Lingua iPhone →
+   English. E Siri in inglese: Impostazioni → Siri → Lingua → English (United States).
+3. Scrivi a mano in Instink le **otto note dell'archivio** (tabella in fondo a
+   `lancio/STORE.md`), una per foglio, **grandi e con calma**: la tua scrittura migliore.
+   Poi apri l'archivio, così vengono lette e diventano cercabili.
+4. La Home della prima pagina **in ordine**: il widget medio di Instink nella metà alta,
+   poche app intorno, uno sfondo tranquillo.
+
+**I sei scatti** (screenshot: tasto laterale + volume su)
+
+1. Apri il foglio, scrivi grande **call mum** e sotto **re: Sunday**. Scatta con la nota
+   sul foglio, **prima** di toccare Done.
+2. La Home col widget. Scatta così: il dito lo aggiungo io.
+3. Apri la nota *podcast idea: slow mornings*, tocca **Send to…**. Scatta col foglio di
+   condivisione aperto. Prima metti Note, Notion e Keep fra i primi della riga (nel foglio
+   di condivisione: Altro → Modifica).
+4. Lo smistamento, con la carta trascinata a destra a metà. Con due mani è scomodo:
+   **registra lo schermo** (Centro di Controllo → Registrazione schermo), trascina piano
+   la carta *bike to work on Fridays* verso destra, ferma la registrazione. Il fotogramma
+   giusto lo estraggo io.
+5. Nell'archivio scrivi **book** nella ricerca: devono comparire le due note col libro.
+   Chiudi la tastiera prima di scattare.
+6. Registra lo schermo, blocca il telefono, di' *"Hey Siri, add a note to Instink"*, detta
+   **buy flowers for Saturday**, aspetta la risposta, ferma la registrazione. Se non viene,
+   al suo posto fai il foglio di sera, col tema scuro, con una nota scritta.
+
+**Poi tutto di nuovo in italiano**, con i testi italiani della tabella: telefono e Siri in
+italiano, e sei scatti uguali.
+
+**iPad** (obbligatorio, perché l'app gira anche su iPad): tre scatti, cioè 1, 3 e 5, su un
+iPad vero se ce l'hai, altrimenti nel simulatore di Xcode sul Mac ("iPad Pro 13-inch",
+screenshot con Cmd+S).
+
+**Come me li mandi.** Le immagini puoi incollarle direttamente qui in chat. I video delle
+registrazioni mettili in una cartella di Google Drive chiamata **Instink screenshot** e
+dimmelo: li prendo io da lì.
+
+**Da non fare:** niente nomi veri, numeri di telefono, indirizzi o foto personali in
+nessuna schermata; nessuna modifica agli scatti (filtri, ritagli): li voglio grezzi.
 
 ## 0quater. Il sito su Cloudflare, passo per passo (D61)
 
@@ -353,10 +408,10 @@ Su developer.apple.com → Certificates, IDs & Profiles:
 
 Poi dimmi "fatto" e scrivo l'estensione.
 
-## 0septies. Le icone (D66)
+## 0septies. Le icone (D66, D71)
 
-Tutto è già nel repository, e si rigenera con tre comandi (sono in
-`tools/brand/icons.py`).
+L'icona è il **foglio su campo vermiglio** (D71). Tutto è già nel repository, e si
+rigenera con i tre comandi scritti in cima a `tools/brand/icons.py`.
 
 | Dove | File | Cosa fare |
 |---|---|---|
@@ -367,8 +422,9 @@ Tutto è già nel repository, e si rigenera con tre comandi (sono in
 | Play Store | `design/brand/store/play-feature-graphic-1024x500.png` | "Grafica in evidenza" |
 | Sito | `site/favicon.svg`, `apple-touch-icon.png`, `og.png` | niente: sono già nelle pagine |
 
-Manda una build nuova su TestFlight e guarda l'icona sulla tua home, di giorno e col tema
-scuro. Se non ti convince, dimmi cosa: si cambia in un punto solo e si rigenera tutto.
+**Prima degli screenshot manda una build nuova su TestFlight** (tag `ios-*`) e installala:
+nello scatto della Home si vede la tua schermata, e l'icona vecchia non deve comparire. Poi
+guardala sulla tua Home, di giorno e col tema scuro.
 
 ## 0octies. Per guadagnare dopo: cosa fare adesso, e cosa no (D68)
 

@@ -2031,7 +2031,8 @@ salvataggio unisce comunque (D14), ma una copia vecchia non ha motivo di viaggia
 
 
 ### D66 — Il segno: il ricciolo scritto a inchiostro, e una goccia calda
-**Data:** 2026-09-24 · **Stato:** attiva, **da vedere sul telefono** · **Precisa D16 e D30**
+**Data:** 2026-09-24 · **Stato:** attiva per il segno; **il fondo dell'icona è SUPERATO da
+D71** (foglio su campo vermiglio) · **Precisa D16 e D30**
 
 L'icona è il ricciolo del widget (D30), ma disegnato **come inchiostro**: sottile
 all'attacco, pieno nel corpo, un po' più stretto alla fine, la stessa idea dello spessore
@@ -2271,6 +2272,114 @@ dentro (l'anello di D47).
 - **Le lingue successive** (coreano, cinese tradizionale, olandese) le decidono i dati di
   App Store Connect per paese, non l'intuito.
 
+### D70 — Gli screenshot: i primi tre sono tutto il messaggio, e c'è una lista sola
+**Data:** 2026-09-24 · **Stato:** attiva · **Supera la lista di `STORIA.md` §6**
+
+Il committente: *"qui ci giochiamo tutto."* È vero: nei risultati di ricerca dell'App
+Store, sotto nome e icona, si vedono **i primi tre screenshot affiancati**, e chi cerca
+decide lì, in un paio di secondi, senza aprire la scheda. C'erano due liste diverse
+(`STORIA.md` e `STORE.md`), e nessuna delle due metteva nei primi tre la risposta
+all'obiezione principale.
+
+**La sequenza**, con le didascalie in sette lingue in [`lancio/STORE.md`](lancio/STORE.md):
+
+1. **"Tap. Write. Done."** — il foglio con una nota scritta a mano, grande.
+2. **"One tap from your Home Screen"** — la Home col widget.
+3. **"Send it where your notes live"** — il foglio di condivisione su una nota.
+4. **"Sort new ideas in 10 seconds"** — lo smistamento a carte.
+5. **"Search your own handwriting"** — l'archivio con una ricerca trovata.
+6. **"Locked? Just ask Siri."** — la risposta di Siri sulla schermata di blocco.
+
+**Perché la scrittura per prima e non il widget.** Un widget bianco su una Home, in
+miniatura, sembra una schermata vuota; la calligrafia invece si riconosce anche piccola,
+ed è la sola cosa che le altre app non hanno (D1). Il primo screenshot mostra il risultato,
+il secondo come ci si arriva.
+
+**Perché "manda dove tieni le note" è il terzo.** È la risposta a "ho già Note" (D69), cioè
+al motivo principale per cui qualcuno non scarica. Al sesto posto non la vede quasi
+nessuno.
+
+**Regole della composizione:**
+
+- **Una sola idea per schermata**, didascalia di 2–5 parole in alto, grande, leggibile in
+  miniatura (lo script ferma le didascalie oltre i 32 caratteri), e una riga piccola sotto.
+- **Lo schermo è l'app vera** (linea guida 2.3.3 di Apple): niente interfacce inventate.
+  Fondo, didascalie, barra di stato pulita e il segno del tocco si aggiungono dopo.
+- **Niente dati personali** e **nessun marchio Apple usato come nostro**: "Note" si nomina
+  come destinazione nel foglio di condivisione del sistema, non nelle didascalie.
+- **Due serie di scatti**: telefono in inglese (serve per inglese, spagnolo, tedesco,
+  francese, portoghese e giapponese, con la didascalia tradotta) e telefono in italiano.
+  Rifarli nella lingua di ogni paese quando un madrelingua ci aiuta.
+- **Servono anche quelli per iPad** (13 pollici): l'app gira su iPad, e l'App Store li
+  chiede. Bastano tre.
+- **La composizione la fa uno script** a partire dagli scatti grezzi: sei per iPhone e tre per
+  iPad in sette lingue sono sessantatré immagini, e a mano non restano coerenti.
+
+**Il sesto ha un'alternativa.** Se la risposta di Siri sulla schermata di blocco non si
+riesce a catturare, al suo posto va il foglio scuro di notte, "Easy on your eyes at 2 a.m."
+(D52).
+
+### D71 — L'icona è un foglio su un campo vermiglio, e il vermiglio diventa il colore del marchio fuori dall'app
+**Data:** 2026-09-24 · **Stato:** attiva, **scelta dal committente** (variante D di
+`design/brand/icone-a-confronto.png`) · **Supera il fondo di D66, precisa D70**
+
+Il committente: *"torniamo alle icone con tutte queste nuove info: è la scelta migliore per
+sfondare su più mercati?"* Messa accanto alle icone tipiche della categoria, nei risultati
+dell'App Store e sulla Home, in chiaro e in scuro, l'icona di D66 perdeva: crema su una
+pagina bianca, fra icone di note bianche e gialle, quasi spariva. Il segno funzionava, il
+fondo no.
+
+**L'icona:** un foglio bianco inclinato di 7 gradi, con sopra il ricciolo a inchiostro e la
+goccia, su un campo vermiglio (`#EA5F35` → `#D9481F`).
+
+**Perché questa fra le quattro provate** (carta, sigillo, inchiostro, foglio):
+
+1. **Si capisce senza leggere.** Un foglio con una scritta a mano lo riconosce chiunque; il
+   ricciolo da solo è una lettera latina, che in Giappone o in Brasile non dice "scrittura
+   a mano". Conta per D69.
+2. **È il prodotto.** Il widget è un foglio bianco (D30): l'icona promette quello che si
+   trova toccandola.
+3. **Si vede.** Nella categoria dominano giallo, blu e bianco; il vermiglio non lo usa nessuno,
+   e resta visibile sulla pagina chiara e su quella scura dello store. L'icona scura
+   ("inchiostro") spariva nelle liste scure, quella vermiglia senza foglio perdeva la goccia.
+4. **Il vermiglio ha un significato in Asia**: è il colore del sigillo, cioè della firma.
+5. **Il marchio resta**: ricciolo e goccia sono quelli di D66, cambia il fondo.
+
+**Il rischio accettato:** nella categoria ci sono app rosse (attività, lettura). Il nostro
+tende all'arancio, e il foglio bianco lo distingue.
+
+**Le varianti:** iOS 18 scura con il foglio vermiglio e il ricciolo in crema su nero; iOS 18
+colorata in scala di grigi; Android adattiva col foglio **ridotto del 10%**, perché gli angoli
+del foglio inclinato restino nel cerchio sicuro di 66 dp; Android monocromatica col solo
+ricciolo (un foglio pieno col ricciolo ritagliato farebbe un buco doppio dove il tratto si
+incrocia). Tutto da `tools/brand/icons.py`, come prima.
+
+**Trovato rigenerando:** le immagini più piccole dell'icona (Play Store 512, e sul sito 180 e
+512) erano **quadrati di carta vuoti**: lo script disegnava l'SVG a 1024 in una finestra più
+piccola e ne salvava l'angolo in alto a sinistra. Ora l'SVG si porta alla misura del lavoro.
+L'icona del Play Store non era ancora stata caricata, quindi non è arrivata a nessuno.
+
+**Il vermiglio fuori dall'app.** Diventa il fondo degli screenshot (precisa D70), della
+grafica del Play Store e delle anteprime dei link, con le scritte in crema. Icona e
+screenshot compaiono insieme nei risultati di ricerca: dello stesso colore si leggono come
+una cosa sola, e da lontano.
+
+**Nessuno sa in anticipo quale fondo fa più clic**, e non va raccontato il contrario. Il
+vermiglio è la scommessa ragionata per il lancio. Poi lo si **misura**: App Store Connect fa
+test A/B della pagina dello store (*Product Page Optimization*: fino a tre varianti di
+screenshot e icona, fino a 90 giorni, senza nessun SDK nell'app, quindi coerente con D12).
+Per provare un'icona diversa, quell'icona deve essere già dentro la build pubblicata. Il
+test ha senso quando c'è traffico, cioè dopo il lancio.
+
+**Dentro l'app non cambia niente**, per ora: la gerarchia la fanno inchiostro e carta (D46),
+e il foglio resta intoccabile (D20). **Proposta per dopo:** il vermiglio entra nell'app con un
+solo significato, la goccia che segna le note "da smistare" (D52), così colore e icona
+dicono la stessa cosa.
+
+**Il sito:** favicon, icona per la Home e anteprime dei link sono già quelle nuove. La pagina
+vera (D50) si rifà quando ci sono gli screenshot composti e il video, e riusa questi pezzi:
+rifarla adesso vorrebbe dire rifarla due volte.
+
 ---
 
 ## 5. Struttura del repository
@@ -2303,7 +2412,7 @@ lancio/          La storia del prodotto (STORIA.md, D60), i testi degli store (S
                  e la ricerca di mercato (MERCATO.md, D68)
 site/            Il sito statico: home, privacy, assistenza, in inglese e italiano (D61)
 design/
-  brand/         Il segno in SVG e le immagini per gli store (D66)
+  brand/         Il segno in SVG, le immagini per gli store e il confronto delle icone (D66, D71)
   mockups/       Le schermate come artboard .dc.html, più il canvas pubblicato:
                  home iOS, cattura nuda, cattura con strumenti, Android da
                  schermo bloccato, Android sopra il launcher, voce, archivio,
@@ -2535,6 +2644,8 @@ su Android (D64) compilano contro Android 15. Riconoscimento, voce e Siri **comp
 
 ## 10. Questioni ancora aperte
 
+- **Gli screenshot** (D70, D71): scatti grezzi dal committente, dopo una build con l'icona
+  nuova; poi la composizione con uno script, su fondo vermiglio. Il video di 15 secondi (`STORIA.md` §6) dopo.
 - **Le traduzioni** (D69) vanno rilette da un madrelingua per lingua prima del lancio in
   quel paese; `DateHints` va esteso a spagnolo, tedesco, francese, portoghese e giapponese.
 - **Nome commerciale:** scelto, **Instink** (D55). Restano le verifiche: store, marchi,

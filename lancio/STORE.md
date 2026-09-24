@@ -721,15 +721,111 @@ La descrizione completa si traduce prima di pubblicare Android (D69).
 
 ---
 
-## Gli screenshot: sei frasi, una storia
+## Gli screenshot (D70)
 
-Il primo è quello che decide: nei risultati di ricerca se ne vedono tre.
+Nei risultati di ricerca se ne vedono tre, uno accanto all'altro: letti insieme sono tutto il messaggio. Come scattarli: `GUIDA.md` §0undecies.
 
-| # | Inglese | Italiano | Cosa si vede |
-|---|---|---|---|
-| 1 | A blank sheet, one tap away. | Un foglio bianco, a un tocco. | La home con il widget di Instink fra le altre app. Il dito lo sta toccando. |
-| 2 | Write the way you think. | Scrivi come pensi. | Il foglio con due parole scritte a mano, grandi, e un'idea cerchiata. |
-| 3 | Saved before you say Done. | Salvata prima di dire Fatto. | "Fatto" in basso a destra; sopra, un tratto appena finito. |
-| 4 | Siri takes it, even locked. | Ci pensa Siri, anche bloccato. | La schermata di blocco con la risposta di Siri "Salvata in Instink". |
-| 5 | Every idea, in your hand. | Ogni idea, nella tua scrittura. | L'archivio: bigliettini nella propria calligrafia, la ricerca con una parola trovata. |
-| 6 | Then send it where it belongs. | Poi mandala dove serve. | Lo smistamento a carte, una carta che va a destra verso Notion. |
+### 1. Tap. Write. Done.
+
+**Cosa si vede:** Il foglio con una nota scritta a mano, grande, su due righe. In basso le tre icone e "Fatto".
+
+**Da scrivere a mano:** inglese «call mum / re: Sunday», italiano «chiamare mamma / per domenica»
+
+| lingua | didascalia | riga piccola |
+|---|---|---|
+| en | Tap. Write. Done. | Handwritten notes in a second |
+| it | Tocchi. Scrivi. Fatto. | Note a mano in un secondo |
+| es | Toca. Escribe. Listo. | Notas a mano en un segundo |
+| de | Tippen. Schreiben. Fertig. | Handschrift-Notizen in einer Sekunde |
+| fr | Touchez. Écrivez. C’est fait. | Des notes manuscrites en une seconde |
+| pt-BR | Toque. Escreva. Pronto. | Notas à mão em um segundo |
+| ja | タップ。書く。完了。 | 手書きメモを一瞬で |
+
+### 2. One tap from your Home Screen
+
+**Cosa si vede:** La schermata Home ordinata, col widget medio di Instink nella metà alta.
+
+| lingua | didascalia | riga piccola |
+|---|---|---|
+| en | One tap from your Home Screen | No app to find, nothing to choose |
+| it | A un tocco dalla Home | Nessuna app da cercare, niente da scegliere |
+| es | A un toque desde tu inicio | Sin buscar la app, sin elegir nada |
+| de | Ein Tipp vom Home-Bildschirm | Keine App suchen, nichts auswählen |
+| fr | À une touche de l’accueil | Aucune app à chercher, rien à choisir |
+| pt-BR | A um toque da Tela de Início | Sem procurar o app, nada para escolher |
+| ja | ホーム画面からワンタップ | アプリを探す必要も、選ぶ必要もなし |
+
+### 3. Send it where your notes live
+
+**Cosa si vede:** Una nota aperta nell'archivio, con il foglio di condivisione del sistema aperto sotto.
+
+**Da scrivere a mano:** inglese «podcast idea: / slow mornings», italiano «idea podcast: / mattine lente»
+
+| lingua | didascalia | riga piccola |
+|---|---|---|
+| en | Send it where your notes live | Text and your handwriting, to any app |
+| it | Poi mandala dove tieni le note | Testo e scrittura, a qualunque app |
+| es | Envíala adonde guardas tus notas | Texto y tu letra, a cualquier app |
+| de | Dorthin, wo deine Notizen wohnen | Text und Handschrift, an jede App |
+| fr | Envoyez-la vers vos notes | Texte et écriture, vers n’importe quelle app |
+| pt-BR | Envie para onde ficam suas notas | Texto e sua letra, para qualquer app |
+| ja | いつものメモアプリへ送る | テキストと手書きを、どのアプリにも |
+
+### 4. Sort new ideas in 10 seconds
+
+**Cosa si vede:** Lo smistamento: una carta trascinata a destra, con la parola "Manda" sopra.
+
+**Da scrivere a mano:** inglese «bike to work / on Fridays», italiano «in bici al lavoro / il venerdì»
+
+| lingua | didascalia | riga piccola |
+|---|---|---|
+| en | Sort new ideas in 10 seconds | Swipe to send, keep or delete |
+| it | Smista le idee in 10 secondi | Scorri per mandare, tenere o buttare |
+| es | Ordena tus ideas en 10 segundos | Desliza para enviar, conservar o eliminar |
+| de | Ideen in 10 Sekunden sortiert | Wischen: senden, behalten, löschen |
+| fr | Triez vos idées en 10 secondes | Glissez pour envoyer, garder ou supprimer |
+| pt-BR | Organize ideias em 10 segundos | Deslize para enviar, manter ou apagar |
+| ja | 10秒でアイデアを整理 | スワイプで送信・保存・削除 |
+
+### 5. Search your own handwriting
+
+**Cosa si vede:** L'archivio con "book" ("libro") digitato nella ricerca, e i due bigliettini a mano che lo contengono.
+
+| lingua | didascalia | riga piccola |
+|---|---|---|
+| en | Search your own handwriting | Read on your device, never uploaded |
+| it | Cerca nella tua scrittura | Letta sul telefono, mai caricata |
+| es | Busca en tu propia letra | Leída en tu dispositivo, nunca subida |
+| de | Durchsuche deine Handschrift | Auf dem Gerät gelesen, nie hochgeladen |
+| fr | Cherchez dans votre écriture | Lue sur l’appareil, jamais envoyée |
+| pt-BR | Busque na sua própria letra | Lida no aparelho, nunca enviada |
+| ja | 手書きの文字も検索 | 端末上で読み取り、アップロードなし |
+
+### 6. Locked? Just ask Siri.
+
+**Cosa si vede:** La schermata di blocco con la risposta di Siri dopo aver dettato una nota.
+
+**Da scrivere a mano:** inglese «(detta:) buy flowers for Saturday», italiano «(detta:) comprare fiori per sabato»
+
+| lingua | didascalia | riga piccola |
+|---|---|---|
+| en | Locked? Just ask Siri. | Dictate a note without unlocking |
+| it | Bloccato? Chiedi a Siri. | Detta una nota senza sbloccare |
+| es | ¿Bloqueado? Pídeselo a Siri. | Dicta una nota sin desbloquear |
+| de | Gesperrt? Frag einfach Siri. | Diktieren, ohne zu entsperren |
+| fr | Verrouillé ? Demandez à Siri. | Dictez une note sans déverrouiller |
+| pt-BR | Bloqueado? Peça à Siri. | Dite uma nota sem desbloquear |
+| ja | ロック中でもSiriに頼むだけ | ロックを解除せずに口述 |
+
+### Le note dell'archivio, da scrivere prima degli scatti
+
+| inglese | italiano |
+|---|---|
+| milk, eggs, basil | latte, uova, basilico |
+| gift for Anna → book? | regalo per Anna → libro? |
+| dentist Tue 10:00 | dentista mar 10:00 |
+| book: The Overstory | libro: Il sussurro del mondo |
+| bike to work on Fridays | in bici al lavoro il venerdì |
+| podcast idea: slow mornings | idea podcast: mattine lente |
+| call mum re: Sunday | chiamare mamma per domenica |
+| rent ✓ | affitto ✓ |

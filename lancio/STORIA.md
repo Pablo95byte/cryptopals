@@ -71,14 +71,9 @@ recensioni da una stella nascono da aspettative sbagliate.
 ## 6. Le immagini
 
 **Gli screenshot raccontano la sequenza, non le funzioni** (D30): chi li scorre deve capire
-il prodotto senza leggere.
-
-1. Una home con il foglio bianco di Instink fra le altre icone. *"A blank sheet, one tap away."*
-2. Il foglio con una parola scritta a mano, grande. *"Write the way you think."*
-3. "Fatto" e la home di nuovo. *"Done. Back to your day."*
-4. L'archivio: bigliettini nella propria calligrafia. *"Every idea, in your hand."*
-5. "Manda a…" verso Notion. *"Then send it where your notes live."*
-6. Il foglio scuro di notte. *"Even at 2 a.m."*
+il prodotto senza leggere. ~~La lista di sei che stava qui~~ è **superata da D70**: la
+lista unica, con le didascalie in sette lingue, sta in [`STORE.md`](STORE.md), e come
+scattarli in `GUIDA.md` §0undecies.
 
 **Il video di 15 secondi** — per lo store, per i social, per il sito. Un solo piano, niente
 musica epica, un cronometro in un angolo:

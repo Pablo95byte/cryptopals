@@ -414,13 +414,95 @@ Instink Pro è disponibile come abbonamento mensile o annuale — quello annuale
 Condizioni d'uso: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Privacy: https://instink.app/it/privacy.html"""
 
+# Gli screenshot (D70). I primi tre si vedono nei risultati di ricerca, uno accanto
+# all'altro: letti insieme sono tutto il messaggio — cosa fa, quanto è vicino, dove va a
+# finire la nota. Ogni riga: didascalia grande e riga piccola nelle sette lingue, cosa si
+# vede, e le parole da scrivere a mano sul telefono in inglese e in italiano.
+SHOT_LANGS = ["en", "it", "es", "de", "fr", "pt-BR", "ja"]
 SHOTS = [
-    ("A blank sheet, one tap away.", "Un foglio bianco, a un tocco.", "La home con il widget di Instink fra le altre app. Il dito lo sta toccando."),
-    ("Write the way you think.", "Scrivi come pensi.", "Il foglio con due parole scritte a mano, grandi, e un'idea cerchiata."),
-    ("Saved before you say Done.", "Salvata prima di dire Fatto.", "\"Fatto\" in basso a destra; sopra, un tratto appena finito."),
-    ("Siri takes it, even locked.", "Ci pensa Siri, anche bloccato.", "La schermata di blocco con la risposta di Siri \"Salvata in Instink\"."),
-    ("Every idea, in your hand.", "Ogni idea, nella tua scrittura.", "L'archivio: bigliettini nella propria calligrafia, la ricerca con una parola trovata."),
-    ("Then send it where it belongs.", "Poi mandala dove serve.", "Lo smistamento a carte, una carta che va a destra verso Notion."),
+    dict(
+        caption=["Tap. Write. Done.", "Tocchi. Scrivi. Fatto.", "Toca. Escribe. Listo.",
+                 "Tippen. Schreiben. Fertig.", "Touchez. Écrivez. C’est fait.",
+                 "Toque. Escreva. Pronto.", "タップ。書く。完了。"],
+        sub=["Handwritten notes in a second", "Note a mano in un secondo",
+             "Notas a mano en un segundo", "Handschrift-Notizen in einer Sekunde",
+             "Des notes manuscrites en une seconde", "Notas à mão em um segundo",
+             "手書きメモを一瞬で"],
+        screen="Il foglio con una nota scritta a mano, grande, su due righe. In basso le tre icone e \"Fatto\".",
+        ink=("call mum / re: Sunday", "chiamare mamma / per domenica"),
+    ),
+    dict(
+        caption=["One tap from your Home Screen", "A un tocco dalla Home",
+                 "A un toque desde tu inicio", "Ein Tipp vom Home-Bildschirm",
+                 "À une touche de l’accueil", "A um toque da Tela de Início",
+                 "ホーム画面からワンタップ"],
+        sub=["No app to find, nothing to choose", "Nessuna app da cercare, niente da scegliere",
+             "Sin buscar la app, sin elegir nada", "Keine App suchen, nichts auswählen",
+             "Aucune app à chercher, rien à choisir", "Sem procurar o app, nada para escolher",
+             "アプリを探す必要も、選ぶ必要もなし"],
+        screen="La schermata Home ordinata, col widget medio di Instink nella metà alta.",
+        ink=None,
+    ),
+    dict(
+        caption=["Send it where your notes live", "Poi mandala dove tieni le note",
+                 "Envíala adonde guardas tus notas", "Dorthin, wo deine Notizen wohnen",
+                 "Envoyez-la vers vos notes", "Envie para onde ficam suas notas",
+                 "いつものメモアプリへ送る"],
+        sub=["Text and your handwriting, to any app", "Testo e scrittura, a qualunque app",
+             "Texto y tu letra, a cualquier app", "Text und Handschrift, an jede App",
+             "Texte et écriture, vers n’importe quelle app", "Texto e sua letra, para qualquer app",
+             "テキストと手書きを、どのアプリにも"],
+        screen="Una nota aperta nell'archivio, con il foglio di condivisione del sistema aperto sotto.",
+        ink=("podcast idea: / slow mornings", "idea podcast: / mattine lente"),
+    ),
+    dict(
+        caption=["Sort new ideas in 10 seconds", "Smista le idee in 10 secondi",
+                 "Ordena tus ideas en 10 segundos", "Ideen in 10 Sekunden sortiert",
+                 "Triez vos idées en 10 secondes", "Organize ideias em 10 segundos",
+                 "10秒でアイデアを整理"],
+        sub=["Swipe to send, keep or delete", "Scorri per mandare, tenere o buttare",
+             "Desliza para enviar, conservar o eliminar", "Wischen: senden, behalten, löschen",
+             "Glissez pour envoyer, garder ou supprimer", "Deslize para enviar, manter ou apagar",
+             "スワイプで送信・保存・削除"],
+        screen="Lo smistamento: una carta trascinata a destra, con la parola \"Manda\" sopra.",
+        ink=("bike to work / on Fridays", "in bici al lavoro / il venerdì"),
+    ),
+    dict(
+        caption=["Search your own handwriting", "Cerca nella tua scrittura",
+                 "Busca en tu propia letra", "Durchsuche deine Handschrift",
+                 "Cherchez dans votre écriture", "Busque na sua própria letra",
+                 "手書きの文字も検索"],
+        sub=["Read on your device, never uploaded", "Letta sul telefono, mai caricata",
+             "Leída en tu dispositivo, nunca subida", "Auf dem Gerät gelesen, nie hochgeladen",
+             "Lue sur l’appareil, jamais envoyée", "Lida no aparelho, nunca enviada",
+             "端末上で読み取り、アップロードなし"],
+        screen="L'archivio con \"book\" (\"libro\") digitato nella ricerca, e i due bigliettini a mano che lo contengono.",
+        ink=None,
+    ),
+    dict(
+        caption=["Locked? Just ask Siri.", "Bloccato? Chiedi a Siri.", "¿Bloqueado? Pídeselo a Siri.",
+                 "Gesperrt? Frag einfach Siri.", "Verrouillé ? Demandez à Siri.",
+                 "Bloqueado? Peça à Siri.", "ロック中でもSiriに頼むだけ"],
+        sub=["Dictate a note without unlocking", "Detta una nota senza sbloccare",
+             "Dicta una nota sin desbloquear", "Diktieren, ohne zu entsperren",
+             "Dictez une note sans déverrouiller", "Dite uma nota sem desbloquear",
+             "ロックを解除せずに口述"],
+        screen="La schermata di blocco con la risposta di Siri dopo aver dettato una nota.",
+        ink=("(detta:) buy flowers for Saturday", "(detta:) comprare fiori per sabato"),
+    ),
+]
+
+# Le note da scrivere a mano prima degli scatti, perché l'archivio sembri usato davvero.
+# Niente nomi veri, numeri, indirizzi: gli screenshot sono pubblici.
+DEMO_NOTES = [
+    ("milk, eggs, basil", "latte, uova, basilico"),
+    ("gift for Anna → book?", "regalo per Anna → libro?"),
+    ("dentist Tue 10:00", "dentista mar 10:00"),
+    ("book: The Overstory", "libro: Il sussurro del mondo"),
+    ("bike to work on Fridays", "in bici al lavoro il venerdì"),
+    ("podcast idea: slow mornings", "idea podcast: mattine lente"),
+    ("call mum re: Sunday", "chiamare mamma per domenica"),
+    ("rent ✓", "affitto ✓"),
 ]
 
 
@@ -446,6 +528,14 @@ def main():
         bad.append("EN: descrizione più Pro oltre 4000")
     if len(PRO_IT) + len(IT["description"]) + 2 > 4000:
         bad.append("IT: descrizione più Pro oltre 4000")
+    for i, shot in enumerate(SHOTS, 1):
+        for key in ("caption", "sub"):
+            if len(shot[key]) != len(SHOT_LANGS):
+                bad.append(f"scatto {i}.{key}: {len(shot[key])} lingue invece di {len(SHOT_LANGS)}")
+        for lang, cap in zip(SHOT_LANGS, shot["caption"]):
+            # Oltre i 32 caratteri la didascalia va su tre righe e non si legge in miniatura.
+            if len(cap) > 32:
+                bad.append(f"scatto {i}.caption.{lang}: {len(cap)} > 32")
     if bad:
         sys.exit("Testi troppo lunghi:\n" + "\n".join(bad))
 
@@ -486,11 +576,22 @@ lunghezza sul limite dello store.
         out.append(block("Titolo", texts["play_title"], 30))
         out.append(block("Descrizione breve", texts["play_short"], 80))
         out.append("La descrizione completa si traduce prima di pubblicare Android (D69).\n")
-    out.append("\n---\n\n## Gli screenshot: sei frasi, una storia\n")
-    out.append("Il primo è quello che decide: nei risultati di ricerca se ne vedono tre.\n")
-    out.append("| # | Inglese | Italiano | Cosa si vede |\n|---|---|---|---|")
-    for i, (en, it, what) in enumerate(SHOTS, 1):
-        out.append(f"| {i} | {en} | {it} | {what} |")
+    out.append("\n---\n\n## Gli screenshot (D70)\n")
+    out.append("Nei risultati di ricerca se ne vedono tre, uno accanto all'altro: letti insieme "
+               "sono tutto il messaggio. Come scattarli: `GUIDA.md` §0undecies.\n")
+    for i, shot in enumerate(SHOTS, 1):
+        out.append(f"### {i}. {shot['caption'][0]}\n")
+        out.append(f"**Cosa si vede:** {shot['screen']}\n")
+        if shot["ink"]:
+            out.append(f"**Da scrivere a mano:** inglese «{shot['ink'][0]}», italiano «{shot['ink'][1]}»\n")
+        out.append("| lingua | didascalia | riga piccola |\n|---|---|---|")
+        for lang, cap, sub in zip(SHOT_LANGS, shot["caption"], shot["sub"]):
+            out.append(f"| {lang} | {cap} | {sub} |")
+        out.append("")
+    out.append("### Le note dell'archivio, da scrivere prima degli scatti\n")
+    out.append("| inglese | italiano |\n|---|---|")
+    for en, it in DEMO_NOTES:
+        out.append(f"| {en} | {it} |")
     out.append("")
     with open(os.path.join(ROOT, "lancio", "STORE.md"), "w") as f:
         f.write("\n".join(out))
