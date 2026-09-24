@@ -10,6 +10,12 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Corretto
+
+- **Gradle si fermava su ogni macchina con l'SDK Android** (Codemagic): il plugin Kotlin
+  per Android è ora dichiarato nella radice. Quando il build lo chiama Xcode,
+  `:androidApp` resta fuori (D57).
+
 ### Cambiato
 
 - **Il nome visibile è Instink** (D55): sotto l'icona su iOS e Android, nel widget e nei

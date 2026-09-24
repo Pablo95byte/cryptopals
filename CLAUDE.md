@@ -1723,6 +1723,32 @@ qualunque branch. Un push che cambia solo la documentazione non consuma minuti d
 L'Apple ID di Instink (`6815617566`) è nel file: il numero della build su TestFlight ora
 parte dall'ultimo caricato.
 
+
+### D57 — Il plugin Kotlin per Android si dichiara nella radice, e Xcode non vede l'app Android
+**Data:** 2026-09-24 · **Stato:** attiva · **Trovata dal primo giro di D56**
+
+Il primo `ios-check` su Codemagic si è fermato prima dello Swift, in Gradle:
+*"plugin 'org.jetbrains.kotlin.android' already on the classpath with an unknown
+version"*. Il Mac di Codemagic ha l'SDK Android, quindi `:androidApp` entrava nel build
+(D23). Il plugin Kotlin per Android sta **nello stesso jar** di quello multipiattaforma,
+che la radice carica: `:androidApp` lo chiedeva con una versione, e Gradle non poteva
+confrontarla con quella di un plugin arrivato sotto un altro id.
+
+**Due correzioni, perché sono due problemi.**
+
+1. **La radice dichiara anche `kotlinAndroid`, `apply false`**, con la stessa versione. Ora
+   Gradle sa quale versione è sul classpath. È la causa, e colpiva ogni macchina con l'SDK:
+   anche i workflow Linux di Codemagic, che l'SDK ce l'hanno.
+2. **Quando Gradle è chiamato da Xcode** (`XCODE_VERSION_ACTUAL` nell'ambiente),
+   `:androidApp` resta fuori. Per costruire InkNoteKit non serve, e configurarla è tempo
+   perso a ogni build iOS. Non è un rimedio al punto 1, è igiene: il build iOS non deve
+   poter rompersi per colpa dell'app Android.
+
+**Perché non anche il plugin Android nella radice**, come fanno i modelli ufficiali: la
+radice lo scaricherebbe sempre, anche dove il dominio di Google è bloccato, e il core non
+si compilerebbe più ovunque (D23). Il plugin Android resta caricato da `:androidApp`, come
+nel build che ha già funzionato sul telefono del committente.
+
 ---
 
 ## 5. Struttura del repository
