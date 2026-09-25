@@ -2540,6 +2540,10 @@ già scritto dieci note aprendo l'icona è proprio chi ne ha più bisogno.
   fare, il bigliettino dà i passi a mano. Da Android 13 c'è anche "Aggiungi il riquadro"
   (`requestAddTileService`), che è l'ingresso a telefono bloccato (D33); sparisce quando
   il riquadro c'è, che l'abbia aggiunto il bigliettino o l'utente a mano.
+- **Trovato dal primo giro su Codemagic:** `WidgetCenter.currentConfigurations()` nella forma
+  `async` esiste solo da iOS 18, e l'app parte da iOS 17. Si usa `getCurrentConfigurations`,
+  col completamento, che c'è da iOS 14. Regola per il futuro: **un'API `async` di Apple può
+  essere più giovane della sua gemella col completamento**; controllare la disponibilità.
 - **Su iOS i passi si scrivono**, perché Apple non permette a un'app di mettere un widget
   sulla Home; una riga ricorda Centro di Controllo e tasto Azione.
 - **Non è un onboarding** (D12): non blocca niente, non compare mai sul foglio né durante
