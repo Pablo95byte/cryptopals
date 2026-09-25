@@ -2566,6 +2566,87 @@ committente sull'iPhone, seguendo la sceneggiatura di `STORIA.md` §6; il cronom
 riga finale si aggiungono dopo, come didascalie. Il primo piano del video è il dito che
 tocca il widget: è lì che si fa sapere che il widget esiste, prima ancora di installare.
 
+### D77 — Il widget si annuncia nella scheda prima che nell'app, e la 1.0.1 porta bigliettino e video
+**Data:** 2026-09-25 · **Stato:** attiva · **Precisa D75 e D76**
+
+La 1.0 è in revisione **senza** il bigliettino del widget: la build che lo conteneva non
+compilava (D76), e quella mandata ad Apple è precedente. Il committente chiede come far
+sapere del widget adesso.
+
+- **Il testo promozionale comincia dal widget**, in sette lingue. È l'unico campo della
+  scheda che si cambia senza una nuova revisione, quindi è la leva immediata. Prima parlava
+  di Siri e della ricerca come "novità", che su una prima versione non ha senso.
+- **Le "Novità di questa versione" sono quelle della 1.0.1**: bigliettino del widget e
+  segno sull'immagine. Sulla 1.0 Apple non le mostra.
+- **La 1.0 non si ritira dalla revisione** per aggiungere bigliettino o video: si perderebbe
+  il posto in coda, e il 23 ottobre (D74, D75) vale più di qualche giorno di bigliettino.
+  Screenshot e video si cambiano solo su una versione modificabile: entrano con la 1.0.1,
+  subito dopo l'approvazione.
+- **Il video arriva da Google Drive**: il committente carica le registrazioni grezze, io le
+  scarico e le monto. Il montaggio aggiunge solo didascalie e cronometro; le immagini sono
+  quelle registrate (linea guida 2.3.4).
+
+### D78 — La strada: giorni, mesi, anni, con un solo metro — guadagnare dopo, senza bruciare la fedeltà
+**Data:** 2026-09-25 · **Stato:** proposta, **da confermare col committente** · **Mette in
+ordine D68, D74, D75 e D77**
+
+Il committente: *"che strada vogliamo intraprendere nei prossimi giorni, mesi, anni?
+Ricordati sempre qual è l'obiettivo finale."* L'obiettivo è che Instink **renda in futuro**
+(D67, D68). Ogni tappa qui sotto si passa **con un numero, non con una data**: una tappa di
+guadagno aperta prima della fedeltà la brucia, e senza fedeltà non c'è niente da vendere.
+
+**1. I prossimi giorni, fino al 23 ottobre: esserci, e bene.**
+
+- 1.0 approvata; testo promozionale col widget (D77); **candidatura alla vetrina entro il 2
+  ottobre** (D75).
+- 1.0.1 subito dopo: bigliettino del widget, segno sull'immagine, video (D76, D77).
+- Prova del Duo nel simulatore (D74).
+- **Il test chiuso del Play Store parte adesso**: 12 persone per 14 giorni sono un obbligo di
+  Google, e i giorni corrono da soli (D48). Primo giro di `android-internal` su Codemagic.
+- Dominio `instink.app` e sito in rete (D61), se non è già fatto.
+
+**2. I primi tre mesi: capire se la gente torna.**
+
+- **Si guarda una cosa sola: la fedeltà** — in App Store Connect, *Analisi app → Fidelizzazione*,
+  che Apple misura senza nessun SDK nell'app (D12). Soglie di D75: 20% a 7 giorni, 10% a 30.
+- **Android nello store** appena finito il test chiuso.
+- Si lavora **sull'abbandono, non sulle funzioni** (D75): cosa succede fra il primo giorno e il
+  settimo. Le recensioni e i commenti di TestFlight sono la sola fonte, e vanno letti tutti.
+- Le traduzioni rilette da un madrelingua; `DateHints` nelle altre lingue (D69).
+- Test A/B della scheda (*Product Page Optimization*, D71) appena c'è traffico.
+- **In silenzio, il primo pezzo di Pro:** `core:billing` e l'invio automatico a Notion e a una
+  cartella (D31). Scritto, non acceso.
+
+**3. Da tre a dodici mesi: Pro si accende, e c'è una ragione per rinnovare.**
+
+- **Pro si accende quando le soglie di D75 tengono e il voto è 4,5 con 50 valutazioni** (D68):
+  invio automatico, punte e colori, ricerca illimitata per chi arriva dopo, niente firma.
+  Mensile, annuale con 14 giorni di prova, a vita; sconto ai fondatori (D68).
+- **Prima di vendere:** accordo delle app a pagamento in App Store Connect, programma per le
+  piccole imprese (commissione 15% invece di 30%), e la forma fiscale giusta — da decidere
+  con un commercialista, non qui.
+- **La ragione dell'abbonamento: iPhone, iPad e Mac insieme.** Con CloudKit la
+  sincronizzazione passa dall'iCloud dell'utente, non da un server nostro: resta vera la
+  promessa di D12, e il costo per noi è quasi zero. È ciò che trasforma un acquisto in un
+  rinnovo (D60).
+- Poi: "Condividi verso Instink" (App Group, D65), riconoscimento e voce su Android (D65),
+  l'Apple Watch per la voce.
+
+**4. Gli anni dopo: diventare il livello di cattura, ovunque.**
+
+- **Sincronizzazione fra iPhone e Android**: richiede un servizio nostro, quindi è il primo
+  vero costo ricorrente — e l'abbonamento che lo paga (D4). Solo quando i numeri lo chiedono.
+- Integrazioni con i sistemi dove le idee lavorano (Notion, Obsidian, Todoist, Drive), sempre
+  in una direzione sola (invariante 18).
+- **I mercati si aprono coi dati per paese** (D69): coreano, cinese tradizionale, olandese.
+- **Cosa resta fuori anche fra tre anni** (D51, D69): cartelle, collaborazione, intelligenza
+  artificiale nel cloud. Ci farebbero diventare un archivio come gli altri.
+
+**Il realismo, di nuovo** (D68): l'app ad abbonamento mediana incassa poche centinaia di euro
+al mese. Arrivare a 50.000 € l'anno vuol dire circa 70.000 download l'anno col 3% che paga.
+Quei download li portano la vetrina di Apple, la ricerca nello store, il passaparola e l'iPad,
+non le funzioni. Per questo i primi mesi si spendono sulla fedeltà e sulla scheda.
+
 ---
 
 ## 5. Struttura del repository
@@ -2833,8 +2914,12 @@ su Android (D64) compilano contro Android 15. Riconoscimento, voce e Siri **comp
 
 - **Il piano del rendimento** (D75): da confermare. Candidatura alla vetrina entro il
   2 ottobre.
-- **Il video di anteprima** (D76): da registrare sull'iPhone con la sceneggiatura di
-  `STORIA.md` §6 (GUIDA §0duodecies); cronometro e titolo li aggiungo io.
+- **Il video di anteprima** (D76, D77): da registrare sull'iPhone (GUIDA §0duodecies) e
+  caricare su Google Drive; montaggio mio, esce con la 1.0.1.
+- **La strada** (D78): giorni, mesi e anni, con le soglie per passare da una tappa
+  all'altra. Da confermare.
+- **La 1.0.1** (D77): bigliettino del widget, segno sull'immagine e video, subito dopo
+  l'approvazione della 1.0.
 - **Gli screenshot** (D70, D71, D73): pronti in `lancio/screenshots/`, da confrontare una
   volta con l'app sul telefono prima di caricarli.
 - **L'iPhone Duo** (D74): provare nel simulatore di Xcode la nota che passa dallo schermo

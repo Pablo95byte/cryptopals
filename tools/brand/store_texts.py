@@ -18,10 +18,7 @@ EN = dict(
     name="Instink: Handwritten Notes",
     subtitle="Jot ideas fast, by hand",
     keywords="instinct,quick,widget,sticky,memo,notepad,scribble,pen,write,journal,voice,dictate,capture,ocr,idea",
-    promo=(
-        "New: dictate a note without unlocking. Just ask Siri to add a note to Instink. "
-        "And your handwriting is now searchable, read right on your iPhone."
-    ),
+    promo="Put Instink on your Home Screen: one tap on the blank sheet and you're writing by hand, in under half a second. Phone locked? Just ask Siri to add a note.",
     description="""An idea shows up. By the time you've unlocked your phone, found your notes app and opened a new page, it's gone.
 
 Instink is a blank sheet on your Home Screen. Tap it and you're already writing — by hand, in your own handwriting. Tap Done and you're back where you were. One second.
@@ -51,10 +48,9 @@ WHAT INSTINK IS NOT
 It's not a notebook with folders and pages. It's the pen for the notes system you already use.
 
 Questions or ideas: hello@instink.app — a real person reads every message.""",
-    whats_new="""• Dictate a note to Siri, even with your phone locked.
-• Record voice notes from the sheet; they're transcribed on your device.
-• Your handwriting is now searchable.
-• A fresh icon.""",
+    whats_new="""• Instink now shows you how to put the sheet on your Home Screen: one tap on the widget and you're writing.
+• Handwritten notes you send now carry a small Instink mark.
+• Fixes and improvements.""",
     play_title="Instink: Handwritten Notes",
     play_short="A blank sheet on your home screen. Tap, write by hand, done. No account.",
     play_full="""An idea shows up. By the time you've unlocked your phone, found your notes app and opened a new page, it's gone.
@@ -90,10 +86,7 @@ IT = dict(
     name="Instink: Note scritte a mano",
     subtitle="Fissa le idee al volo, a mano",
     keywords="istinto,veloce,widget,appunti,memo,blocco,penna,scrivere,scarabocchi,diario,voce,dettare,promemoria",
-    promo=(
-        "Novità: detta una nota senza sbloccare, basta chiedere a Siri di aggiungerla a Instink. "
-        "E la tua scrittura ora si cerca, letta direttamente sull'iPhone."
-    ),
+    promo='Metti Instink sulla Home: un tocco sul foglio bianco e stai già scrivendo a mano, in meno di mezzo secondo. Telefono bloccato? Chiedi a Siri di aggiungere una nota.',
     description="""Ti viene un'idea. Il tempo di sbloccare il telefono, cercare l'app delle note e aprire una pagina nuova, e non c'è più.
 
 Instink è un foglio bianco sulla schermata Home. Lo tocchi e stai già scrivendo — a mano, con la tua calligrafia. Tocchi Fatto e sei di nuovo dove eri. Un secondo.
@@ -123,10 +116,9 @@ COSA NON È
 Non è un quaderno con cartelle e pagine. È la penna del sistema di note che usi già.
 
 Domande o idee: hello@instink.app — ogni messaggio lo legge una persona.""",
-    whats_new="""• Detta una nota a Siri, anche a telefono bloccato.
-• Registra note vocali dal foglio: si trascrivono sul dispositivo.
-• La tua scrittura ora si può cercare.
-• Un'icona nuova.""",
+    whats_new="""• Instink ora ti mostra come mettere il foglio sulla Home: un tocco sul widget e stai già scrivendo.
+• Le note scritte a mano che mandi portano un piccolo segno Instink.
+• Correzioni e miglioramenti.""",
     play_title="Instink: Note scritte a mano",
     play_short="Un foglio bianco sulla home. Tocchi, scrivi a mano, fatto. Senza account.",
     play_full="""Ti viene un'idea. Il tempo di sbloccare il telefono, cercare l'app delle note e aprire una pagina nuova, e non c'è più.
@@ -166,10 +158,7 @@ ES = dict(
     name="Instink: Notas a mano",
     subtitle="Apunta tus ideas al instante",
     keywords="instinto,rápido,widget,apuntes,memo,libreta,bloc,escribir,lápiz,garabatos,diario,voz,dictar,idea",
-    promo=(
-        "Nuevo: dicta una nota sin desbloquear, solo pídeselo a Siri. "
-        "Y ahora puedes buscar en tu propia letra, leída directamente en tu iPhone."
-    ),
+    promo='Pon Instink en tu pantalla de inicio: un toque en la hoja en blanco y ya estás escribiendo a mano, en menos de medio segundo. ¿Bloqueado? Pídele la nota a Siri.',
     description="""Se te ocurre una idea. Entre desbloquear el móvil, buscar la app de notas y abrir una página nueva, ya se ha ido.
 
 Instink es una hoja en blanco en tu pantalla de inicio. La tocas y ya estás escribiendo, a mano, con tu propia letra. Tocas Listo y vuelves a donde estabas. Un segundo.
@@ -199,9 +188,9 @@ LO QUE INSTINK NO ES
 No es un cuaderno con carpetas y páginas. Es el bolígrafo del sistema de notas que ya usas.
 
 Preguntas o ideas: hello@instink.app. Cada mensaje lo lee una persona.""",
-    whats_new="""• Dicta una nota a Siri, incluso con el móvil bloqueado.
-• Graba notas de voz desde la hoja; se transcriben en tu dispositivo.
-• Ahora puedes buscar en tu letra.""",
+    whats_new="""• Instink ahora te muestra cómo poner la hoja en tu pantalla de inicio: un toque en el widget y ya estás escribiendo.
+• Las notas a mano que envías llevan una pequeña marca de Instink.
+• Correcciones y mejoras.""",
     play_title="Instink: Notas a mano",
     play_short="Una hoja en blanco en tu pantalla de inicio. Toca, escribe a mano, listo.",
 )
@@ -210,10 +199,7 @@ DE = dict(
     name="Instink: Handschrift-Notizen",
     subtitle="Ideen blitzschnell festhalten",
     keywords="instinkt,schnell,widget,notizblock,memo,zettel,stift,schreiben,kritzeln,tagebuch,stimme,diktieren",
-    promo=(
-        "Neu: Diktiere eine Notiz, ohne zu entsperren – sag einfach Siri Bescheid. "
-        "Und deine Handschrift ist jetzt durchsuchbar, gelesen direkt auf deinem iPhone."
-    ),
+    promo='Leg Instink auf deinen Home-Bildschirm: ein Tippen aufs leere Blatt, und du schreibst von Hand – in unter einer halben Sekunde. Gesperrt? Sag es einfach Siri.',
     description="""Dir kommt eine Idee. Bis du das Handy entsperrt, die Notizen-App gefunden und eine neue Seite geöffnet hast, ist sie weg.
 
 Instink ist ein leeres Blatt auf deinem Home-Bildschirm. Tippen, und du schreibst schon – von Hand, in deiner eigenen Schrift. Tippe auf Fertig, und du bist wieder da, wo du warst. Eine Sekunde.
@@ -243,9 +229,9 @@ WAS INSTINK NICHT IST
 Kein Notizbuch mit Ordnern und Seiten. Es ist der Stift für das Notizsystem, das du schon benutzt.
 
 Fragen oder Ideen: hello@instink.app – jede Nachricht liest ein Mensch.""",
-    whats_new="""• Diktiere Siri eine Notiz, auch bei gesperrtem Handy.
-• Nimm Sprachnotizen vom Blatt auf; sie werden auf deinem Gerät transkribiert.
-• Deine Handschrift ist jetzt durchsuchbar.""",
+    whats_new="""• Instink zeigt dir jetzt, wie du das Blatt auf den Home-Bildschirm legst: ein Tippen aufs Widget, und du schreibst.
+• Handschriftliche Notizen, die du sendest, tragen ein kleines Instink-Zeichen.
+• Fehlerbehebungen und Verbesserungen.""",
     play_title="Instink: Handschrift-Notizen",
     play_short="Ein leeres Blatt auf dem Startbildschirm. Tippen, von Hand schreiben, fertig.",
 )
@@ -254,10 +240,7 @@ FR = dict(
     name="Instink : notes manuscrites",
     subtitle="Notez vos idées en un éclair",
     keywords="instinct,rapide,widget,mémo,bloc,carnet,stylo,écrire,griffonner,journal,voix,dicter,rappel,post-it",
-    promo=(
-        "Nouveau : dictez une note sans déverrouiller, il suffit de le demander à Siri. "
-        "Et votre écriture est désormais consultable, lue directement sur votre iPhone."
-    ),
+    promo='Mettez Instink sur l’écran d’accueil : un toucher sur la feuille blanche et vous écrivez à la main, en moins d’une demi-seconde. Verrouillé ? Demandez à Siri.',
     description="""Une idée arrive. Le temps de déverrouiller le téléphone, de trouver l’app de notes et d’ouvrir une nouvelle page, elle est partie.
 
 Instink est une feuille blanche sur votre écran d’accueil. Touchez-la et vous écrivez déjà, à la main, avec votre propre écriture. Touchez Terminé et vous revenez là où vous étiez. Une seconde.
@@ -287,9 +270,9 @@ CE QU’INSTINK N’EST PAS
 Ce n’est pas un cahier avec des dossiers et des pages. C’est le stylo du système de notes que vous utilisez déjà.
 
 Questions ou idées : hello@instink.app. Chaque message est lu par une personne.""",
-    whats_new="""• Dictez une note à Siri, même téléphone verrouillé.
-• Enregistrez des notes vocales depuis la feuille ; elles sont transcrites sur votre appareil.
-• Votre écriture est désormais consultable.""",
+    whats_new="""• Instink vous montre maintenant comment mettre la feuille sur l’écran d’accueil : un toucher sur le widget et vous écrivez.
+• Les notes manuscrites que vous envoyez portent une petite marque Instink.
+• Corrections et améliorations.""",
     play_title="Instink : notes manuscrites",
     play_short="Une page blanche sur votre écran d’accueil. Touchez, écrivez, c’est noté.",
 )
@@ -298,10 +281,7 @@ PT = dict(
     name="Instink: Notas escritas à mão",
     subtitle="Anote suas ideias na hora",
     keywords="instinto,rápido,widget,anotação,memo,bloco,caderno,caneta,escrever,rabisco,diário,voz,ditar,lembrete",
-    promo=(
-        "Novo: dite uma nota sem desbloquear, é só pedir à Siri. "
-        "E agora dá para buscar na sua própria letra, lida direto no seu iPhone."
-    ),
+    promo='Coloque o Instink na Tela de Início: um toque na folha em branco e você já está escrevendo à mão, em menos de meio segundo. Bloqueado? É só pedir à Siri.',
     description="""Você tem uma ideia. Até desbloquear o celular, achar o app de notas e abrir uma página nova, ela já foi embora.
 
 O Instink é uma folha em branco na sua Tela de Início. Você toca e já está escrevendo, à mão, com a sua letra. Toca em Pronto e volta para onde estava. Um segundo.
@@ -331,9 +311,9 @@ O QUE O INSTINK NÃO É
 Não é um caderno com pastas e páginas. É a caneta do sistema de notas que você já usa.
 
 Dúvidas ou ideias: hello@instink.app. Cada mensagem é lida por uma pessoa.""",
-    whats_new="""• Dite uma nota para a Siri, mesmo com o celular bloqueado.
-• Grave notas de voz na folha; elas são transcritas no seu aparelho.
-• Agora dá para buscar na sua letra.""",
+    whats_new="""• O Instink agora mostra como colocar a folha na Tela de Início: um toque no widget e você já está escrevendo.
+• As notas à mão que você envia levam uma pequena marca do Instink.
+• Correções e melhorias.""",
     play_title="Instink: Notas escritas à mão",
     play_short="Uma folha em branco na tela inicial. Toque, escreva à mão, pronto.",
 )
@@ -342,10 +322,7 @@ JA = dict(
     name="Instink：手書きメモ",
     subtitle="ひらめきを一瞬で書きとめる",
     keywords="ノート,ウィジェット,付箋,メモ帳,すばやく,アイデア,音声入力,日記,ペン,落書き,ロック画面,簡単,備忘録,instinct",
-    promo=(
-        "新機能：ロックを解除せずにメモを口述できます。Siriに頼むだけ。"
-        "さらに、手書きの文字がiPhone上で読み取られ、検索できるようになりました。"
-    ),
+    promo='ホーム画面にInstinkを。白い紙をタップすれば、0.5秒以内に手書きで書き始められます。ロック中なら、Siriに頼むだけ。',
     description="""アイデアが浮かんだ。でも、ロックを解除して、メモアプリを探して、新しいページを開くころには、もう消えている。
 
 Instinkは、ホーム画面に置く一枚の白い紙です。タップすれば、もう書き始めています。手書きで、あなた自身の文字で。「完了」をタップすれば、元の画面に戻ります。わずか一秒。
@@ -375,9 +352,9 @@ Instinkではないもの
 フォルダやページのあるノートではありません。いつも使っているメモの仕組みのための「ペン」です。
 
 ご質問・アイデア：hello@instink.app（すべてのメッセージを人が読んでいます）""",
-    whats_new="""• ロック中でも、Siriにメモを口述できます。
-• 紙から音声メモを録音。端末上で文字起こしされます。
-• 手書きの文字を検索できるようになりました。""",
+    whats_new="""• ホーム画面に用紙を置く方法をご案内します。ウィジェットをタップすれば、すぐに書けます。
+• 送信する手書きメモに、小さなInstinkのマークが入ります。
+• 不具合の修正と改善。""",
     play_title="Instink：手書きメモ",
     play_short="ホーム画面に白い紙。タップして手書きするだけ。アカウント不要。",
 )
