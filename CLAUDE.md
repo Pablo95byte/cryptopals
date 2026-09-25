@@ -2138,7 +2138,8 @@ paywall, il limite nella ricerca, la riga in fondo alle note mandate fuori.
 
 ### D68 — Gratis adesso, Pro quando porta cose nuove, e ciò che hai resta tuo
 **Data:** 2026-09-24 · **Stato:** attiva, decisa col committente · **Supera il punto 1 di
-D67** (Pro dal lancio) **e ne aggiorna i prezzi** · la ricerca è in
+D67** (Pro dal lancio) **e ne aggiorna i prezzi** · **le soglie di fedeltà del punto 3 sono
+riviste da D75** · la ricerca è in
 [`lancio/MERCATO.md`](lancio/MERCATO.md)
 
 Il committente: *"non serve che renda ora, ma che in futuro lo sia; se serve, farla
@@ -2273,7 +2274,8 @@ dentro (l'anello di D47).
   App Store Connect per paese, non l'intuito.
 
 ### D70 — Gli screenshot: i primi tre sono tutto il messaggio, e c'è una lista sola
-**Data:** 2026-09-24 · **Stato:** attiva · **Supera la lista di `STORIA.md` §6**
+**Data:** 2026-09-24 · **Stato:** attiva · **Supera la lista di `STORIA.md` §6** · gli
+scatti grezzi sono **superati da D73**: gli schermi si ricostruiscono dal codice
 
 Il committente: *"qui ci giochiamo tutto."* È vero: nei risultati di ricerca dell'App
 Store, sotto nome e icona, si vedono **i primi tre screenshot affiancati**, e chi cerca
@@ -2380,6 +2382,186 @@ dicono la stessa cosa.
 vera (D50) si rifà quando ci sono gli screenshot composti e il video, e riusa questi pezzi:
 rifarla adesso vorrebbe dire rifarla due volte.
 
+### D72 — Dentro l'app il vermiglio vuol dire una cosa sola: "da smistare"
+**Data:** 2026-09-24 · **Stato:** attiva, chiesta dal committente · **Attua la proposta di
+D71**, **precisa D46 e D52**
+
+Un bigliettino che aspetta lo smistamento porta, in alto a destra, **la goccia vermiglia
+dell'icona**. La stessa goccia sta davanti a "Smista N" nell'intestazione dell'archivio. Su
+iOS e su Android.
+
+**Perché un colore con un significato e non una decorazione.** D46 vuole la gerarchia fatta
+da inchiostro e carta, e resta vero: il vermiglio entra solo come segnale. Chi apre
+l'archivio vede a colpo d'occhio cosa è nuovo, e l'icona sulla Home e le gocce nell'app
+dicono la stessa cosa. Usarlo per altro, anche una volta, gli toglierebbe il significato.
+
+**La regola sta nel modello, e dice le stesse note della coda.** `Note.awaitsSorting`: viva,
+non vuota, né tenuta né mandata fuori. La coda dello smistamento la decide invece una query
+dell'archivio (`notesToSort`). Se le due regole divergessero, comparirebbe una goccia su una
+nota che lo smistamento non mostra: un compito che non si può finire, cioè il contrario di
+D51. Un test della facciata controlla che dicano le stesse note.
+
+**Niente conteggi rossi e niente notifiche** (D51): la goccia non è un "badge" da azzerare,
+è un segno sulla carta. Quando la nota è tenuta, mandata o buttata, sparisce.
+
+### D73 — Gli screenshot si disegnano dal codice, in tutte le lingue, e non si fotografano
+**Data:** 2026-09-24 · **Stato:** attiva, chiesta dal committente · **Supera gli scatti
+grezzi di D70**
+
+Il committente: *"se ti impegni puoi preparare gli screen da mettere sullo store, non servono
+reali."* `tools/shots/` ricostruisce i sei schermi dell'iPhone e tre dell'iPad **dal codice
+dell'app**: stesse misure in punti, stessi colori di `Brand.swift`, stesse parole del catalogo
+di Xcode, lingua per lingua. Il risultato sono 63 immagini in `lancio/screenshots/`, già alle
+misure che l'App Store chiede (1320×2868 e 2064×2752), senza canale alfa.
+
+**Perché è meglio degli scatti, non solo più comodo:**
+
+- **Ogni lingua ha il suo schermo, non solo la sua didascalia.** Il giapponese vede un foglio
+  scritto in giapponese e i pulsanti in giapponese; con gli scatti si sarebbero riusate le
+  schermate inglesi per cinque lingue su sette.
+- **Si rifanno in un minuto** quando cambia un testo, una didascalia o l'app, e restano
+  coerenti fra loro.
+- **Niente dati personali** possibili, per costruzione.
+
+**Il vincolo, e va rispettato: lo schermo deve essere l'app vera** (linea guida 2.3.3 e 2.3.1
+di Apple: le immagini non devono mostrare cose che l'app non fa). Per questo gli schermi
+copiano il codice e non un'idea dell'app, e `page.html` dice in testa quali file riproduce.
+**Ogni volta che cambia l'interfaccia di un di quei file, gli screenshot si rigenerano.**
+Prima di caricarli, il committente li confronta una volta con l'app sul telefono.
+
+**Cosa è disegnato e non è nostro:** la Home, il foglio di condivisione e la schermata di
+blocco di iOS, in forma semplificata. Le app intorno sono icone generiche, senza loghi di
+nessuno; nel foglio di condivisione le destinazioni sono iniziali su un colore, non i loghi di
+Note, Notion o Keep.
+
+**La scrittura a mano è un carattere** (Caveat, e Klee One per il giapponese), passato
+dentro le forme dei bigliettini dell'app. Non è la calligrafia di un utente, ed è il solo
+punto dove l'immagine è più ordinata della realtà: la differenza si vede solo da vicino.
+
+**L'iPad mostra foglio, condivisione e smistamento**, non la ricerca: con quattro risultati la
+griglia dell'iPad lasciava mezzo schermo vuoto.
+
+**Trovati disegnando:** il giapponese andava a capo a metà parola (ora la didascalia usa
+l'andata a capo per frasi del browser), e le righe lunghe uscivano dai bigliettini (ora ogni
+scritta si stringe finché ci sta).
+
+### D74 — L'iPhone Duo: pronti il 23 ottobre, e una nota non si perde quando il telefono si chiude
+**Data:** 2026-09-24 · **Stato:** attiva, **da provare nel simulatore di Xcode** · le fonti
+sono nella risposta al committente
+
+Il committente: *"l'iPhone Duo non è ancora uscito: possiamo sfondare lì, visto che saremo i
+primi a pensarci?"* Apple l'ha presentato il 9 settembre, esce il **23 ottobre**: fuori uno
+schermo da 5,4 pollici, dentro uno da 7,6 che per le app vale come un iPad (classi di
+dimensione regolari). La matita USB-C arriverà più avanti nell'anno.
+
+**La risposta onesta: non saremo i primi a pensarci, ma possiamo essere fra i primi a esserci
+davvero.** Goodnotes e Notability girano già sull'iPad e sul Duo si vedranno bene dal primo
+giorno. Quello che loro non hanno è il gesto: **chiuso, si scrive in un secondo come su un
+telefono; aperto, si smista e si cerca come su un iPad**, e la stessa nota passa dall'uno
+all'altro. Quando esce un apparecchio nuovo, l'App Store mette in vetrina le app pronte:
+per noi vuol dire **essere nello store entro il 23 ottobre**, con la scheda che lo dice.
+
+**Già pronto, senza saperlo:** l'app gira su iPad (`TARGETED_DEVICE_FAMILY` 1,2), l'archivio
+mette tante colonne quante ne stanno, la nota aperta ha una colonna di al massimo 680
+punti, e il foglio accetta la matita con la pressione.
+
+**Corretto adesso: il foglio che cambia misura.** La nota nasce con la misura dello schermo e
+le sue coordinate stanno lì (D10). Se lo schermo si allargava non succedeva niente di male;
+se si stringeva — il Duo che si chiude a metà nota, ma anche un iPhone girato in orizzontale —
+l'inchiostro scritto oltre il nuovo bordo finiva fuori dallo schermo: salvato, ma invisibile.
+Ora il foglio, quando lo schermo è più piccolo della nota, la mostra tutta rimpicciolita, e i
+tocchi nuovi si riportano alla stessa scala. Il giornale e il modello non cambiano: è solo un
+modo di mostrare, come il foglio di notte (D52).
+
+**Da fare sul Mac del committente**, perché qui non c'è un simulatore: aprire l'app nel
+simulatore del Duo di Xcode, scrivere aperto e chiudere a metà nota, e il contrario.
+
+### D75 — Il rendimento viene da tre cose, in quest'ordine: esserci il 23 ottobre, far mettere l'ingresso, far viaggiare le note
+**Data:** 2026-09-25 · **Stato:** attiva, **approvata dal committente** · **Rivede le
+soglie di D47 e D68** · i punti 2, 3 e 4 sono attuati e **precisati da D76**
+
+Il committente: *"cosa ci rende unici, e cosa ci dà il maggior rendimento?"* Riletto coi
+numeri del mercato e con quello che si sa del comportamento delle persone.
+
+**Il numero che cambia i piani.** Le app di produttività su iOS tengono il **17,1%** di chi
+le installa dopo un giorno e il **4,1%** dopo trenta; quelle forti fra il 10 e il 18%. D47 e
+D68 chiedevano "uno su cinque dopo 30 giorni" per accendere Pro: è cinque volte la media
+della categoria, e aspettarlo vorrebbe dire non accenderlo mai. **Soglie nuove: a 7 giorni
+almeno il 20%, a 30 giorni almeno il 10%** — già da app forte. Il voto (4,5 con 50
+valutazioni) resta com'è.
+
+**Cosa ci rende unici non cambia (D69):** la mano come primo gesto, la velocità misurata, un
+flusso che si svuota (smistamento e riemersione), nessun account, due piattaforme. Due fatti
+sul comportamento lo sostengono: **scrivere a mano attiva il cervello più che digitare** (EEG
+su 36 studenti, Frontiers in Psychology, 2024: è un argomento di storia, non una promessa
+medica da scheda dello store); e **un'idea annotata e mai riletta è persa lo stesso**, che è
+la ragione della riemersione e dello smistamento.
+
+**Dove sta il rendimento, in ordine:**
+
+1. **Esserci il 23 ottobre, con la candidatura alla vetrina.** App Store Connect ha un modulo
+   per candidare un'app al featuring; Apple chiede di mandarlo **almeno tre settimane prima**
+   del lancio. Col Duo in uscita il 23, la candidatura va mandata **entro il 2 ottobre**. Una
+   vetrina vale mesi di ricerca nello store, e costa un modulo.
+2. **Far mettere l'ingresso il primo giorno.** Un'abitudine nasce da un segnale: per noi è il
+   widget, il Controllo o il tasto Azione. Chi non lo mette usa l'app come un'app di note
+   qualunque, e la abbandona come le altre (il 4% che resta). **Da fare:** quando l'archivio è
+   vuoto, al posto della frase di oggi, tre modi di mettere il foglio a un pollice di
+   distanza, con un disegno ciascuno. Non è un onboarding (D12): non blocca niente, non chiede
+   niente, sparisce alla prima nota.
+3. **Far viaggiare le note.** La firma in fondo al testo (D68) si perde quando la nota viaggia
+   come immagine, cioè nei messaggi, che è dove la gente manda la calligrafia. **Da fare:** un
+   segno piccolo "Instink" nell'angolo dell'immagine dell'inchiostro mandata fuori. Con Pro si
+   potrà togliere, come la firma.
+4. **Il video di anteprima** (15 secondi, `STORIA.md` §6): nei risultati di ricerca parte da
+   solo, senza audio, al posto del primo screenshot. ~~Si può disegnare dal codice come gli
+   screenshot (D73).~~ **No, vedi D76:** va registrato sul telefono.
+
+**Cosa non fare adesso:** funzioni nuove (formule, intelligenza artificiale, sincronizzazione)
+prima di avere i dati di fedeltà. Con il 4% di fedeltà media, il primo nemico è l'abbandono,
+non la mancanza di funzioni (D47).
+
+### D76 — Far sapere che il widget esiste, firmare l'immagine, e il video si gira sul telefono
+**Data:** 2026-09-25 · **Stato:** attiva, chiesta dal committente · **Attua D75, punti 2–4**
+
+Il committente: *"dobbiamo far sapere che c'è il widget che ti porta velocissimamente nella
+nota."* È il punto 2 di D75 detto con le sue parole.
+
+**1. Il bigliettino "Metti il foglio sulla Home".** In cima all'archivio, su iOS e Android:
+un piccolo foglio col ricciolo, com'è il widget, e i passi per metterlo. Rispetto a D75
+cambia il **quando**: non solo ad archivio vuoto, ma **finché il widget non c'è**. Chi ha
+già scritto dieci note aprendo l'icona è proprio chi ne ha più bisogno.
+
+- **Sa se il widget c'è**: su iOS lo dice WidgetKit (`currentConfigurations`, Home o
+  schermata di blocco), su Android `AppWidgetManager`. Appena lo si mette, il bigliettino
+  sparisce da solo.
+- **Su Android lo mette con un tocco**: "Aggiungi il widget" chiede al launcher di
+  collocarlo (`requestPinAppWidget`), e l'utente conferma dove. Se il launcher non lo sa
+  fare, il bigliettino dà i passi a mano. Da Android 13 c'è anche "Aggiungi il riquadro"
+  (`requestAddTileService`), che è l'ingresso a telefono bloccato (D33); sparisce quando
+  il riquadro c'è, che l'abbia aggiunto il bigliettino o l'utente a mano.
+- **Su iOS i passi si scrivono**, perché Apple non permette a un'app di mettere un widget
+  sulla Home; una riga ricorda Centro di Controllo e tasto Azione.
+- **Non è un onboarding** (D12): non blocca niente, non compare mai sul foglio né durante
+  una ricerca. La crocetta lo nasconde **per una settimana**; dopo due volte, **per sempre**.
+  Un consiglio ripetuto diventa un compito, e D51 esclude le app che danno compiti.
+- **Tenue**: pulsanti a pillola chiara. Il solo pulsante pieno resta "Scrivi" (D46).
+
+**2. La firma sull'immagine.** L'immagine dell'inchiostro mandata fuori porta in basso una
+fascia sottile con la goccia vermiglia e "Instink", in grigio tenue. È la firma di D68 per
+le note che viaggiano come immagine — nei messaggi, dove la gente manda la calligrafia.
+**La lettura della scrittura usa l'immagine senza firma** (D62): altrimenti Vision
+leggerebbe "Instink" in fondo a ogni nota, e la ricerca la troverebbe in tutte. Con Pro si
+potrà togliere, come la riga di testo.
+
+**3. Il video: si gira sul telefono, non si disegna.** D75 diceva che il video di anteprima
+si poteva disegnare dal codice come gli screenshot (D73). **Sbagliato:** le linee guida di
+Apple (2.3.4) vogliono che l'anteprima sia **una registrazione dello schermo dell'app**. Per
+gli screenshot una ricostruzione fedele è ammessa; per il video no. Quindi lo registra il
+committente sull'iPhone, seguendo la sceneggiatura di `STORIA.md` §6; il cronometro e la
+riga finale si aggiungono dopo, come didascalie. Il primo piano del video è il dito che
+tocca il widget: è lì che si fa sapere che il widget esiste, prima ancora di installare.
+
 ---
 
 ## 5. Struttura del repository
@@ -2407,9 +2589,10 @@ tools/
                  in sette lingue, con i limiti di caratteri controllati (store_texts.py, D67, D69)
   i18n/          Le traduzioni dell'interfaccia in un file solo, scritte nei cataloghi iOS e
                  nei values-xx Android da apply.py (D69)
+  shots/         Gli screenshot dell'App Store ridisegnati dal codice, in sette lingue (D73)
 codemagic.yaml   Il CI: test del core a ogni push, TestFlight e Play interno su tag (D53)
-lancio/          La storia del prodotto (STORIA.md, D60), i testi degli store (STORE.md, D67)
-                 e la ricerca di mercato (MERCATO.md, D68)
+lancio/          La storia del prodotto (STORIA.md, D60), i testi degli store (STORE.md, D67),
+                 la ricerca di mercato (MERCATO.md, D68) e gli screenshot pronti (screenshots/, D73)
 site/            Il sito statico: home, privacy, assistenza, in inglese e italiano (D61)
 design/
   brand/         Il segno in SVG, le immagini per gli store e il confronto delle icone (D66, D71)
@@ -2644,8 +2827,14 @@ su Android (D64) compilano contro Android 15. Riconoscimento, voce e Siri **comp
 
 ## 10. Questioni ancora aperte
 
-- **Gli screenshot** (D70, D71): scatti grezzi dal committente, dopo una build con l'icona
-  nuova; poi la composizione con uno script, su fondo vermiglio. Il video di 15 secondi (`STORIA.md` §6) dopo.
+- **Il piano del rendimento** (D75): da confermare. Candidatura alla vetrina entro il
+  2 ottobre.
+- **Il video di anteprima** (D76): da registrare sull'iPhone con la sceneggiatura di
+  `STORIA.md` §6 (GUIDA §0duodecies); cronometro e titolo li aggiungo io.
+- **Gli screenshot** (D70, D71, D73): pronti in `lancio/screenshots/`, da confrontare una
+  volta con l'app sul telefono prima di caricarli.
+- **L'iPhone Duo** (D74): provare nel simulatore di Xcode la nota che passa dallo schermo
+  aperto a quello chiuso; essere nello store entro il 23 ottobre. Il video di 15 secondi (`STORIA.md` §6) dopo.
 - **Le traduzioni** (D69) vanno rilette da un madrelingua per lingua prima del lancio in
   quel paese; `DateHints` va esteso a spagnolo, tedesco, francese, portoghese e giapponese.
 - **Nome commerciale:** scelto, **Instink** (D55). Restano le verifiche: store, marchi,

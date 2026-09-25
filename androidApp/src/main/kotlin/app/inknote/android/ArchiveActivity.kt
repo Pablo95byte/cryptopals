@@ -2,11 +2,16 @@ package app.inknote.android
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.StatusBarManager
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Icon
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -64,6 +69,10 @@ class ArchiveActivity : Activity() {
     private lateinit var resurfacedCaption: TextView
     private lateinit var resurfacedInk: InkPreviewView
     private var resurfacedNote: Note? = null
+    private lateinit var entryCard: View
+    private lateinit var entryBody: TextView
+    private lateinit var entryAddWidget: View
+    private lateinit var entryAddTile: View
     private val reloadTask = Runnable { reload() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,6 +116,7 @@ class ArchiveActivity : Activity() {
             sortButton.text = getString(R.string.sort_button, toSort.toInt())
             sortButton.visibility = if (toSort > 0) View.VISIBLE else View.GONE
             showResurfaced(resurfaced)
+            showEntryHint(searching = term.isNotBlank())
             subtitle.text = resources.getQuantityString(R.plurals.note_count, total.toInt(), total.toInt())
             subtitle.visibility = if (total > 0) View.VISIBLE else View.INVISIBLE
             val searching = term.isNotBlank()
@@ -186,9 +196,13 @@ class ArchiveActivity : Activity() {
             setPadding(dp(2), dp(2), 0, 0)
         }
         // Tenue: il solo pulsante pieno della schermata resta "Scrivi" (D46).
-        sortButton = Ui.pill(this, "", R.drawable.ic_keep, primary = false) {
+        // La stessa goccia dei bigliettini, senza tinta: il pulsante dice dove vanno (D72).
+        sortButton = Ui.pill(this, "", null, primary = false) {
             startActivity(Intent(this, TriageActivity::class.java))
         }.apply {
+            val drop = Ui.drop(this@ArchiveActivity).apply { setBounds(0, 0, dp(8), dp(8)) }
+            setCompoundDrawablesRelative(drop, null, null, null)
+            compoundDrawablePadding = dp(8)
             visibility = View.GONE
             minHeight = dp(40)
             setPadding(dp(16), 0, dp(16), 0)
@@ -244,11 +258,124 @@ class ArchiveActivity : Activity() {
             addView(clearSearch)
         }
         header.addView(pill, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)))
+        entryCard = buildEntryCard()
+        header.addView(entryCard, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(14)
+        })
         resurfacedCard = buildResurfacedCard()
         header.addView(resurfacedCard, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
             topMargin = dp(14)
         })
         return header
+    }
+
+    /**
+     * "Metti il foglio sulla home" (D76): il bigliettino che fa sapere che il widget esiste.
+     *
+     * Chi non mette il widget usa Instink come un'app di note qualunque, e la abbandona come
+     * le altre (D75). Il bigliettino compare solo **finché il widget non c'è**, e lo mette
+     * con un tocco: il launcher chiede dove, l'utente conferma. Accanto, da Android 13, il
+     * riquadro rapido, che è l'ingresso a telefono bloccato (D33). Non è un onboarding
+     * (D12): non blocca niente. La crocetta lo nasconde per una settimana; dopo due volte,
+     * per sempre, perché un consiglio ripetuto diventa un compito (D51).
+     */
+    private fun buildEntryCard(): View {
+        val sheet = FrameLayout(this).apply {
+            background = Ui.rounded(getColor(R.color.paper), dp(12).toFloat(), getColor(R.color.outline), dp(1).coerceAtLeast(1))
+            addView(ImageView(context).apply {
+                setImageResource(R.drawable.ic_scribble)
+                setColorFilter(getColor(R.color.on_paper_muted))
+                alpha = 0.55f
+            }, FrameLayout.LayoutParams(dp(26), dp(26), Gravity.CENTER))
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        }
+        val title = Ui.text(this, Ui.LABEL + 0.5f, Ui.SEMIBOLD, getColor(R.color.on_paper)).apply {
+            setText(R.string.entry_title)
+        }
+        entryBody = Ui.text(this, Ui.CAPTION + 1, Ui.REGULAR, getColor(R.color.on_paper_muted)).apply {
+            setPadding(0, dp(4), 0, 0)
+        }
+        val texts = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(title)
+            addView(entryBody)
+        }
+        val close = Ui.iconButton(this, R.drawable.ic_close, getString(R.string.entry_later), getColor(R.color.on_paper_muted)) {
+            val prefs = prefs()
+            prefs.edit()
+                .putInt(PREF_ENTRY_DISMISS_COUNT, prefs.getInt(PREF_ENTRY_DISMISS_COUNT, 0) + 1)
+                .putLong(PREF_ENTRY_DISMISSED_AT, System.currentTimeMillis())
+                .apply()
+            entryCard.visibility = View.GONE
+        }
+        val top = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.TOP
+            addView(sheet, LinearLayout.LayoutParams(dp(56), dp(56)).apply { marginEnd = dp(14); topMargin = dp(4) })
+            addView(texts, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { topMargin = dp(4) })
+            addView(close)
+        }
+        // Tenui: il solo pulsante pieno della schermata resta "Scrivi" (D46).
+        entryAddWidget = Ui.pill(this, getString(R.string.entry_add_widget), R.drawable.ic_add, primary = false) {
+            val manager = AppWidgetManager.getInstance(this)
+            manager.requestPinAppWidget(ComponentName(this, SheetWidgetProvider::class.java), null, null)
+        }.apply { minHeight = dp(44); setPadding(dp(16), 0, dp(18), 0) }
+        entryAddTile = Ui.pill(this, getString(R.string.entry_add_tile), null, primary = false) {
+            requestTile()
+        }.apply { minHeight = dp(44); setPadding(dp(16), 0, dp(16), 0) }
+        val actions = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(70), dp(10), 0, dp(2))
+            addView(entryAddWidget, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(44)).apply { marginEnd = dp(8) })
+            addView(entryAddTile, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(44)))
+        }
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(14), dp(10), dp(4), dp(14))
+            Ui.card(this, context, radiusDp = 18f)
+            visibility = View.GONE
+            addView(top, Ui.matchWidth())
+            addView(actions, Ui.matchWidth())
+        }
+    }
+
+    /** Il riquadro rapido con un tocco (Android 13): il sistema chiede conferma all'utente. */
+    private fun requestTile() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        getSystemService(StatusBarManager::class.java)?.requestAddTileService(
+            ComponentName(this, CaptureTileService::class.java),
+            getString(R.string.tile_label),
+            Icon.createWithResource(this, R.drawable.ic_scribble),
+            mainExecutor,
+        ) { result ->
+            if (result == StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED ||
+                result == StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED
+            ) {
+                prefs().edit().putBoolean(PREF_TILE_ADDED, true).apply()
+                entryAddTile.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun showEntryHint(searching: Boolean) {
+        val prefs = prefs()
+        val widgets = AppWidgetManager.getInstance(this)
+            .getAppWidgetIds(ComponentName(this, SheetWidgetProvider::class.java))
+        val lastDismissed = prefs.getLong(PREF_ENTRY_DISMISSED_AT, 0L)
+        val allowed = prefs.getInt(PREF_ENTRY_DISMISS_COUNT, 0) < 2 &&
+            (lastDismissed == 0L || System.currentTimeMillis() - lastDismissed > ENTRY_PAUSE_MS)
+        if (searching || widgets.isNotEmpty() || !allowed) {
+            entryCard.visibility = View.GONE
+            return
+        }
+        // Alcuni launcher non sanno aggiungere un widget su richiesta: allora i passi a mano.
+        val canPin = AppWidgetManager.getInstance(this).isRequestPinAppWidgetSupported
+        entryBody.setText(if (canPin) R.string.entry_body else R.string.entry_manual)
+        entryAddWidget.visibility = if (canPin) View.VISIBLE else View.GONE
+        val tileAdded = prefs.getBoolean(PREF_TILE_ADDED, false)
+        entryAddTile.visibility =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !tileAdded) View.VISIBLE else View.GONE
+        entryCard.visibility = View.VISIBLE
     }
 
     /**
@@ -377,13 +504,18 @@ class ArchiveActivity : Activity() {
         val resurfaced: Resurfaced?,
     )
 
-    private companion object {
+    internal companion object {
         const val SEARCH_DELAY_MS = 200L
         const val DAY_MS = 86_400_000L
 
         /** Preferenze di chi guarda, non dati delle note: stanno fuori dall'archivio (D52). */
         const val PREFS = "archive"
         const val PREF_RESURFACE_DISMISSED = "resurface.dismissedDay"
+        const val PREF_ENTRY_DISMISS_COUNT = "entryHint.dismissCount"
+        const val PREF_ENTRY_DISMISSED_AT = "entryHint.dismissedAt"
+        /** Scritto anche dal riquadro stesso, quando l'utente lo aggiunge a mano. */
+        const val PREF_TILE_ADDED = "entryHint.tileAdded"
+        const val ENTRY_PAUSE_MS = 7 * 86_400_000L
         const val MENU_SHARE = 1
         const val MENU_DELETE = 2
     }
@@ -442,6 +574,9 @@ private class NotesAdapter(private val context: Context) : BaseAdapter() {
         holder.caption.text = line ?: ""
         holder.caption.visibility = if (line == null) View.GONE else View.VISIBLE
 
+        // La goccia dell'icona, con un significato solo: da smistare (D72).
+        holder.drop.visibility = if (note.awaitsSorting) View.VISIBLE else View.GONE
+
         holder.date.text = DateUtils.getRelativeTimeSpanString(
             note.updatedAt, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE,
         )
@@ -489,6 +624,11 @@ private class NotesAdapter(private val context: Context) : BaseAdapter() {
             }, LinearLayout.LayoutParams(dp(15f), dp(15f)).apply { rightMargin = dp(3f) })
             addView(photoCount)
         }
+        val drop = View(context).apply {
+            background = Ui.drop(context)
+            contentDescription = context.getString(R.string.awaits_sorting)
+            visibility = View.GONE
+        }
         val card: View
 
         init {
@@ -496,6 +636,10 @@ private class NotesAdapter(private val context: Context) : BaseAdapter() {
                 addView(ink, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
                 addView(photo, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
                 addView(body, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+                addView(drop, FrameLayout.LayoutParams(dp(9f), dp(9f), Gravity.TOP or Gravity.END).apply {
+                    topMargin = dp(13f)
+                    rightMargin = dp(13f)
+                })
             }
             val footer = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL

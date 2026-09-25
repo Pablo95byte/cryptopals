@@ -10,6 +10,35 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Aggiunto — il bigliettino del widget e la firma sull'immagine (D76)
+
+- In cima all'archivio, su iOS e Android, **"Metti il foglio sulla Home"** finché il widget
+  non c'è: su Android lo aggiunge con un tocco, e da Android 13 aggiunge anche il riquadro
+  rapido. Si nasconde per una settimana, dopo due volte per sempre.
+- L'immagine dell'inchiostro mandata fuori porta in basso la goccia e "Instink". La lettura
+  della scrittura continua a usare l'immagine senza firma.
+
+### Aggiunto — gli screenshot dell'App Store (D73)
+
+- **63 screenshot pronti** in `lancio/screenshots/`: sei per iPhone e tre per iPad in sette
+  lingue, alle misure dell'App Store, col fondo vermiglio. Gli schermi sono ridisegnati dal
+  codice dell'app, con le sue parole in ogni lingua.
+- `tools/shots/`: i dati (`build.py`), la pagina che disegna (`page.html`) e lo script che
+  fotografa (`render.mjs`).
+
+### Corretto — il foglio che cambia misura (D74)
+
+- Su iOS, se lo schermo diventa più piccolo della nota (l'iPhone Duo che si chiude a metà
+  nota, un iPhone girato in orizzontale), la nota si mostra intera e rimpicciolita invece di
+  finire fuori dallo schermo.
+
+### Aggiunto — la goccia "da smistare" (D72)
+
+- Nell'archivio, su iOS e Android, i bigliettini che aspettano lo smistamento portano la
+  goccia vermiglia dell'icona; la stessa goccia sta su "Smista N".
+- `Note.awaitsSorting` nel modello, con i test, e un test che la confronta con la coda
+  dello smistamento.
+
 ### Cambiato — l'icona (D71)
 
 - **L'icona è un foglio bianco inclinato su un campo vermiglio**, col ricciolo e la goccia:

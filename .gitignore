@@ -39,3 +39,7 @@ xcuserdata/
 keystore.properties
 *.jks
 *.keystore
+
+# Gli strumenti in Node (i caratteri degli screenshot, D73)
+node_modules/
+__pycache__/

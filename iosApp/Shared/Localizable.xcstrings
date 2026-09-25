@@ -681,6 +681,46 @@
         }
       }
     },
+    "It's also in Control Center and on the Action button.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auch im Kontrollzentrum und auf der Aktionstaste."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "También está en el Centro de control y en el botón de acción."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aussi dans le centre de contrôle et sur le bouton Action."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "C'è anche nel Centro di Controllo e sul tasto Azione."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コントロールセンターやアクションボタンからも使えます。"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Também está na Central de Controle e no botão de Ação."
+          }
+        }
+      }
+    },
     "Keep": {
       "localizations": {
         "de": {
@@ -1161,6 +1201,46 @@
         }
       }
     },
+    "One tap and you're writing. Touch and hold the Home Screen, tap Edit, then Add Widget, and search for Instink.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Tippen und du schreibst. Halte den Home-Bildschirm gedrückt, tippe auf „Bearbeiten“, dann auf „Widget hinzufügen“, und suche nach Instink."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un toque y ya estás escribiendo. Mantén pulsada la pantalla de inicio, toca Editar, luego Añadir widget, y busca Instink."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un toucher et vous écrivez. Maintenez le doigt sur l’écran d’accueil, touchez Modifier, puis Ajouter un widget, et recherchez Instink."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un tocco e stai già scrivendo. Tieni premuta la Home, tocca Modifica, poi Aggiungi widget, e cerca Instink."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "タップひとつで書き始められます。ホーム画面を長押しし、「編集」→「ウィジェットを追加」をタップして、Instinkを検索してください。"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um toque e você já está escrevendo. Toque e segure a Tela de Início, toque em Editar, depois em Adicionar Widget, e busque Instink."
+          }
+        }
+      }
+    },
     "Opens a blank sheet, ready for your handwriting.": {
       "localizations": {
         "de": {
@@ -1357,6 +1437,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ouvir a nota de voz"
+          }
+        }
+      }
+    },
+    "Put the sheet on your Home Screen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leg das Blatt auf deinen Home-Bildschirm"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pon la hoja en tu pantalla de inicio"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mettez la feuille sur votre écran d’accueil"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metti il foglio sulla Home"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ホーム画面に用紙を置きましょう"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coloque a folha na sua Tela de Início"
           }
         }
       }
@@ -1917,6 +2037,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Para gravar notas de voz, permita que o Instink use o microfone em Ajustes."
+          }
+        }
+      }
+    },
+    "To sort": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu sortieren"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por ordenar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À trier"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Da smistare"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未整理"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para organizar"
           }
         }
       }

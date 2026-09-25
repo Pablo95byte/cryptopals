@@ -29,6 +29,28 @@ class NoteTest {
     }
 
     @Test
+    fun `una nota scritta aspetta lo smistamento finché non è tenuta o mandata`() {
+        val written = Note.empty(CANVAS, now = 1_000L)
+            .withStroke(stroke("a", createdAt = 1_100L), now = 1_100L)
+
+        assertTrue(written.awaitsSorting)
+        assertFalse(written.withSorted(now = 2_000L).awaitsSorting)
+        assertFalse(written.withExport(ExportTarget.SystemShare, now = 2_000L).awaitsSorting)
+    }
+
+    @Test
+    fun `una nota vuota o cestinata non aspetta niente`() {
+        val empty = Note.empty(CANVAS, now = 1_000L)
+        val trashed = empty.withStroke(stroke("a", createdAt = 1_100L), now = 1_100L)
+            .copy(deletedAt = 2_000L)
+
+        // Una goccia su una nota che lo smistamento non mostra sarebbe un compito che non
+        // si può finire (D72).
+        assertFalse(empty.awaitsSorting)
+        assertFalse(trashed.awaitsSorting)
+    }
+
+    @Test
     fun `aggiungere un tratto avanza la revisione`() {
         val note = Note.empty(CANVAS, now = 1_000L)
         val updated = note.withStroke(stroke("a", createdAt = 1_100L), now = 1_100L)

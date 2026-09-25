@@ -98,6 +98,14 @@ data class Note(
     val isSorted: Boolean get() = sortedAt != null || exports.isNotEmpty()
 
     /**
+     * `true` se la nota aspetta lo smistamento: viva, non vuota, né tenuta né mandata fuori.
+     * È la goccia vermiglia sul bigliettino nell'archivio (D72), e deve dire esattamente
+     * ciò che dice la coda dell'archivio (`notesToSort`): una goccia su una nota che lo
+     * smistamento non mostra sarebbe un compito che non si può finire.
+     */
+    val awaitsSorting: Boolean get() = !isDeleted && !isEmpty && !isSorted
+
+    /**
      * Segna la nota come smistata. Come un invio, **non** fa salire la revisione:
      * smistare una nota non la modifica (D31, D52).
      */

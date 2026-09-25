@@ -85,6 +85,7 @@ T = {
     "Settings": ["Ajustes", "Einstellungen", "Réglages", "Ajustes", "設定"],
     "Sort %lld": ["Ordenar %lld", "%lld sortieren", "Trier %lld", "Organizar %lld", "整理 %lld"],
     "Stop recording": ["Detener grabación", "Aufnahme stoppen", "Arrêter l’enregistrement", "Parar gravação", "録音を停止"],
+    "To sort": ["Por ordenar", "Zu sortieren", "À trier", "Para organizar", "未整理"],
     "Tap Write, or add the widget to your Home Screen: an idea takes a second.": [
         "Toca Escribir o añade el widget a tu pantalla de inicio: una idea lleva un segundo.",
         "Tippe auf Schreiben oder füge das Widget zum Home-Bildschirm hinzu: Eine Idee dauert eine Sekunde.",
@@ -181,6 +182,33 @@ T = {
     "android:resurface_hide": ["Ocultar por hoy", "Für heute ausblenden", "Masquer pour aujourd’hui", "Ocultar por hoje", "今日は非表示"],
     "android:sort_button": ["Ordenar %d", "%d sortieren", "Trier %d", "Organizar %d", "整理 %d"],
     "android:resurface_days": ["Hace %d días", "Vor %d Tagen", "Il y a %d jours", "Há %d dias", "%d日前"],
+    # Il bigliettino "metti il foglio sulla home" (D76).
+    "Put the sheet on your Home Screen": ["Pon la hoja en tu pantalla de inicio", "Leg das Blatt auf deinen Home-Bildschirm", "Mettez la feuille sur votre écran d’accueil", "Coloque a folha na sua Tela de Início", "ホーム画面に用紙を置きましょう"],
+    "One tap and you're writing. Touch and hold the Home Screen, tap Edit, then Add Widget, and search for Instink.": [
+        "Un toque y ya estás escribiendo. Mantén pulsada la pantalla de inicio, toca Editar, luego Añadir widget, y busca Instink.",
+        "Ein Tippen und du schreibst. Halte den Home-Bildschirm gedrückt, tippe auf „Bearbeiten“, dann auf „Widget hinzufügen“, und suche nach Instink.",
+        "Un toucher et vous écrivez. Maintenez le doigt sur l’écran d’accueil, touchez Modifier, puis Ajouter un widget, et recherchez Instink.",
+        "Um toque e você já está escrevendo. Toque e segure a Tela de Início, toque em Editar, depois em Adicionar Widget, e busque Instink.",
+        "タップひとつで書き始められます。ホーム画面を長押しし、「編集」→「ウィジェットを追加」をタップして、Instinkを検索してください。",
+    ],
+    "It's also in Control Center and on the Action button.": ["También está en el Centro de control y en el botón de acción.", "Auch im Kontrollzentrum und auf der Aktionstaste.", "Aussi dans le centre de contrôle et sur le bouton Action.", "Também está na Central de Controle e no botão de Ação.", "コントロールセンターやアクションボタンからも使えます。"],
+    "android:entry_title": ["Pon la hoja en tu pantalla de inicio", "Leg das Blatt auf deinen Startbildschirm", "Mettez la feuille sur votre écran d’accueil", "Coloque a folha na sua tela inicial", "ホーム画面に用紙を置きましょう"],
+    "android:entry_body": [
+        "Un toque en el widget y ya estás escribiendo. O desliza hacia abajo: el icono de ajustes rápidos funciona incluso con el teléfono bloqueado.",
+        "Ein Tippen aufs Widget und du schreibst. Oder wisch nach unten: Die Schnelleinstellung funktioniert sogar bei gesperrtem Handy.",
+        "Un toucher sur le widget et vous écrivez. Ou balayez vers le bas : la vignette des réglages rapides fonctionne même téléphone verrouillé.",
+        "Um toque no widget e você já está escrevendo. Ou deslize para baixo: o bloco das configurações rápidas funciona até com o celular bloqueado.",
+        "ウィジェットをタップすればすぐに書けます。下にスワイプすれば、クイック設定のタイルからロック中でも書けます。",
+    ],
+    "android:entry_manual": [
+        "Mantén pulsado un espacio vacío de la pantalla de inicio, toca Widgets y busca Instink. Un toque y ya estás escribiendo.",
+        "Halte eine leere Stelle auf dem Startbildschirm gedrückt, tippe auf „Widgets“ und such nach Instink. Ein Tippen und du schreibst.",
+        "Maintenez le doigt sur un espace vide de l’écran d’accueil, touchez Widgets et cherchez Instink. Un toucher et vous écrivez.",
+        "Toque e segure um espaço vazio da tela inicial, toque em Widgets e procure Instink. Um toque e você já está escrevendo.",
+        "ホーム画面の空いている場所を長押しし、「ウィジェット」をタップしてInstinkを探してください。タップひとつで書き始められます。",
+    ],
+    "android:entry_add_widget": ["Añadir el widget", "Widget hinzufügen", "Ajouter le widget", "Adicionar o widget", "ウィジェットを追加"],
+    "android:entry_add_tile": ["Añadir el icono", "Kachel hinzufügen", "Ajouter la vignette", "Adicionar o bloco", "タイルを追加"],
 }
 
 # Plurali Android: (one, other). Il giapponese ha solo "other".
@@ -191,6 +219,7 @@ PLURALS = {
 
 # Dalle stringhe iOS a quelle Android con lo stesso testo inglese.
 ANDROID_FROM_SHARED = {
+    "awaits_sorting": "To sort", "entry_later": "Not now",
     "capture_label": "Write", "ok": "OK", "tile_label": "Write a note", "keyboard": "Type",
     "camera": "Photo", "archive_title": "Notes", "search_hint": "Search", "search_empty": "Nothing found.",
     "photo_note": "Photo", "share": "Send to…", "delete": "Delete", "delete_confirm": "Delete this note?",

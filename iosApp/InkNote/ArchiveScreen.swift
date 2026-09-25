@@ -8,6 +8,7 @@ import SwiftUI
 struct ArchiveScreen: View {
     @EnvironmentObject private var router: Router
     @StateObject private var model = ArchiveModel()
+    @StateObject private var entryHint = EntryHint()
     @Environment(\.scenePhase) private var scenePhase
     @State private var sorting = false
     @State private var share: SharePayload?
@@ -19,6 +20,12 @@ struct ArchiveScreen: View {
                 Brand.desk.ignoresSafeArea()
 
                 ScrollView {
+                    // Il widget, finché non c'è (D76): anche ad archivio vuoto, dove serve di più.
+                    if entryHint.visible && model.query.isEmpty {
+                        EntryHintCard { entryHint.dismiss() }
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 12)
+                    }
                     if model.loaded && model.notes.isEmpty {
                         EmptyState(searching: !model.query.isEmpty)
                     } else {
@@ -73,9 +80,12 @@ struct ArchiveScreen: View {
                 if model.toSortCount > 0 {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button { sorting = true } label: {
-                            Label("Sort \(model.toSortCount)", systemImage: "rectangle.stack")
-                                .labelStyle(.titleAndIcon)
-                                .font(.subheadline.weight(.semibold))
+                            // La stessa goccia dei bigliettini: il pulsante dice dove vanno (D72).
+                            HStack(spacing: 7) {
+                                Circle().fill(Brand.spark).frame(width: 8, height: 8)
+                                Text("Sort \(model.toSortCount)")
+                            }
+                            .font(.subheadline.weight(.semibold))
                         }
                     }
                 }
@@ -92,8 +102,8 @@ struct ArchiveScreen: View {
             }
             .presentationDetents([.medium, .large])
         }
-        .onAppear { model.refresh() }
-        .onChange(of: scenePhase) { _, phase in if phase == .active { model.refresh() } }
+        .onAppear { model.refresh(); entryHint.refresh() }
+        .onChange(of: scenePhase) { _, phase in if phase == .active { model.refresh(); entryHint.refresh() } }
         .onChange(of: router.isCapturing) { _, capturing in if !capturing { model.refresh() } }
         .onChange(of: model.notes.count) { _, count in askForReviewIfDeserved(noteCount: count) }
         .alert("The last stroke before the app closed could not be saved.", isPresented: $model.lostStroke) {
@@ -159,6 +169,17 @@ private struct NoteCard: View {
         .background(Brand.card)
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Brand.outline, lineWidth: 1))
+        .overlay(alignment: .topTrailing) {
+            // La goccia dell'icona, con un significato solo: da smistare (D72). Sparisce
+            // quando la nota è tenuta o mandata fuori, e dice le stesse note della coda.
+            if item.note.awaitsSorting {
+                Circle()
+                    .fill(Brand.spark)
+                    .frame(width: 9, height: 9)
+                    .padding(13)
+                    .accessibilityLabel(Text("To sort"))
+            }
+        }
     }
 }
 

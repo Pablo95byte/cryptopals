@@ -30,6 +30,12 @@
     <string name="done">Fertig</string>
     <string name="back">Zurück</string>
     <string name="camera_denied">Ohne Kameraberechtigung können auf dem Blatt keine Fotos aufgenommen werden.</string>
+    <string name="entry_title">Leg das Blatt auf deinen Startbildschirm</string>
+    <string name="entry_body">Ein Tippen aufs Widget und du schreibst. Oder wisch nach unten: Die Schnelleinstellung funktioniert sogar bei gesperrtem Handy.</string>
+    <string name="entry_manual">Halte eine leere Stelle auf dem Startbildschirm gedrückt, tippe auf „Widgets“ und such nach Instink. Ein Tippen und du schreibst.</string>
+    <string name="entry_add_widget">Widget hinzufügen</string>
+    <string name="entry_add_tile">Kachel hinzufügen</string>
+    <string name="entry_later">Nicht jetzt</string>
     <string name="archive_empty_title">Noch nichts hier</string>
     <string name="archive_empty_body">Tippe auf Schreiben oder füge das Widget zum Startbildschirm hinzu: Eine Idee dauert eine Sekunde.</string>
     <string name="sort_button">%d sortieren</string>
@@ -45,6 +51,7 @@
     <string name="resurface_days">Vor %d Tagen</string>
     <string name="resurface_hide">Für heute ausblenden</string>
     <string name="share_signature">Geschrieben mit Instink · instink.app</string>
+    <string name="awaits_sorting">Zu sortieren</string>
     <plurals name="note_count">
         <item quantity="one">%d Notiz</item>
         <item quantity="other">%d Notizen</item>
