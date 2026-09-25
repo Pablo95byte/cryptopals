@@ -19,10 +19,12 @@ final class EntryHint: ObservableObject {
     private static let pause: TimeInterval = 7 * 86_400
 
     func refresh() {
-        Task {
-            let widgets = (try? await WidgetCenter.shared.currentConfigurations()) ?? []
-            let placed = widgets.contains { $0.kind == Self.widgetKind }
-            visible = !placed && allowedNow()
+        // La versione con il completamento c'è da iOS 14; quella `async` solo da iOS 18.
+        WidgetCenter.shared.getCurrentConfigurations { result in
+            let kinds = (try? result.get())?.map(\.kind) ?? []
+            Task { @MainActor in
+                self.visible = !kinds.contains(Self.widgetKind) && self.allowedNow()
+            }
         }
     }
 

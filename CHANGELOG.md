@@ -10,6 +10,11 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Corretto — la build iOS (D76)
+
+- Il bigliettino del widget usava un'API di WidgetKit che esiste solo da iOS 18: la build
+  per TestFlight non compilava. Ora usa quella disponibile da iOS 14.
+
 ### Aggiunto — il bigliettino del widget e la firma sull'immagine (D76)
 
 - In cima all'archivio, su iOS e Android, **"Metti il foglio sulla Home"** finché il widget
