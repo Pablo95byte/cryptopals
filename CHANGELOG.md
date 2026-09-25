@@ -10,6 +10,11 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Cambiato — la scheda dello store annuncia il widget (D77)
+
+- Il testo promozionale, in sette lingue, comincia dal widget; le "Novità" sono quelle della
+  1.0.1 (bigliettino del widget, segno sull'immagine).
+
 ### Corretto — la build iOS (D76)
 
 - Il bigliettino del widget usava un'API di WidgetKit che esiste solo da iOS 18: la build

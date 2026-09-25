@@ -33,10 +33,10 @@ Jot ideas fast, by hand
 instinct,quick,widget,sticky,memo,notepad,scribble,pen,write,journal,voice,dictate,capture,ocr,idea
 ```
 
-**Testo promozionale** — 145/170
+**Testo promozionale** — 154/170
 
 ```
-New: dictate a note without unlocking. Just ask Siri to add a note to Instink. And your handwriting is now searchable, read right on your iPhone.
+Put Instink on your Home Screen: one tap on the blank sheet and you're writing by hand, in under half a second. Phone locked? Just ask Siri to add a note.
 ```
 
 **Descrizione** — 1778/4000
@@ -73,13 +73,12 @@ It's not a notebook with folders and pages. It's the pen for the notes system yo
 Questions or ideas: hello@instink.app — a real person reads every message.
 ```
 
-**Novità di questa versione** — 181/4000
+**Novità di questa versione** — 194/4000
 
 ```
-• Dictate a note to Siri, even with your phone locked.
-• Record voice notes from the sheet; they're transcribed on your device.
-• Your handwriting is now searchable.
-• A fresh icon.
+• Instink now shows you how to put the sheet on your Home Screen: one tap on the widget and you're writing.
+• Handwritten notes you send now carry a small Instink mark.
+• Fixes and improvements.
 ```
 
 **Da aggiungere alla descrizione quando Pro è in vendita (D67, D68): non al lancio** — 833/2220
@@ -167,10 +166,10 @@ Fissa le idee al volo, a mano
 istinto,veloce,widget,appunti,memo,blocco,penna,scrivere,scarabocchi,diario,voce,dettare,promemoria
 ```
 
-**Testo promozionale** — 152/170
+**Testo promozionale** — 164/170
 
 ```
-Novità: detta una nota senza sbloccare, basta chiedere a Siri di aggiungerla a Instink. E la tua scrittura ora si cerca, letta direttamente sull'iPhone.
+Metti Instink sulla Home: un tocco sul foglio bianco e stai già scrivendo a mano, in meno di mezzo secondo. Telefono bloccato? Chiedi a Siri di aggiungere una nota.
 ```
 
 **Descrizione** — 1934/4000
@@ -207,13 +206,12 @@ Non è un quaderno con cartelle e pagine. È la penna del sistema di note che us
 Domande o idee: hello@instink.app — ogni messaggio lo legge una persona.
 ```
 
-**Novità di questa versione** — 175/4000
+**Novità di questa versione** — 199/4000
 
 ```
-• Detta una nota a Siri, anche a telefono bloccato.
-• Registra note vocali dal foglio: si trascrivono sul dispositivo.
-• La tua scrittura ora si può cercare.
-• Un'icona nuova.
+• Instink ora ti mostra come mettere il foglio sulla Home: un tocco sul widget e stai già scrivendo.
+• Le note scritte a mano che mandi portano un piccolo segno Instink.
+• Correzioni e miglioramenti.
 ```
 
 **Da aggiungere alla descrizione quando Pro è in vendita (D67, D68): non al lancio** — 891/2064
@@ -301,10 +299,10 @@ Apunta tus ideas al instante
 instinto,rápido,widget,apuntes,memo,libreta,bloc,escribir,lápiz,garabatos,diario,voz,dictar,idea
 ```
 
-**Testo promozionale** — 135/170
+**Testo promozionale** — 160/170
 
 ```
-Nuevo: dicta una nota sin desbloquear, solo pídeselo a Siri. Y ahora puedes buscar en tu propia letra, leída directamente en tu iPhone.
+Pon Instink en tu pantalla de inicio: un toque en la hoja en blanco y ya estás escribiendo a mano, en menos de medio segundo. ¿Bloqueado? Pídele la nota a Siri.
 ```
 
 **Descrizione** — 1889/4000
@@ -341,12 +339,12 @@ No es un cuaderno con carpetas y páginas. Es el bolígrafo del sistema de notas
 Preguntas o ideas: hello@instink.app. Cada mensaje lo lee una persona.
 ```
 
-**Novità di questa versione** — 161/4000
+**Novità di questa versione** — 210/4000
 
 ```
-• Dicta una nota a Siri, incluso con el móvil bloqueado.
-• Graba notas de voz desde la hoja; se transcriben en tu dispositivo.
-• Ahora puedes buscar en tu letra.
+• Instink ahora te muestra cómo poner la hoja en tu pantalla de inicio: un toque en el widget y ya estás escribiendo.
+• Las notas a mano que envías llevan una pequeña marca de Instink.
+• Correcciones y mejoras.
 ```
 
 
@@ -389,10 +387,10 @@ Ideen blitzschnell festhalten
 instinkt,schnell,widget,notizblock,memo,zettel,stift,schreiben,kritzeln,tagebuch,stimme,diktieren
 ```
 
-**Testo promozionale** — 153/170
+**Testo promozionale** — 158/170
 
 ```
-Neu: Diktiere eine Notiz, ohne zu entsperren – sag einfach Siri Bescheid. Und deine Handschrift ist jetzt durchsuchbar, gelesen direkt auf deinem iPhone.
+Leg Instink auf deinen Home-Bildschirm: ein Tippen aufs leere Blatt, und du schreibst von Hand – in unter einer halben Sekunde. Gesperrt? Sag es einfach Siri.
 ```
 
 **Descrizione** — 2011/4000
@@ -429,12 +427,12 @@ Kein Notizbuch mit Ordnern und Seiten. Es ist der Stift für das Notizsystem, da
 Fragen oder Ideen: hello@instink.app – jede Nachricht liest ein Mensch.
 ```
 
-**Novità di questa versione** — 177/4000
+**Novità di questa versione** — 235/4000
 
 ```
-• Diktiere Siri eine Notiz, auch bei gesperrtem Handy.
-• Nimm Sprachnotizen vom Blatt auf; sie werden auf deinem Gerät transkribiert.
-• Deine Handschrift ist jetzt durchsuchbar.
+• Instink zeigt dir jetzt, wie du das Blatt auf den Home-Bildschirm legst: ein Tippen aufs Widget, und du schreibst.
+• Handschriftliche Notizen, die du sendest, tragen ein kleines Instink-Zeichen.
+• Fehlerbehebungen und Verbesserungen.
 ```
 
 
@@ -477,10 +475,10 @@ Notez vos idées en un éclair
 instinct,rapide,widget,mémo,bloc,carnet,stylo,écrire,griffonner,journal,voix,dicter,rappel,post-it
 ```
 
-**Testo promozionale** — 157/170
+**Testo promozionale** — 158/170
 
 ```
-Nouveau : dictez une note sans déverrouiller, il suffit de le demander à Siri. Et votre écriture est désormais consultable, lue directement sur votre iPhone.
+Mettez Instink sur l’écran d’accueil : un toucher sur la feuille blanche et vous écrivez à la main, en moins d’une demi-seconde. Verrouillé ? Demandez à Siri.
 ```
 
 **Descrizione** — 2133/4000
@@ -517,12 +515,12 @@ Ce n’est pas un cahier avec des dossiers et des pages. C’est le stylo du sys
 Questions ou idées : hello@instink.app. Chaque message est lu par une personne.
 ```
 
-**Novità di questa versione** — 191/4000
+**Novità di questa versione** — 232/4000
 
 ```
-• Dictez une note à Siri, même téléphone verrouillé.
-• Enregistrez des notes vocales depuis la feuille ; elles sont transcrites sur votre appareil.
-• Votre écriture est désormais consultable.
+• Instink vous montre maintenant comment mettre la feuille sur l’écran d’accueil : un toucher sur le widget et vous écrivez.
+• Les notes manuscrites que vous envoyez portent une petite marque Instink.
+• Corrections et améliorations.
 ```
 
 
@@ -565,10 +563,10 @@ Anote suas ideias na hora
 instinto,rápido,widget,anotação,memo,bloco,caderno,caneta,escrever,rabisco,diário,voz,ditar,lembrete
 ```
 
-**Testo promozionale** — 127/170
+**Testo promozionale** — 153/170
 
 ```
-Novo: dite uma nota sem desbloquear, é só pedir à Siri. E agora dá para buscar na sua própria letra, lida direto no seu iPhone.
+Coloque o Instink na Tela de Início: um toque na folha em branco e você já está escrevendo à mão, em menos de meio segundo. Bloqueado? É só pedir à Siri.
 ```
 
 **Descrizione** — 1857/4000
@@ -605,12 +603,12 @@ Não é um caderno com pastas e páginas. É a caneta do sistema de notas que vo
 Dúvidas ou ideias: hello@instink.app. Cada mensagem é lida por uma pessoa.
 ```
 
-**Novità di questa versione** — 165/4000
+**Novità di questa versione** — 203/4000
 
 ```
-• Dite uma nota para a Siri, mesmo com o celular bloqueado.
-• Grave notas de voz na folha; elas são transcritas no seu aparelho.
-• Agora dá para buscar na sua letra.
+• O Instink agora mostra como colocar a folha na Tela de Início: um toque no widget e você já está escrevendo.
+• As notas à mão que você envia levam uma pequena marca do Instink.
+• Correções e melhorias.
 ```
 
 
@@ -653,10 +651,10 @@ Instink：手書きメモ
 ノート,ウィジェット,付箋,メモ帳,すばやく,アイデア,音声入力,日記,ペン,落書き,ロック画面,簡単,備忘録,instinct
 ```
 
-**Testo promozionale** — 72/170
+**Testo promozionale** — 63/170
 
 ```
-新機能：ロックを解除せずにメモを口述できます。Siriに頼むだけ。さらに、手書きの文字がiPhone上で読み取られ、検索できるようになりました。
+ホーム画面にInstinkを。白い紙をタップすれば、0.5秒以内に手書きで書き始められます。ロック中なら、Siriに頼むだけ。
 ```
 
 **Descrizione** — 912/4000
@@ -693,12 +691,12 @@ Instinkではないもの
 ご質問・アイデア：hello@instink.app（すべてのメッセージを人が読んでいます）
 ```
 
-**Novità di questa versione** — 76/4000
+**Novità di questa versione** — 92/4000
 
 ```
-• ロック中でも、Siriにメモを口述できます。
-• 紙から音声メモを録音。端末上で文字起こしされます。
-• 手書きの文字を検索できるようになりました。
+• ホーム画面に用紙を置く方法をご案内します。ウィジェットをタップすれば、すぐに書けます。
+• 送信する手書きメモに、小さなInstinkのマークが入ります。
+• 不具合の修正と改善。
 ```
 
 

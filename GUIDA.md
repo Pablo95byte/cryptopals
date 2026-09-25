@@ -269,27 +269,54 @@ l'archivio). Se qualcosa non torna, dimmelo: si corregge e si rigenerano tutte i
 **Rigenerarle** (lo faccio io; qui solo per memoria): `python3 tools/shots/build.py`, poi
 `npm install` una volta in `tools/shots/`, poi `node tools/shots/render.mjs`.
 
-## 0duodecies. Il video di anteprima (D76)
+## 0duodecies. Il video di anteprima e il widget (D76, D77)
 
-Apple vuole che il video sia **una registrazione vera dello schermo** (non posso disegnarlo
-come gli screenshot). Lo giri tu, io faccio il resto.
+### Dove va il video
 
-**Prima:** metti il widget sulla Home, in una pagina pulita (sfondo semplice, poche icone);
-attiva "Non disturbare"; lingua del telefono in inglese; batteria carica.
+In App Store Connect, nella **stessa area degli screenshot** ("Anteprime e screenshot
+dell'app"), per ogni lingua: fino a **3 video** per formato di schermo, **prima** degli
+screenshot. Nei risultati di ricerca il primo video **parte da solo, senza audio**, al posto
+del primo screenshot: è il posto più visto di tutta la scheda.
 
-**Si registra** dal Centro di Controllo → Registrazione schermo. Tre prese, ognuna di pochi
-secondi, rifatte finché vengono pulite:
+**Quando:** screenshot e video si cambiano solo su una versione **modificabile**. La 1.0 è
+in revisione, quindi il video entra con la **1.0.1**, insieme al bigliettino del widget. Non
+ritirare la 1.0 dalla revisione per aggiungerlo: si perde il posto in coda.
+
+**Le misure** le sistemo io: 15–30 secondi, verticale, 886×1920 per iPhone 6,9" (vale anche
+per gli schermi più piccoli), .mp4 o .mov. Un video solo in inglese va bene per tutte le
+lingue: il testo sopra lo traduco io, lingua per lingua.
+
+### Come lo giri
+
+Apple vuole **una registrazione vera dello schermo**. Prima: widget sulla Home in una pagina
+pulita, "Non disturbare" acceso, telefono in inglese, batteria carica, ora sul telefono
+qualunque (non si vede, la barra la copro).
+
+Centro di Controllo → **Registrazione schermo**. Tre prese separate, ognuna rifatta finché
+viene pulita:
 
 1. **La Home** → il dito tocca il widget → il foglio si apre → scrivi a mano, grande,
-   *call mum re: Sunday* → **Fatto** → torni alla Home. Tutto di fila, senza pause.
-2. **L'archivio** → tieni premuta la nota → **Manda a…** → tocca Note o Notion.
-3. (facoltativa) **Il telefono bloccato** → "Ehi Siri, aggiungi una nota a Instink" →
-   detti una frase → "Salvata".
+   *call mum re: Sunday* → **Done** → torni alla Home. Tutto di fila, senza pause.
+2. **L'archivio** → tieni premuta la nota → **Send to…** → tocca Notes o Notion.
+3. (facoltativa) **Telefono bloccato** → "Hey Siri, add a note to Instink" → detti una frase.
 
-**Mandami i file** così come escono dall'iPhone. Io li monto in 15–30 secondi, aggiungo il
-cronometro in un angolo e la riga finale *Instink. Write on instinct.*, e li porto alla
-misura dell'App Store (886×1920 per iPhone 6,9"). Il video si carica accanto agli screenshot,
-e nei risultati di ricerca parte da solo al posto del primo.
+**Come me li mandi:** mettili in una cartella di **Google Drive** e dimmi il nome della
+cartella: li scarico io da qui. Io li taglio, aggiungo il cronometro e la riga finale
+*Instink. Write on instinct.*, e ti restituisco i file pronti da caricare.
+
+### Far sapere che il widget esiste
+
+Tre posti, dal più veloce:
+
+1. **Testo promozionale, adesso.** È il campo sopra la descrizione e si cambia **quando
+   vuoi, senza nuova revisione**. Ora comincia dal widget in tutte e sette le lingue
+   (`lancio/STORE.md`, "Testo promozionale"): copialo in ogni lingua e salva.
+2. **Nell'app, con la 1.0.1.** Il bigliettino "Metti il foglio sulla Home" compare in cima
+   all'archivio finché il widget non c'è (D76). Non è nella build in revisione: arriva con la
+   prossima. Quando la 1.0 è approvata, lancia "iOS — TestFlight" da `master` e manda la
+   nuova build come 1.0.1, con le "Novità" già scritte in `lancio/STORE.md`.
+3. **Nel video**, che comincia proprio dal dito sul widget; e nel secondo screenshot, che lo
+   mostra già.
 
 ## 0quater. Il sito su Cloudflare, passo per passo (D61)
 

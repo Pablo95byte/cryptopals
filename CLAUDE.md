@@ -2566,6 +2566,26 @@ committente sull'iPhone, seguendo la sceneggiatura di `STORIA.md` §6; il cronom
 riga finale si aggiungono dopo, come didascalie. Il primo piano del video è il dito che
 tocca il widget: è lì che si fa sapere che il widget esiste, prima ancora di installare.
 
+### D77 — Il widget si annuncia nella scheda prima che nell'app, e la 1.0.1 porta bigliettino e video
+**Data:** 2026-09-25 · **Stato:** attiva · **Precisa D75 e D76**
+
+La 1.0 è in revisione **senza** il bigliettino del widget: la build che lo conteneva non
+compilava (D76), e quella mandata ad Apple è precedente. Il committente chiede come far
+sapere del widget adesso.
+
+- **Il testo promozionale comincia dal widget**, in sette lingue. È l'unico campo della
+  scheda che si cambia senza una nuova revisione, quindi è la leva immediata. Prima parlava
+  di Siri e della ricerca come "novità", che su una prima versione non ha senso.
+- **Le "Novità di questa versione" sono quelle della 1.0.1**: bigliettino del widget e
+  segno sull'immagine. Sulla 1.0 Apple non le mostra.
+- **La 1.0 non si ritira dalla revisione** per aggiungere bigliettino o video: si perderebbe
+  il posto in coda, e il 23 ottobre (D74, D75) vale più di qualche giorno di bigliettino.
+  Screenshot e video si cambiano solo su una versione modificabile: entrano con la 1.0.1,
+  subito dopo l'approvazione.
+- **Il video arriva da Google Drive**: il committente carica le registrazioni grezze, io le
+  scarico e le monto. Il montaggio aggiunge solo didascalie e cronometro; le immagini sono
+  quelle registrate (linea guida 2.3.4).
+
 ---
 
 ## 5. Struttura del repository
@@ -2833,8 +2853,10 @@ su Android (D64) compilano contro Android 15. Riconoscimento, voce e Siri **comp
 
 - **Il piano del rendimento** (D75): da confermare. Candidatura alla vetrina entro il
   2 ottobre.
-- **Il video di anteprima** (D76): da registrare sull'iPhone con la sceneggiatura di
-  `STORIA.md` §6 (GUIDA §0duodecies); cronometro e titolo li aggiungo io.
+- **Il video di anteprima** (D76, D77): da registrare sull'iPhone (GUIDA §0duodecies) e
+  caricare su Google Drive; montaggio mio, esce con la 1.0.1.
+- **La 1.0.1** (D77): bigliettino del widget, segno sull'immagine e video, subito dopo
+  l'approvazione della 1.0.
 - **Gli screenshot** (D70, D71, D73): pronti in `lancio/screenshots/`, da confrontare una
   volta con l'app sul telefono prima di caricarli.
 - **L'iPhone Duo** (D74): provare nel simulatore di Xcode la nota che passa dallo schermo
