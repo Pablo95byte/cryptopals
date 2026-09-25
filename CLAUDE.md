@@ -2138,7 +2138,8 @@ paywall, il limite nella ricerca, la riga in fondo alle note mandate fuori.
 
 ### D68 — Gratis adesso, Pro quando porta cose nuove, e ciò che hai resta tuo
 **Data:** 2026-09-24 · **Stato:** attiva, decisa col committente · **Supera il punto 1 di
-D67** (Pro dal lancio) **e ne aggiorna i prezzi** · la ricerca è in
+D67** (Pro dal lancio) **e ne aggiorna i prezzi** · **le soglie di fedeltà del punto 3 sono
+riviste da D75** · la ricerca è in
 [`lancio/MERCATO.md`](lancio/MERCATO.md)
 
 Il committente: *"non serve che renda ora, ma che in futuro lo sia; se serve, farla
@@ -2475,6 +2476,51 @@ modo di mostrare, come il foglio di notte (D52).
 **Da fare sul Mac del committente**, perché qui non c'è un simulatore: aprire l'app nel
 simulatore del Duo di Xcode, scrivere aperto e chiudere a metà nota, e il contrario.
 
+### D75 — Il rendimento viene da tre cose, in quest'ordine: esserci il 23 ottobre, far mettere l'ingresso, far viaggiare le note
+**Data:** 2026-09-25 · **Stato:** proposta, **da confermare col committente** · **Rivede le
+soglie di D47 e D68**
+
+Il committente: *"cosa ci rende unici, e cosa ci dà il maggior rendimento?"* Riletto coi
+numeri del mercato e con quello che si sa del comportamento delle persone.
+
+**Il numero che cambia i piani.** Le app di produttività su iOS tengono il **17,1%** di chi
+le installa dopo un giorno e il **4,1%** dopo trenta; quelle forti fra il 10 e il 18%. D47 e
+D68 chiedevano "uno su cinque dopo 30 giorni" per accendere Pro: è cinque volte la media
+della categoria, e aspettarlo vorrebbe dire non accenderlo mai. **Soglie nuove: a 7 giorni
+almeno il 20%, a 30 giorni almeno il 10%** — già da app forte. Il voto (4,5 con 50
+valutazioni) resta com'è.
+
+**Cosa ci rende unici non cambia (D69):** la mano come primo gesto, la velocità misurata, un
+flusso che si svuota (smistamento e riemersione), nessun account, due piattaforme. Due fatti
+sul comportamento lo sostengono: **scrivere a mano attiva il cervello più che digitare** (EEG
+su 36 studenti, Frontiers in Psychology, 2024: è un argomento di storia, non una promessa
+medica da scheda dello store); e **un'idea annotata e mai riletta è persa lo stesso**, che è
+la ragione della riemersione e dello smistamento.
+
+**Dove sta il rendimento, in ordine:**
+
+1. **Esserci il 23 ottobre, con la candidatura alla vetrina.** App Store Connect ha un modulo
+   per candidare un'app al featuring; Apple chiede di mandarlo **almeno tre settimane prima**
+   del lancio. Col Duo in uscita il 23, la candidatura va mandata **entro il 2 ottobre**. Una
+   vetrina vale mesi di ricerca nello store, e costa un modulo.
+2. **Far mettere l'ingresso il primo giorno.** Un'abitudine nasce da un segnale: per noi è il
+   widget, il Controllo o il tasto Azione. Chi non lo mette usa l'app come un'app di note
+   qualunque, e la abbandona come le altre (il 4% che resta). **Da fare:** quando l'archivio è
+   vuoto, al posto della frase di oggi, tre modi di mettere il foglio a un pollice di
+   distanza, con un disegno ciascuno. Non è un onboarding (D12): non blocca niente, non chiede
+   niente, sparisce alla prima nota.
+3. **Far viaggiare le note.** La firma in fondo al testo (D68) si perde quando la nota viaggia
+   come immagine, cioè nei messaggi, che è dove la gente manda la calligrafia. **Da fare:** un
+   segno piccolo "Instink" nell'angolo dell'immagine dell'inchiostro mandata fuori. Con Pro si
+   potrà togliere, come la firma.
+4. **Il video di anteprima** (15 secondi, `STORIA.md` §6): nei risultati di ricerca parte da
+   solo, senza audio, al posto del primo screenshot. Si può disegnare dal codice come gli
+   screenshot (D73).
+
+**Cosa non fare adesso:** funzioni nuove (formule, intelligenza artificiale, sincronizzazione)
+prima di avere i dati di fedeltà. Con il 4% di fedeltà media, il primo nemico è l'abbandono,
+non la mancanza di funzioni (D47).
+
 ---
 
 ## 5. Struttura del repository
@@ -2740,6 +2786,8 @@ su Android (D64) compilano contro Android 15. Riconoscimento, voce e Siri **comp
 
 ## 10. Questioni ancora aperte
 
+- **Il piano del rendimento** (D75): da confermare. Candidatura alla vetrina entro il
+  2 ottobre.
 - **Gli screenshot** (D70, D71, D73): pronti in `lancio/screenshots/`, da confrontare una
   volta con l'app sul telefono prima di caricarli.
 - **L'iPhone Duo** (D74): provare nel simulatore di Xcode la nota che passa dallo schermo
