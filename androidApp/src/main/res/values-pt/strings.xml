@@ -30,6 +30,12 @@
     <string name="done">Pronto</string>
     <string name="back">Voltar</string>
     <string name="camera_denied">Sem a permissão da câmera, não é possível tirar fotos pela folha.</string>
+    <string name="entry_title">Coloque a folha na sua tela inicial</string>
+    <string name="entry_body">Um toque no widget e você já está escrevendo. Ou deslize para baixo: o bloco das configurações rápidas funciona até com o celular bloqueado.</string>
+    <string name="entry_manual">Toque e segure um espaço vazio da tela inicial, toque em Widgets e procure Instink. Um toque e você já está escrevendo.</string>
+    <string name="entry_add_widget">Adicionar o widget</string>
+    <string name="entry_add_tile">Adicionar o bloco</string>
+    <string name="entry_later">Agora não</string>
     <string name="archive_empty_title">Nada aqui ainda</string>
     <string name="archive_empty_body">Toque em Escrever ou adicione o widget à tela inicial: uma ideia leva um segundo.</string>
     <string name="sort_button">Organizar %d</string>

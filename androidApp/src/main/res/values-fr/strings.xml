@@ -30,6 +30,12 @@
     <string name="done">Terminé</string>
     <string name="back">Retour</string>
     <string name="camera_denied">Sans l’autorisation de l’appareil photo, impossible de prendre des photos depuis la feuille.</string>
+    <string name="entry_title">Mettez la feuille sur votre écran d’accueil</string>
+    <string name="entry_body">Un toucher sur le widget et vous écrivez. Ou balayez vers le bas : la vignette des réglages rapides fonctionne même téléphone verrouillé.</string>
+    <string name="entry_manual">Maintenez le doigt sur un espace vide de l’écran d’accueil, touchez Widgets et cherchez Instink. Un toucher et vous écrivez.</string>
+    <string name="entry_add_widget">Ajouter le widget</string>
+    <string name="entry_add_tile">Ajouter la vignette</string>
+    <string name="entry_later">Plus tard</string>
     <string name="archive_empty_title">Rien pour l’instant</string>
     <string name="archive_empty_body">Touchez Écrire, ou ajoutez le widget à l’écran d’accueil : une idée prend une seconde.</string>
     <string name="sort_button">Trier %d</string>

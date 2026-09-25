@@ -2477,8 +2477,8 @@ modo di mostrare, come il foglio di notte (D52).
 simulatore del Duo di Xcode, scrivere aperto e chiudere a metà nota, e il contrario.
 
 ### D75 — Il rendimento viene da tre cose, in quest'ordine: esserci il 23 ottobre, far mettere l'ingresso, far viaggiare le note
-**Data:** 2026-09-25 · **Stato:** proposta, **da confermare col committente** · **Rivede le
-soglie di D47 e D68**
+**Data:** 2026-09-25 · **Stato:** attiva, **approvata dal committente** · **Rivede le
+soglie di D47 e D68** · i punti 2, 3 e 4 sono attuati e **precisati da D76**
 
 Il committente: *"cosa ci rende unici, e cosa ci dà il maggior rendimento?"* Riletto coi
 numeri del mercato e con quello che si sa del comportamento delle persone.
@@ -2514,12 +2514,53 @@ la ragione della riemersione e dello smistamento.
    segno piccolo "Instink" nell'angolo dell'immagine dell'inchiostro mandata fuori. Con Pro si
    potrà togliere, come la firma.
 4. **Il video di anteprima** (15 secondi, `STORIA.md` §6): nei risultati di ricerca parte da
-   solo, senza audio, al posto del primo screenshot. Si può disegnare dal codice come gli
-   screenshot (D73).
+   solo, senza audio, al posto del primo screenshot. ~~Si può disegnare dal codice come gli
+   screenshot (D73).~~ **No, vedi D76:** va registrato sul telefono.
 
 **Cosa non fare adesso:** funzioni nuove (formule, intelligenza artificiale, sincronizzazione)
 prima di avere i dati di fedeltà. Con il 4% di fedeltà media, il primo nemico è l'abbandono,
 non la mancanza di funzioni (D47).
+
+### D76 — Far sapere che il widget esiste, firmare l'immagine, e il video si gira sul telefono
+**Data:** 2026-09-25 · **Stato:** attiva, chiesta dal committente · **Attua D75, punti 2–4**
+
+Il committente: *"dobbiamo far sapere che c'è il widget che ti porta velocissimamente nella
+nota."* È il punto 2 di D75 detto con le sue parole.
+
+**1. Il bigliettino "Metti il foglio sulla Home".** In cima all'archivio, su iOS e Android:
+un piccolo foglio col ricciolo, com'è il widget, e i passi per metterlo. Rispetto a D75
+cambia il **quando**: non solo ad archivio vuoto, ma **finché il widget non c'è**. Chi ha
+già scritto dieci note aprendo l'icona è proprio chi ne ha più bisogno.
+
+- **Sa se il widget c'è**: su iOS lo dice WidgetKit (`currentConfigurations`, Home o
+  schermata di blocco), su Android `AppWidgetManager`. Appena lo si mette, il bigliettino
+  sparisce da solo.
+- **Su Android lo mette con un tocco**: "Aggiungi il widget" chiede al launcher di
+  collocarlo (`requestPinAppWidget`), e l'utente conferma dove. Se il launcher non lo sa
+  fare, il bigliettino dà i passi a mano. Da Android 13 c'è anche "Aggiungi il riquadro"
+  (`requestAddTileService`), che è l'ingresso a telefono bloccato (D33); sparisce quando
+  il riquadro c'è, che l'abbia aggiunto il bigliettino o l'utente a mano.
+- **Su iOS i passi si scrivono**, perché Apple non permette a un'app di mettere un widget
+  sulla Home; una riga ricorda Centro di Controllo e tasto Azione.
+- **Non è un onboarding** (D12): non blocca niente, non compare mai sul foglio né durante
+  una ricerca. La crocetta lo nasconde **per una settimana**; dopo due volte, **per sempre**.
+  Un consiglio ripetuto diventa un compito, e D51 esclude le app che danno compiti.
+- **Tenue**: pulsanti a pillola chiara. Il solo pulsante pieno resta "Scrivi" (D46).
+
+**2. La firma sull'immagine.** L'immagine dell'inchiostro mandata fuori porta in basso una
+fascia sottile con la goccia vermiglia e "Instink", in grigio tenue. È la firma di D68 per
+le note che viaggiano come immagine — nei messaggi, dove la gente manda la calligrafia.
+**La lettura della scrittura usa l'immagine senza firma** (D62): altrimenti Vision
+leggerebbe "Instink" in fondo a ogni nota, e la ricerca la troverebbe in tutte. Con Pro si
+potrà togliere, come la riga di testo.
+
+**3. Il video: si gira sul telefono, non si disegna.** D75 diceva che il video di anteprima
+si poteva disegnare dal codice come gli screenshot (D73). **Sbagliato:** le linee guida di
+Apple (2.3.4) vogliono che l'anteprima sia **una registrazione dello schermo dell'app**. Per
+gli screenshot una ricostruzione fedele è ammessa; per il video no. Quindi lo registra il
+committente sull'iPhone, seguendo la sceneggiatura di `STORIA.md` §6; il cronometro e la
+riga finale si aggiungono dopo, come didascalie. Il primo piano del video è il dito che
+tocca il widget: è lì che si fa sapere che il widget esiste, prima ancora di installare.
 
 ---
 
@@ -2788,6 +2829,8 @@ su Android (D64) compilano contro Android 15. Riconoscimento, voce e Siri **comp
 
 - **Il piano del rendimento** (D75): da confermare. Candidatura alla vetrina entro il
   2 ottobre.
+- **Il video di anteprima** (D76): da registrare sull'iPhone con la sceneggiatura di
+  `STORIA.md` §6 (GUIDA §0duodecies); cronometro e titolo li aggiungo io.
 - **Gli screenshot** (D70, D71, D73): pronti in `lancio/screenshots/`, da confrontare una
   volta con l'app sul telefono prima di caricarli.
 - **L'iPhone Duo** (D74): provare nel simulatore di Xcode la nota che passa dallo schermo

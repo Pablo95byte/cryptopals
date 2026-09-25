@@ -8,6 +8,7 @@ import SwiftUI
 struct ArchiveScreen: View {
     @EnvironmentObject private var router: Router
     @StateObject private var model = ArchiveModel()
+    @StateObject private var entryHint = EntryHint()
     @Environment(\.scenePhase) private var scenePhase
     @State private var sorting = false
     @State private var share: SharePayload?
@@ -19,6 +20,12 @@ struct ArchiveScreen: View {
                 Brand.desk.ignoresSafeArea()
 
                 ScrollView {
+                    // Il widget, finché non c'è (D76): anche ad archivio vuoto, dove serve di più.
+                    if entryHint.visible && model.query.isEmpty {
+                        EntryHintCard { entryHint.dismiss() }
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 12)
+                    }
                     if model.loaded && model.notes.isEmpty {
                         EmptyState(searching: !model.query.isEmpty)
                     } else {
@@ -95,8 +102,8 @@ struct ArchiveScreen: View {
             }
             .presentationDetents([.medium, .large])
         }
-        .onAppear { model.refresh() }
-        .onChange(of: scenePhase) { _, phase in if phase == .active { model.refresh() } }
+        .onAppear { model.refresh(); entryHint.refresh() }
+        .onChange(of: scenePhase) { _, phase in if phase == .active { model.refresh(); entryHint.refresh() } }
         .onChange(of: router.isCapturing) { _, capturing in if !capturing { model.refresh() } }
         .onChange(of: model.notes.count) { _, count in askForReviewIfDeserved(noteCount: count) }
         .alert("The last stroke before the app closed could not be saved.", isPresented: $model.lostStroke) {

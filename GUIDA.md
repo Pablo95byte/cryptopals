@@ -269,6 +269,28 @@ l'archivio). Se qualcosa non torna, dimmelo: si corregge e si rigenerano tutte i
 **Rigenerarle** (lo faccio io; qui solo per memoria): `python3 tools/shots/build.py`, poi
 `npm install` una volta in `tools/shots/`, poi `node tools/shots/render.mjs`.
 
+## 0duodecies. Il video di anteprima (D76)
+
+Apple vuole che il video sia **una registrazione vera dello schermo** (non posso disegnarlo
+come gli screenshot). Lo giri tu, io faccio il resto.
+
+**Prima:** metti il widget sulla Home, in una pagina pulita (sfondo semplice, poche icone);
+attiva "Non disturbare"; lingua del telefono in inglese; batteria carica.
+
+**Si registra** dal Centro di Controllo → Registrazione schermo. Tre prese, ognuna di pochi
+secondi, rifatte finché vengono pulite:
+
+1. **La Home** → il dito tocca il widget → il foglio si apre → scrivi a mano, grande,
+   *call mum re: Sunday* → **Fatto** → torni alla Home. Tutto di fila, senza pause.
+2. **L'archivio** → tieni premuta la nota → **Manda a…** → tocca Note o Notion.
+3. (facoltativa) **Il telefono bloccato** → "Ehi Siri, aggiungi una nota a Instink" →
+   detti una frase → "Salvata".
+
+**Mandami i file** così come escono dall'iPhone. Io li monto in 15–30 secondi, aggiungo il
+cronometro in un angolo e la riga finale *Instink. Write on instinct.*, e li porto alla
+misura dell'App Store (886×1920 per iPhone 6,9"). Il video si carica accanto agli screenshot,
+e nei risultati di ricerca parte da solo al posto del primo.
+
 ## 0quater. Il sito su Cloudflare, passo per passo (D61)
 
 Le pagine sono pronte in `site/`: home, **privacy** e **assistenza**, in inglese e in

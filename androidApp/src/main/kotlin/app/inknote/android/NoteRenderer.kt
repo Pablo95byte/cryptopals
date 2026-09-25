@@ -63,12 +63,17 @@ object NoteRenderer {
      *
      * Tre pixel per unità logica, e mai oltre 2048 per lato: abbastanza nitida per uno
      * schermo grande, abbastanza leggera per un messaggio.
+     *
+     * In fondo, in una fascia sua, la goccia e il nome (D75): nei messaggi la nota viaggia
+     * come immagine, e la firma del testo lì si perde. Si usa solo per ciò che esce
+     * dall'app.
      */
     fun exportPng(note: Note, file: File): Boolean {
         val ink = Bounds.of(note)?.inflate(EXPORT_MARGIN) ?: return false
         val density = minOf(EXPORT_DENSITY, MAX_EXPORT_SIDE / maxOf(ink.width, ink.height))
         val width = (ink.width * density).toInt().coerceAtLeast(1)
-        val height = (ink.height * density).toInt().coerceAtLeast(1)
+        val band = (MARK_BAND * density).toInt()
+        val height = (ink.height * density).toInt().coerceAtLeast(1) + band
 
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -78,6 +83,7 @@ object NoteRenderer {
         for (outlined in StrokeGeometry.outlines(note, RenderQuality.SCREEN)) {
             canvas.drawPath(outlined.outline.toPath(density, offsetX, offsetY), InkDraw.paint(outlined.pen))
         }
+        drawMark(canvas, width.toFloat(), height.toFloat(), band.toFloat())
 
         file.parentFile?.mkdirs()
         FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
@@ -121,6 +127,29 @@ object NoteRenderer {
     private const val EXPORT_DENSITY = 3f
     private const val MAX_EXPORT_SIDE = 2048f
     private const val EXPORT_MARGIN = 12f
+
+    /** L'altezza della fascia del segno, in unità logiche. */
+    private const val MARK_BAND = 22f
+
+    /** La goccia vermiglia e "Instink", tenui, in basso a destra: si riconosce, non disturba. */
+    private fun drawMark(canvas: Canvas, width: Float, bottom: Float, band: Float) {
+        val size = band * 0.38f
+        val text = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = 0xFFA89F8F.toInt()
+            textSize = size
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        }
+        val label = "Instink"
+        val margin = band * 0.55f
+        val textWidth = text.measureText(label)
+        val centerY = bottom - band / 2f
+        val baseline = centerY - (text.descent() + text.ascent()) / 2f
+        val x = width - margin - textWidth
+        canvas.drawText(label, x, baseline, text)
+        val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFE4572E.toInt() }
+        val radius = size * 0.21f
+        canvas.drawCircle(x - size * 0.35f - radius, centerY, radius, dot)
+    }
 }
 
 /**

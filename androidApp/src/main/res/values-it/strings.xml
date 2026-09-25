@@ -29,6 +29,12 @@
     <string name="done">Fatto</string>
     <string name="back">Indietro</string>
     <string name="camera_denied">Senza il permesso della fotocamera, dal foglio non si possono scattare foto.</string>
+    <string name="entry_title">Metti il foglio sulla home</string>
+    <string name="entry_body">Un tocco sul widget e stai già scrivendo. Oppure scorri giù: il riquadro rapido funziona anche a telefono bloccato.</string>
+    <string name="entry_manual">Tieni premuto un punto vuoto della home, tocca Widget e cerca Instink. Un tocco e stai già scrivendo.</string>
+    <string name="entry_add_widget">Aggiungi il widget</string>
+    <string name="entry_add_tile">Aggiungi il riquadro</string>
+    <string name="entry_later">Non ora</string>
     <string name="archive_empty_title">Ancora niente</string>
     <string name="archive_empty_body">Tocca Scrivi, o metti il widget sulla home: un\'idea prende un secondo.</string>
     <plurals name="note_count">

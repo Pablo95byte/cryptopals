@@ -30,6 +30,12 @@
     <string name="done">完了</string>
     <string name="back">戻る</string>
     <string name="camera_denied">カメラの許可がないと、シートから写真を撮影できません。</string>
+    <string name="entry_title">ホーム画面に用紙を置きましょう</string>
+    <string name="entry_body">ウィジェットをタップすればすぐに書けます。下にスワイプすれば、クイック設定のタイルからロック中でも書けます。</string>
+    <string name="entry_manual">ホーム画面の空いている場所を長押しし、「ウィジェット」をタップしてInstinkを探してください。タップひとつで書き始められます。</string>
+    <string name="entry_add_widget">ウィジェットを追加</string>
+    <string name="entry_add_tile">タイルを追加</string>
+    <string name="entry_later">今はしない</string>
     <string name="archive_empty_title">まだ何もありません</string>
     <string name="archive_empty_body">「書く」をタップするか、ホーム画面にウィジェットを追加しましょう。アイデアは1秒で書き留められます。</string>
     <string name="sort_button">整理 %d</string>

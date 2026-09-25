@@ -33,6 +33,12 @@
     <string name="done">Done</string>
     <string name="back">Back</string>
     <string name="camera_denied">Without the camera permission, photos can\'t be taken from the sheet.</string>
+    <string name="entry_title">Put the sheet on your home screen</string>
+    <string name="entry_body">One tap on the widget and you\'re writing. Or swipe down: the Quick Settings tile works even when the phone is locked.</string>
+    <string name="entry_manual">Touch and hold an empty spot on the home screen, tap Widgets, and find Instink. One tap and you\'re writing.</string>
+    <string name="entry_add_widget">Add the widget</string>
+    <string name="entry_add_tile">Add the tile</string>
+    <string name="entry_later">Not now</string>
     <string name="archive_empty_title">Nothing here yet</string>
     <string name="archive_empty_body">Tap Write, or add the widget to your home screen: an idea takes a second.</string>
     <plurals name="note_count">

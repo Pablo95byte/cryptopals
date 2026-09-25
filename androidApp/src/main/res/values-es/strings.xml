@@ -30,6 +30,12 @@
     <string name="done">Listo</string>
     <string name="back">Atrás</string>
     <string name="camera_denied">Sin el permiso de cámara no se pueden hacer fotos desde la hoja.</string>
+    <string name="entry_title">Pon la hoja en tu pantalla de inicio</string>
+    <string name="entry_body">Un toque en el widget y ya estás escribiendo. O desliza hacia abajo: el icono de ajustes rápidos funciona incluso con el teléfono bloqueado.</string>
+    <string name="entry_manual">Mantén pulsado un espacio vacío de la pantalla de inicio, toca Widgets y busca Instink. Un toque y ya estás escribiendo.</string>
+    <string name="entry_add_widget">Añadir el widget</string>
+    <string name="entry_add_tile">Añadir el icono</string>
+    <string name="entry_later">Ahora no</string>
     <string name="archive_empty_title">Todavía no hay nada</string>
     <string name="archive_empty_body">Toca Escribir o añade el widget a tu pantalla de inicio: una idea lleva un segundo.</string>
     <string name="sort_button">Ordenar %d</string>

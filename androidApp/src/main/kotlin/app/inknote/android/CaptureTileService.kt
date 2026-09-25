@@ -33,6 +33,18 @@ class CaptureTileService : TileService() {
         }
     }
 
+    // L'archivio smette di proporre il riquadro quando c'è già (D76). Scrivere una
+    // preferenza qui non tocca la cattura: il riquadro è un servizio a parte.
+    override fun onTileAdded() = rememberTile(true)
+
+    override fun onTileRemoved() = rememberTile(false)
+
+    private fun rememberTile(added: Boolean) {
+        getSharedPreferences(ArchiveActivity.PREFS, MODE_PRIVATE).edit()
+            .putBoolean(ArchiveActivity.PREF_TILE_ADDED, added)
+            .apply()
+    }
+
     override fun onClick() {
         val intent = Intent(this, CaptureActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

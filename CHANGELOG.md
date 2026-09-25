@@ -10,6 +10,14 @@ solo cosa è cambiato nel codice.
 
 ## [Non rilasciato]
 
+### Aggiunto — il bigliettino del widget e la firma sull'immagine (D76)
+
+- In cima all'archivio, su iOS e Android, **"Metti il foglio sulla Home"** finché il widget
+  non c'è: su Android lo aggiunge con un tocco, e da Android 13 aggiunge anche il riquadro
+  rapido. Si nasconde per una settimana, dopo due volte per sempre.
+- L'immagine dell'inchiostro mandata fuori porta in basso la goccia e "Instink". La lettura
+  della scrittura continua a usare l'immagine senza firma.
+
 ### Aggiunto — gli screenshot dell'App Store (D73)
 
 - **63 screenshot pronti** in `lancio/screenshots/`: sei per iPhone e tre per iPad in sette

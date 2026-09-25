@@ -19,7 +19,7 @@ enum ShareNote {
         // La firma è l'anello di crescita (D68): chi riceve la nota scopre da dove viene.
         let signature = String(localized: "Written with Instink · instink.app")
         if let text = archive.shareText(note: note, dateLabel: date, signature: signature) { items.append(text) }
-        if let ink = inkImage(of: note) { items.append(ink) }
+        if let ink = inkImage(of: note, marked: true) { items.append(ink) }
         for path in archive.photoPaths(note: note) {
             if let photo = PhotoFiles.load(path) { items.append(photo) }
         }
@@ -36,11 +36,18 @@ enum ShareNote {
 
     /// L'inchiostro su carta, largo 1080 pixel: si legge su qualunque schermo e pesa poco.
     /// Sempre su carta chiara, anche di notte: la nota andrà a vivere altrove (D52).
-    static func inkImage(of note: Note, width: CGFloat = 1080) -> UIImage? {
+    ///
+    /// [marked] aggiunge in fondo, in una fascia sua, la goccia e il nome (D76): la nota
+    /// nei messaggi viaggia come immagine, e la firma del testo lì si perde. Solo per ciò
+    /// che esce dall'app: l'immagine che legge Vision (D62) resta senza, altrimenti ogni
+    /// nota conterrebbe la parola "Instink".
+    static func inkImage(of note: Note, width: CGFloat = 1080, marked: Bool = false) -> UIImage? {
         guard note.hasInk else { return nil }
-        let height = CGFloat(InkPreview.shared.heightFor(note: note, width: Float(width), min: 360, max: 2400))
-        let shapes = InkPreview.shared.shapes(note: note, width: Float(width), height: Float(height), padding: 48)
+        let inkHeight = CGFloat(InkPreview.shared.heightFor(note: note, width: Float(width), min: 360, max: 2400))
+        let shapes = InkPreview.shared.shapes(note: note, width: Float(width), height: Float(inkHeight), padding: 48)
         guard !shapes.isEmpty else { return nil }
+        let band: CGFloat = marked ? width * 0.06 : 0
+        let height = inkHeight + band
         let format = UIGraphicsImageRendererFormat.default()
         format.scale = 1
         format.opaque = true
@@ -52,7 +59,30 @@ enum ShareNote {
                 context.cgContext.setFillColor(InkCanvasView.color(of: shape).cgColor)
                 context.cgContext.fillPath()
             }
+            if marked { drawMark(width: width, bottom: height, band: band) }
         }
+    }
+
+    /// La goccia vermiglia e "Instink", tenui, in basso a destra: si riconosce, non disturba.
+    private static func drawMark(width: CGFloat, bottom: CGFloat, band: CGFloat) {
+        let size = band * 0.38
+        let font = UIFont.systemFont(ofSize: size, weight: .semibold)
+        let text = NSAttributedString(string: "Instink", attributes: [
+            .font: font,
+            .foregroundColor: UIColor(red: 0xA8 / 255, green: 0x9F / 255, blue: 0x8F / 255, alpha: 1),
+        ])
+        let textSize = text.size()
+        let margin = band * 0.55
+        let origin = CGPoint(x: width - margin - textSize.width, y: bottom - band / 2 - textSize.height / 2)
+        text.draw(at: origin)
+        let dot = size * 0.42
+        UIColor(Brand.spark).setFill()
+        UIBezierPath(ovalIn: CGRect(
+            x: origin.x - dot - size * 0.35,
+            y: bottom - band / 2 - dot / 2,
+            width: dot,
+            height: dot
+        )).fill()
     }
 }
 
